@@ -84,6 +84,15 @@ class CRMApp {
         document.getElementById('paste-note-email').addEventListener('input', (e) => this.handlePasteTextChange(e));
         document.getElementById('auto-fill-btn').addEventListener('click', () => this.autoFillForm());
         document.getElementById('clear-paste-btn').addEventListener('click', () => this.clearPasteText());
+
+        // Smart contact duplication
+        document.getElementById('signer-same-as-primary').addEventListener('change', (e) => this.handleSignerSameAsPrimary(e));
+        document.getElementById('billing-same-as-primary').addEventListener('change', (e) => this.handleBillingSameAsPrimary(e));
+
+        // Primary contact field changes should update copied fields
+        document.getElementById('primary-name').addEventListener('input', () => this.updateCopiedFields());
+        document.getElementById('primary-email').addEventListener('input', () => this.updateCopiedFields());
+        document.getElementById('primary-phone').addEventListener('input', () => this.updateCopiedFields());
     }
 
     async loadCustomers() {
@@ -133,12 +142,59 @@ class CRMApp {
 
         emptyState.style.display = 'none';
         
-        listContainer.innerHTML = this.customers.map(customer => `
-            <div class="customer-card" onclick="app.showCustomerDetail('${customer.id}')">
-                <h3>${this.escapeHtml(customer.companyName)}</h3>
-                <span class="status-badge ${this.getStatusClass(customer.status)}">${customer.status}</span>
-            </div>
-        `).join('');
+        listContainer.innerHTML = this.customers.map(customer => {
+            const primaryContactName = customer.primaryContact?.name || 'No primary contact';
+            const { noteText, noteTimestamp } = this.getLatestNoteInfo(customer.notes);
+            
+            return `
+                <div class="customer-card" onclick="app.showCustomerDetail('${customer.id}')">
+                    <div class="customer-card-header">
+                        <h3>${this.escapeHtml(customer.companyName)}</h3>
+                        <span class="status-badge ${this.getStatusClass(customer.status)}">${customer.status}</span>
+                    </div>
+                    <div class="customer-card-details">
+                        <div class="contact-info">
+                            <strong>Primary Contact:</strong> ${this.escapeHtml(primaryContactName)}
+                        </div>
+                        <div class="latest-note">
+                            <strong>Latest Note:</strong> ${noteText}
+                            ${noteTimestamp ? `<span class="note-timestamp">${noteTimestamp}</span>` : ''}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    getLatestNoteInfo(notes) {
+        if (!notes || notes.length === 0) {
+            return { noteText: 'No notes yet.', noteTimestamp: null };
+        }
+
+        // Sort notes by timestamp, newest first
+        const sortedNotes = [...notes].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+        const latestNote = sortedNotes[0];
+        
+        // Truncate note text if too long
+        const maxLength = 100;
+        let noteText = latestNote.content;
+        if (noteText.length > maxLength) {
+            noteText = noteText.substring(0, maxLength) + '...';
+        }
+
+        // Format timestamp
+        const noteDate = new Date(latestNote.timestamp);
+        const noteTimestamp = noteDate.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+        }) + ' @ ' + noteDate.toLocaleTimeString('en-US', {
+            hour: 'numeric',
+            minute: '2-digit',
+            hour12: true
+        });
+
+        return { noteText: this.escapeHtml(noteText), noteTimestamp };
     }
 
     getStatusClass(status) {
@@ -169,6 +225,7 @@ class CRMApp {
         document.getElementById('customer-form').reset();
         this.clearDuplicateWarning();
         this.clearPasteText();
+        this.clearContactDuplicationCheckboxes();
         document.getElementById('auto-fill-section').style.display = 'block';
         this.showView('customer-form');
     }
@@ -693,6 +750,98 @@ class CRMApp {
 
         // Trigger duplicate checking after auto-fill
         this.checkDuplicates();
+    }
+
+    // Smart contact duplication functionality
+    handleSignerSameAsPrimary(e) {
+        const isChecked = e.target.checked;
+        const signerFields = ['signer-name', 'signer-email', 'signer-phone'];
+        
+        if (isChecked) {
+            this.copyPrimaryContactToFields(signerFields);
+            this.setFieldsReadOnly(signerFields, true);
+        } else {
+            this.clearFields(signerFields);
+            this.setFieldsReadOnly(signerFields, false);
+        }
+    }
+
+    handleBillingSameAsPrimary(e) {
+        const isChecked = e.target.checked;
+        const billingFields = ['billing-name', 'billing-email', 'billing-phone'];
+        
+        if (isChecked) {
+            this.copyPrimaryContactToFields(billingFields);
+            this.setFieldsReadOnly(billingFields, true);
+        } else {
+            this.clearFields(billingFields);
+            this.setFieldsReadOnly(billingFields, false);
+        }
+    }
+
+    copyPrimaryContactToFields(targetFields) {
+        const primaryName = document.getElementById('primary-name').value;
+        const primaryEmail = document.getElementById('primary-email').value;
+        const primaryPhone = document.getElementById('primary-phone').value;
+
+        if (targetFields.includes('signer-name') || targetFields.includes('billing-name')) {
+            const nameField = targetFields.find(field => field.includes('name'));
+            if (nameField) document.getElementById(nameField).value = primaryName;
+        }
+        
+        if (targetFields.includes('signer-email') || targetFields.includes('billing-email')) {
+            const emailField = targetFields.find(field => field.includes('email'));
+            if (emailField) document.getElementById(emailField).value = primaryEmail;
+        }
+        
+        if (targetFields.includes('signer-phone') || targetFields.includes('billing-phone')) {
+            const phoneField = targetFields.find(field => field.includes('phone'));
+            if (phoneField) document.getElementById(phoneField).value = primaryPhone;
+        }
+    }
+
+    setFieldsReadOnly(fieldIds, isReadOnly) {
+        fieldIds.forEach(fieldId => {
+            const field = document.getElementById(fieldId);
+            field.readOnly = isReadOnly;
+            if (isReadOnly) {
+                field.style.backgroundColor = 'hsl(var(--secondary))';
+                field.style.color = 'hsl(var(--text-secondary))';
+            } else {
+                field.style.backgroundColor = '';
+                field.style.color = '';
+            }
+        });
+    }
+
+    clearFields(fieldIds) {
+        fieldIds.forEach(fieldId => {
+            document.getElementById(fieldId).value = '';
+        });
+    }
+
+    updateCopiedFields() {
+        // Update signer fields if checkbox is checked
+        if (document.getElementById('signer-same-as-primary').checked) {
+            const signerFields = ['signer-name', 'signer-email', 'signer-phone'];
+            this.copyPrimaryContactToFields(signerFields);
+        }
+
+        // Update billing fields if checkbox is checked
+        if (document.getElementById('billing-same-as-primary').checked) {
+            const billingFields = ['billing-name', 'billing-email', 'billing-phone'];
+            this.copyPrimaryContactToFields(billingFields);
+        }
+    }
+
+    clearContactDuplicationCheckboxes() {
+        // Uncheck checkboxes
+        document.getElementById('signer-same-as-primary').checked = false;
+        document.getElementById('billing-same-as-primary').checked = false;
+        
+        // Reset field states
+        const allFields = ['signer-name', 'signer-email', 'signer-phone', 'billing-name', 'billing-email', 'billing-phone'];
+        this.setFieldsReadOnly(allFields, false);
     }
 }
 
