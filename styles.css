@@ -256,6 +256,21 @@ nav {
     color: hsl(38 92% 30%);
 }
 
+.auto-fill-section {
+    margin-bottom: 2rem;
+}
+
+.auto-fill-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.auto-fill-actions button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
 .detail-header {
     display: flex;
     justify-content: space-between;

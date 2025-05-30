@@ -79,6 +79,11 @@ class CRMApp {
         document.getElementById('company-name').addEventListener('input', () => this.checkDuplicates());
         document.getElementById('primary-email').addEventListener('input', () => this.checkDuplicates());
         document.getElementById('primary-phone').addEventListener('input', () => this.checkDuplicates());
+
+        // Auto-fill functionality
+        document.getElementById('paste-note-email').addEventListener('input', (e) => this.handlePasteTextChange(e));
+        document.getElementById('auto-fill-btn').addEventListener('click', () => this.autoFillForm());
+        document.getElementById('clear-paste-btn').addEventListener('click', () => this.clearPasteText());
     }
 
     async loadCustomers() {
@@ -163,6 +168,8 @@ class CRMApp {
         document.getElementById('form-title').textContent = 'Add Customer';
         document.getElementById('customer-form').reset();
         this.clearDuplicateWarning();
+        this.clearPasteText();
+        document.getElementById('auto-fill-section').style.display = 'block';
         this.showView('customer-form');
     }
 
@@ -257,6 +264,7 @@ class CRMApp {
 
         document.getElementById('form-title').textContent = 'Edit Customer';
         this.populateForm(this.currentCustomer);
+        document.getElementById('auto-fill-section').style.display = 'none';
         this.showView('customer-form');
     }
 
@@ -496,6 +504,195 @@ class CRMApp {
         const div = document.createElement('div');
         div.textContent = text;
         return div.innerHTML;
+    }
+
+    // Auto-fill functionality
+    handlePasteTextChange(e) {
+        const text = e.target.value.trim();
+        const autoFillBtn = document.getElementById('auto-fill-btn');
+        autoFillBtn.disabled = text.length === 0;
+    }
+
+    clearPasteText() {
+        document.getElementById('paste-note-email').value = '';
+        document.getElementById('auto-fill-btn').disabled = true;
+    }
+
+    autoFillForm() {
+        const text = document.getElementById('paste-note-email').value;
+        if (!text.trim()) return;
+
+        const extractedData = this.parseTextForCustomerData(text);
+        this.populateFormFromExtractedData(extractedData);
+    }
+
+    /*
+     * FUTURE ENHANCEMENT: OpenAI API Integration
+     * 
+     * To upgrade this text parsing with AI, replace the parseTextForCustomerData method
+     * with an OpenAI API call. Here's how:
+     * 
+     * 1. Add OpenAI API key to environment variables
+     * 2. Create a prompt that asks GPT to extract customer data from the text
+     * 3. Structure the prompt to return JSON with the expected fields
+     * 4. Example implementation:
+     * 
+     * async parseTextWithAI(text) {
+     *   const response = await fetch('https://api.openai.com/v1/chat/completions', {
+     *     method: 'POST',
+     *     headers: {
+     *       'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+     *       'Content-Type': 'application/json'
+     *     },
+     *     body: JSON.stringify({
+     *       model: 'gpt-3.5-turbo',
+     *       messages: [{
+     *         role: 'user',
+     *         content: `Extract customer information from this text and return as JSON: ${text}`
+     *       }]
+     *     })
+     *   });
+     *   return await response.json();
+     * }
+     */
+
+    parseTextForCustomerData(text) {
+        const data = {
+            companyName: '',
+            physicalAddress: '',
+            billingAddress: '',
+            primaryContact: { name: '', email: '', phone: '' },
+            authorizedSigner: { name: '', email: '', phone: '' },
+            billingContact: { name: '', email: '', phone: '' }
+        };
+
+        // Extract emails (basic pattern)
+        const emailRegex = /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g;
+        const emails = text.match(emailRegex) || [];
+
+        // Extract phone numbers (US format variations)
+        const phoneRegex = /(?:\+?1[-.\s]?)?\(?([0-9]{3})\)?[-.\s]?([0-9]{3})[-.\s]?([0-9]{4})/g;
+        const phones = [];
+        let phoneMatch;
+        while ((phoneMatch = phoneRegex.exec(text)) !== null) {
+            phones.push(phoneMatch[0].trim());
+        }
+
+        // Extract company name (look for common patterns)
+        const companyPatterns = [
+            /(?:company|corp|corporation|inc|llc|ltd|limited)[\s:]+([^\n\r.]+)/i,
+            /([A-Z][a-zA-Z\s&]+(?:Inc|LLC|Corp|Corporation|Company|Ltd|Limited))/,
+            /company[\s:]+([^\n\r]+)/i,
+            /from[\s:]+([A-Z][a-zA-Z\s&]+)/i
+        ];
+
+        for (const pattern of companyPatterns) {
+            const match = text.match(pattern);
+            if (match) {
+                data.companyName = match[1].trim();
+                break;
+            }
+        }
+
+        // Extract addresses (look for multi-line patterns with city, state, zip)
+        const addressRegex = /([0-9]+[\s\w]+(?:Street|St|Avenue|Ave|Road|Rd|Drive|Dr|Lane|Ln|Boulevard|Blvd|Way|Place|Pl)[^\n]*[\n\r]*[A-Za-z\s]+,\s*[A-Z]{2}\s*[0-9]{5}(?:-[0-9]{4})?)/gi;
+        const addresses = text.match(addressRegex) || [];
+
+        if (addresses.length > 0) {
+            data.physicalAddress = addresses[0].trim();
+            if (addresses.length > 1) {
+                data.billingAddress = addresses[1].trim();
+            }
+        }
+
+        // Extract names (look for patterns like "Name:", "Contact:", etc.)
+        const namePatterns = [
+            /(?:contact|name|from)[\s:]+([A-Z][a-z]+\s+[A-Z][a-z]+)/i,
+            /([A-Z][a-z]+\s+[A-Z][a-z]+)[\s,]*<[^>]+@/,
+            /([A-Z][a-z]+\s+[A-Z][a-z]+)[\s,]*\(?[0-9]/
+        ];
+
+        for (const pattern of namePatterns) {
+            const match = text.match(pattern);
+            if (match) {
+                data.primaryContact.name = match[1].trim();
+                break;
+            }
+        }
+
+        // Assign first email and phone to primary contact
+        if (emails.length > 0) {
+            data.primaryContact.email = emails[0];
+        }
+        if (phones.length > 0) {
+            data.primaryContact.phone = phones[0];
+        }
+
+        // If we have multiple emails/phones, distribute them
+        if (emails.length > 1) {
+            data.authorizedSigner.email = emails[1];
+        }
+        if (emails.length > 2) {
+            data.billingContact.email = emails[2];
+        }
+
+        if (phones.length > 1) {
+            data.authorizedSigner.phone = phones[1];
+        }
+        if (phones.length > 2) {
+            data.billingContact.phone = phones[2];
+        }
+
+        return data;
+    }
+
+    populateFormFromExtractedData(data) {
+        // Only populate if we found something
+        if (data.companyName) {
+            document.getElementById('company-name').value = data.companyName;
+        }
+        if (data.physicalAddress) {
+            document.getElementById('physical-address').value = data.physicalAddress;
+        }
+        if (data.billingAddress) {
+            document.getElementById('billing-address').value = data.billingAddress;
+        }
+
+        // Primary Contact
+        if (data.primaryContact.name) {
+            document.getElementById('primary-name').value = data.primaryContact.name;
+        }
+        if (data.primaryContact.email) {
+            document.getElementById('primary-email').value = data.primaryContact.email;
+        }
+        if (data.primaryContact.phone) {
+            document.getElementById('primary-phone').value = data.primaryContact.phone;
+        }
+
+        // Authorized Signer
+        if (data.authorizedSigner.name) {
+            document.getElementById('signer-name').value = data.authorizedSigner.name;
+        }
+        if (data.authorizedSigner.email) {
+            document.getElementById('signer-email').value = data.authorizedSigner.email;
+        }
+        if (data.authorizedSigner.phone) {
+            document.getElementById('signer-phone').value = data.authorizedSigner.phone;
+        }
+
+        // Billing Contact
+        if (data.billingContact.name) {
+            document.getElementById('billing-name').value = data.billingContact.name;
+        }
+        if (data.billingContact.email) {
+            document.getElementById('billing-email').value = data.billingContact.email;
+        }
+        if (data.billingContact.phone) {
+            document.getElementById('billing-phone').value = data.billingContact.phone;
+        }
+
+        // Trigger duplicate checking after auto-fill
+        this.checkDuplicates();
     }
 }
 
