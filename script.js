@@ -1,7 +1,39 @@
+// Simple Database Implementation for CRM
+class SimpleDB {
+    constructor() {
+        this.storageKey = 'crm_data';
+    }
+
+    async get(key) {
+        const data = this.getAllData();
+        return data[key] || null;
+    }
+
+    async set(key, value) {
+        const data = this.getAllData();
+        data[key] = value;
+        localStorage.setItem(this.storageKey, JSON.stringify(data));
+        return true;
+    }
+
+    async list(prefix = '') {
+        const data = this.getAllData();
+        return Object.keys(data).filter(key => key.startsWith(prefix));
+    }
+
+    getAllData() {
+        try {
+            return JSON.parse(localStorage.getItem(this.storageKey) || '{}');
+        } catch {
+            return {};
+        }
+    }
+}
+
 // CRM Application
 class CRMApp {
     constructor() {
-        this.db = new Database();
+        this.db = new SimpleDB();
         this.customers = [];
         this.currentCustomer = null;
         this.currentCustomerId = null;
