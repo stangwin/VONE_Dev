@@ -1,219 +1,428 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simple CRM</title>
-    <link rel="stylesheet" href="styles.css">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Simple CRM</title>
+        <link rel="stylesheet" href="styles.css" />
+    </head>
+    <body>
+        <div class="container">
+            <header>
+                <h1>Simple CRM</h1>
+                <nav>
+                    <button id="dashboard-btn" class="nav-btn active">
+                        Dashboard
+                    </button>
+                    <button id="add-customer-btn" class="nav-btn">
+                        Add Customer
+                    </button>
+                </nav>
+            </header>
 
-</head>
-<body>
-    <div class="container">
-        <header>
-            <h1>Simple CRM</h1>
-            <nav>
-                <button id="dashboard-btn" class="nav-btn active">Dashboard</button>
-                <button id="add-customer-btn" class="nav-btn">Add Customer</button>
-            </nav>
-        </header>
-
-        <main>
-            <!-- Dashboard View -->
-            <div id="dashboard-view" class="view active">
-                <div class="dashboard-header">
-                    <h2>Customers</h2>
-                    <div class="loading" id="dashboard-loading">Loading customers...</div>
-                    <div class="error-message" id="dashboard-error" style="display: none;"></div>
-                </div>
-                
-                <div class="customer-list" id="customer-list">
-                    <!-- Customer list will be populated here -->
-                </div>
-                
-                <div class="empty-state" id="empty-state" style="display: none;">
-                    <p>No customers found. <a href="#" id="add-first-customer">Add your first customer</a></p>
-                </div>
-            </div>
-
-            <!-- Add/Edit Customer View -->
-            <div id="customer-form-view" class="view">
-                <div class="form-header">
-                    <h2 id="form-title">Add Customer</h2>
-                    <button id="back-btn" class="btn btn-secondary">← Back to Dashboard</button>
-                </div>
-
-                <!-- Auto-Fill Section -->
-                <div class="auto-fill-section" id="auto-fill-section">
-                    <div class="form-section">
-                        <h3>Quick Fill from Text</h3>
-                        <div class="form-group">
-                            <label for="paste-note-email">Paste Note or Email</label>
-                            <textarea id="paste-note-email" placeholder="Paste an email, note, or any text containing customer information here..." rows="6"></textarea>
+            <main>
+                <!-- Dashboard View -->
+                <div id="dashboard-view" class="view active">
+                    <div class="dashboard-header">
+                        <h2>Customers</h2>
+                        <div class="loading" id="dashboard-loading">
+                            Loading customers...
                         </div>
-                        <div class="auto-fill-actions">
-                            <button type="button" id="auto-fill-btn" class="btn btn-primary" disabled>Auto-Fill Form</button>
-                            <button type="button" id="clear-paste-btn" class="btn btn-secondary">Clear</button>
-                        </div>
+                        <div
+                            class="error-message"
+                            id="dashboard-error"
+                            style="display: none"
+                        ></div>
+                    </div>
+
+                    <div class="customer-list" id="customer-list">
+                        <!-- Customer list will be populated here -->
+                    </div>
+
+                    <div
+                        class="empty-state"
+                        id="empty-state"
+                        style="display: none"
+                    >
+                        <p>
+                            No customers found.
+                            <a href="#" id="add-first-customer"
+                                >Add your first customer</a
+                            >
+                        </p>
                     </div>
                 </div>
 
-                <form id="customer-form">
-                    <div class="form-section">
-                        <h3>Basic Information</h3>
-                        <div class="form-group">
-                            <label for="company-name">Company Name *</label>
-                            <input type="text" id="company-name" name="companyName" required>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="status">Status</label>
-                            <select id="status" name="status">
-                                <option value="Lead">Lead</option>
-                                <option value="Contacted">Contacted</option>
-                                <option value="Qualified">Qualified</option>
-                                <option value="Proposal Sent">Proposal Sent</option>
-                                <option value="Onboarding">Onboarding</option>
-                                <option value="Active">Active</option>
-                                <option value="Paused">Paused</option>
-                                <option value="At Risk">At Risk</option>
-                                <option value="Closed">Closed</option>
-                                <option value="Archived">Archived</option>
-                            </select>
-                        </div>
+                <!-- Add/Edit Customer View -->
+                <div id="customer-form-view" class="view">
+                    <div class="form-header">
+                        <h2 id="form-title">Add Customer</h2>
+                        <button id="back-btn" class="btn btn-secondary">
+                            ← Back to Dashboard
+                        </button>
                     </div>
 
-                    <div class="form-section">
-                        <h3>Addresses</h3>
-                        <div class="form-group">
-                            <label for="physical-address">Physical Address</label>
-                            <textarea id="physical-address" name="physicalAddress" rows="3"></textarea>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="billing-address">Billing Address</label>
-                            <textarea id="billing-address" name="billingAddress" rows="3"></textarea>
-                        </div>
-                    </div>
-
-                    <div class="form-section">
-                        <h3>Primary Contact</h3>
-                        <div class="contact-fields">
+                    <!-- Auto-Fill Section -->
+                    <div class="auto-fill-section" id="auto-fill-section">
+                        <div class="form-section">
+                            <h3>Quick Fill from Text</h3>
                             <div class="form-group">
-                                <label for="primary-name">Name</label>
-                                <input type="text" id="primary-name" name="primaryContact.name">
+                                <label for="paste-note-email"
+                                    >Paste Note or Email</label
+                                >
+                                <textarea
+                                    id="paste-note-email"
+                                    placeholder="Paste an email, note, or any text containing customer information here..."
+                                    rows="6"
+                                ></textarea>
                             </div>
-                            <div class="form-group">
-                                <label for="primary-email">Email</label>
-                                <input type="email" id="primary-email" name="primaryContact.email">
-                            </div>
-                            <div class="form-group">
-                                <label for="primary-phone">Phone</label>
-                                <input type="tel" id="primary-phone" name="primaryContact.phone">
+                            <div class="auto-fill-actions">
+                                <button
+                                    type="button"
+                                    id="auto-fill-btn"
+                                    class="btn btn-primary"
+                                    disabled
+                                >
+                                    Auto-Fill Form
+                                </button>
+                                <button
+                                    type="button"
+                                    id="clear-paste-btn"
+                                    class="btn btn-secondary"
+                                >
+                                    Clear
+                                </button>
                             </div>
                         </div>
                     </div>
 
-                    <div class="form-section">
-                        <h3>Authorized Signer</h3>
-                        <div class="form-group checkbox-group">
-                            <label class="checkbox-label">
-                                <input type="checkbox" id="signer-same-as-primary">
-                                <span class="checkmark"></span>
-                                Authorized Signer is the same as Primary Contact
-                            </label>
-                        </div>
-                        <div class="contact-fields">
+                    <form id="customer-form">
+                        <div class="form-section">
+                            <h3>Basic Information</h3>
                             <div class="form-group">
-                                <label for="signer-name">Name</label>
-                                <input type="text" id="signer-name" name="authorizedSigner.name">
+                                <label for="company-name">Company Name *</label>
+                                <input
+                                    type="text"
+                                    id="company-name"
+                                    name="companyName"
+                                    required
+                                />
                             </div>
-                            <div class="form-group">
-                                <label for="signer-email">Email</label>
-                                <input type="email" id="signer-email" name="authorizedSigner.email">
-                            </div>
-                            <div class="form-group">
-                                <label for="signer-phone">Phone</label>
-                                <input type="tel" id="signer-phone" name="authorizedSigner.phone">
-                            </div>
-                        </div>
-                    </div>
 
-                    <div class="form-section">
-                        <h3>Billing Contact</h3>
-                        <div class="form-group checkbox-group">
-                            <label class="checkbox-label">
-                                <input type="checkbox" id="billing-same-as-primary">
-                                <span class="checkmark"></span>
-                                Billing Contact is the same as Primary Contact
-                            </label>
-                        </div>
-                        <div class="contact-fields">
                             <div class="form-group">
-                                <label for="billing-name">Name</label>
-                                <input type="text" id="billing-name" name="billingContact.name">
-                            </div>
-                            <div class="form-group">
-                                <label for="billing-email">Email</label>
-                                <input type="email" id="billing-email" name="billingContact.email">
-                            </div>
-                            <div class="form-group">
-                                <label for="billing-phone">Phone</label>
-                                <input type="tel" id="billing-phone" name="billingContact.phone">
+                                <label for="status">Status</label>
+                                <select id="status" name="status">
+                                    <option value="Lead">Lead</option>
+                                    <option value="Contacted">Contacted</option>
+                                    <option value="Qualified">Qualified</option>
+                                    <option value="Proposal Sent">
+                                        Proposal Sent
+                                    </option>
+                                    <option value="Onboarding">
+                                        Onboarding
+                                    </option>
+                                    <option value="Active">Active</option>
+                                    <option value="Paused">Paused</option>
+                                    <option value="At Risk">At Risk</option>
+                                    <option value="Closed">Closed</option>
+                                    <option value="Archived">Archived</option>
+                                </select>
                             </div>
                         </div>
-                    </div>
 
-                    <div class="form-section">
-                        <h3>Additional Information</h3>
-                        <div class="form-group">
-                            <label for="paste-text">Paste Block of Text</label>
-                            <textarea id="paste-text" name="pasteText" rows="5" placeholder="Paste emails, notes, or other text here for future processing"></textarea>
+                        <div class="form-section">
+                            <h3>Physical Address</h3>
+                            <div class="form-group">
+                                <label for="phys_street1"
+                                    >Street Address 1</label
+                                >
+                                <input type="text" id="phys_street1" required />
+                            </div>
+                            <div class="form-group">
+                                <label for="phys_street2"
+                                    >Street Address 2</label
+                                >
+                                <input type="text" id="phys_street2" />
+                            </div>
+                            <div class="form-group">
+                                <label for="phys_city">City</label>
+                                <input type="text" id="phys_city" />
+                            </div>
+                            <div class="form-group">
+                                <label for="phys_state">State</label>
+                                <select id="phys_state">
+                                    <option value="">Select a state</option>
+                                    <option value="AL">Alabama</option>
+                                    <option value="AK">Alaska</option>
+                                    <option value="AZ">Arizona</option>
+                                    <option value="AR">Arkansas</option>
+                                    <option value="CA">California</option>
+                                    <!-- Add remaining states as needed -->
+                                    <option value="WY">Wyoming</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="phys_zip">Zip Code</label>
+                                <input type="text" id="phys_zip" />
+                            </div>
+
+                            <div class="form-group checkbox-group">
+                                <label class="checkbox-label">
+                                    <input
+                                        type="checkbox"
+                                        id="sameAsPhysical"
+                                    />
+                                    <span class="checkmark"></span>
+                                    Billing address is the same as physical
+                                    address
+                                </label>
+                            </div>
                         </div>
-                    </div>
 
-                    <div class="duplicate-warning" id="duplicate-warning" style="display: none;">
-                        <p>⚠️ <span id="duplicate-message"></span></p>
-                    </div>
-
-                    <div class="form-actions">
-                        <button type="submit" class="btn btn-primary" id="save-btn">Save Customer</button>
-                        <button type="button" class="btn btn-secondary" id="cancel-btn">Cancel</button>
-                    </div>
-                </form>
-            </div>
-
-            <!-- Customer Detail View -->
-            <div id="customer-detail-view" class="view">
-                <div class="detail-header">
-                    <h2 id="detail-company-name"></h2>
-                    <div class="detail-actions">
-                        <button id="edit-customer-btn" class="btn btn-primary">Edit</button>
-                        <button id="delete-customer-btn" class="btn btn-danger">Delete</button>
-                        <button id="back-to-dashboard-btn" class="btn btn-secondary">← Back</button>
-                    </div>
-                </div>
-
-                <div class="customer-details" id="customer-details">
-                    <!-- Customer details will be populated here -->
-                </div>
-
-                <div class="notes-section">
-                    <h3>Notes</h3>
-                    <form id="note-form">
-                        <div class="form-group">
-                            <textarea id="new-note" placeholder="Add a note..." rows="3"></textarea>
+                        <div class="form-section">
+                            <h3>Billing Address</h3>
+                            <div class="form-group">
+                                <label for="bill_street1"
+                                    >Street Address 1</label
+                                >
+                                <input type="text" id="bill_street1" required />
+                            </div>
+                            <div class="form-group">
+                                <label for="bill_street2"
+                                    >Street Address 2</label
+                                >
+                                <input type="text" id="bill_street2" />
+                            </div>
+                            <div class="form-group">
+                                <label for="bill_city">City</label>
+                                <input type="text" id="bill_city" />
+                            </div>
+                            <div class="form-group">
+                                <label for="bill_state">State</label>
+                                <select id="bill_state">
+                                    <option value="">Select a state</option>
+                                    <option value="AL">Alabama</option>
+                                    <option value="AK">Alaska</option>
+                                    <option value="AZ">Arizona</option>
+                                    <option value="AR">Arkansas</option>
+                                    <option value="CA">California</option>
+                                    <!-- Add remaining states as needed -->
+                                    <option value="WY">Wyoming</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="bill_zip">Zip Code</label>
+                                <input type="text" id="bill_zip" />
+                            </div>
                         </div>
-                        <button type="submit" class="btn btn-primary">Add Note</button>
+
+                        <div class="form-section">
+                            <h3>Primary Contact</h3>
+                            <div class="contact-fields">
+                                <div class="form-group">
+                                    <label for="primary-name">Name</label>
+                                    <input
+                                        type="text"
+                                        id="primary-name"
+                                        name="primaryContact.name"
+                                    />
+                                </div>
+                                <div class="form-group">
+                                    <label for="primary-email">Email</label>
+                                    <input
+                                        type="email"
+                                        id="primary-email"
+                                        name="primaryContact.email"
+                                    />
+                                </div>
+                                <div class="form-group">
+                                    <label for="primary-phone">Phone</label>
+                                    <input
+                                        type="tel"
+                                        id="primary-phone"
+                                        name="primaryContact.phone"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <h3>Authorized Signer</h3>
+                            <div class="form-group checkbox-group">
+                                <label class="checkbox-label">
+                                    <input
+                                        type="checkbox"
+                                        id="signer-same-as-primary"
+                                    />
+                                    <span class="checkmark"></span>
+                                    Authorized Signer is the same as Primary
+                                    Contact
+                                </label>
+                            </div>
+                            <div class="contact-fields">
+                                <div class="form-group">
+                                    <label for="signer-name">Name</label>
+                                    <input
+                                        type="text"
+                                        id="signer-name"
+                                        name="authorizedSigner.name"
+                                    />
+                                </div>
+                                <div class="form-group">
+                                    <label for="signer-email">Email</label>
+                                    <input
+                                        type="email"
+                                        id="signer-email"
+                                        name="authorizedSigner.email"
+                                    />
+                                </div>
+                                <div class="form-group">
+                                    <label for="signer-phone">Phone</label>
+                                    <input
+                                        type="tel"
+                                        id="signer-phone"
+                                        name="authorizedSigner.phone"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <h3>Billing Contact</h3>
+                            <div class="form-group checkbox-group">
+                                <label class="checkbox-label">
+                                    <input
+                                        type="checkbox"
+                                        id="billing-same-as-primary"
+                                    />
+                                    <span class="checkmark"></span>
+                                    Billing Contact is the same as Primary
+                                    Contact
+                                </label>
+                            </div>
+                            <div class="contact-fields">
+                                <div class="form-group">
+                                    <label for="billing-name">Name</label>
+                                    <input
+                                        type="text"
+                                        id="billing-name"
+                                        name="billingContact.name"
+                                    />
+                                </div>
+                                <div class="form-group">
+                                    <label for="billing-email">Email</label>
+                                    <input
+                                        type="email"
+                                        id="billing-email"
+                                        name="billingContact.email"
+                                    />
+                                </div>
+                                <div class="form-group">
+                                    <label for="billing-phone">Phone</label>
+                                    <input
+                                        type="tel"
+                                        id="billing-phone"
+                                        name="billingContact.phone"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <h3>Additional Information</h3>
+                            <div class="form-group">
+                                <label for="paste-text"
+                                    >Paste Block of Text</label
+                                >
+                                <textarea
+                                    id="paste-text"
+                                    name="pasteText"
+                                    rows="5"
+                                    placeholder="Paste emails, notes, or other text here for future processing"
+                                ></textarea>
+                            </div>
+                        </div>
+
+                        <div
+                            class="duplicate-warning"
+                            id="duplicate-warning"
+                            style="display: none"
+                        >
+                            <p>⚠️ <span id="duplicate-message"></span></p>
+                        </div>
+
+                        <div class="form-actions">
+                            <button
+                                type="submit"
+                                class="btn btn-primary"
+                                id="save-btn"
+                            >
+                                Save Customer
+                            </button>
+                            <button
+                                type="button"
+                                class="btn btn-secondary"
+                                id="cancel-btn"
+                            >
+                                Cancel
+                            </button>
+                        </div>
                     </form>
-                    
-                    <div class="notes-list" id="notes-list">
-                        <!-- Notes will be populated here -->
+                </div>
+
+                <!-- Customer Detail View -->
+                <div id="customer-detail-view" class="view">
+                    <div class="detail-header">
+                        <h2 id="detail-company-name"></h2>
+                        <div class="detail-actions">
+                            <button
+                                id="edit-customer-btn"
+                                class="btn btn-primary"
+                            >
+                                Edit
+                            </button>
+                            <button
+                                id="delete-customer-btn"
+                                class="btn btn-danger"
+                            >
+                                Delete
+                            </button>
+                            <button
+                                id="back-to-dashboard-btn"
+                                class="btn btn-secondary"
+                            >
+                                ← Back
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="customer-details" id="customer-details">
+                        <!-- Customer details will be populated here -->
+                    </div>
+
+                    <div class="notes-section">
+                        <h3>Notes</h3>
+                        <form id="note-form">
+                            <div class="form-group">
+                                <textarea
+                                    id="new-note"
+                                    placeholder="Add a note..."
+                                    rows="3"
+                                ></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">
+                                Add Note
+                            </button>
+                        </form>
+
+                        <div class="notes-list" id="notes-list">
+                            <!-- Notes will be populated here -->
+                        </div>
                     </div>
                 </div>
-            </div>
-        </main>
-    </div>
+            </main>
+        </div>
 
-    <script src="script.js"></script>
-</body>
+        <script src="script.js"></script>
+    </body>
 </html>
