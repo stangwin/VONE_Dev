@@ -82,6 +82,7 @@ Preferred communication style: Simple, everyday language.
 ## Changelog
 
 Changelog:
+- June 23, 2025: Updated form fields to use dropdowns for data consistency (Status, Affiliate Partner, Next Step)
 - June 23, 2025: One-time import of Microsoft Lists customer data - 12 customers imported directly
 - June 20, 2025: Enhanced CRM with modern dashboard layout showing company name, status, affiliate partner, next step, and latest notes
 - June 20, 2025: Added quick action buttons for View Details, Create in QBO, and Send Agreement
