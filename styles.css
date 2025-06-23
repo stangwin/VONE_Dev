@@ -98,60 +98,140 @@ nav {
 
 .customer-list {
     display: grid;
-    gap: 1rem;
+    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+    gap: 1.5rem;
 }
 
 .customer-card {
     background: hsl(var(--surface));
     border: 1px solid hsl(var(--border));
-    border-radius: 8px;
-    padding: 1.5rem;
-    cursor: pointer;
+    border-radius: 12px;
+    padding: 0;
     transition: all 0.2s;
+    overflow: hidden;
 }
 
 .customer-card:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    transform: translateY(-4px);
 }
 
 .customer-card-header {
+    background: hsl(var(--background));
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid hsl(var(--border));
+}
+
+.customer-title {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 1rem;
-    flex-wrap: wrap;
-    gap: 0.5rem;
+    align-items: center;
+    margin-bottom: 0.75rem;
 }
 
 .customer-card h3 {
     margin: 0;
     color: hsl(var(--text));
-    flex: 1;
+    font-size: 1.1rem;
+    font-weight: 600;
 }
 
-.customer-card-details {
+.card-actions {
     display: flex;
-    flex-direction: column;
     gap: 0.5rem;
 }
 
-.contact-info,
-.latest-note {
-    font-size: 0.9rem;
-    color: hsl(var(--text-secondary));
+.action-btn {
+    padding: 0.4rem 0.8rem;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
 }
 
-.latest-note {
-    line-height: 1.4;
+.view-btn {
+    background: hsl(var(--primary));
+    color: white;
+}
+
+.view-btn:hover {
+    background: hsl(var(--primary-dark));
+}
+
+.qbo-btn {
+    background: hsl(120 60% 50%);
+    color: white;
+}
+
+.qbo-btn:hover {
+    background: hsl(120 60% 45%);
+}
+
+.agreement-btn {
+    background: hsl(270 60% 50%);
+    color: white;
+}
+
+.agreement-btn:hover {
+    background: hsl(270 60% 45%);
+}
+
+.customer-card-body {
+    padding: 1.25rem;
+}
+
+.card-row {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.card-row:last-child {
+    margin-bottom: 0;
+}
+
+.field-group {
+    flex: 1;
+}
+
+.field-group.full-width {
+    flex: 100%;
+}
+
+.field-group label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: hsl(var(--text-secondary));
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.25rem;
+}
+
+.field-group span {
+    display: block;
+    font-size: 0.9rem;
+    color: hsl(var(--text));
+    line-height: 1.3;
+}
+
+.next-step {
+    font-style: italic;
+    color: hsl(var(--primary)) !important;
+}
+
+.latest-note-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
 }
 
 .note-timestamp {
-    display: block;
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     color: hsl(var(--text-secondary));
     opacity: 0.8;
-    margin-top: 0.25rem;
 }
 
 .status-badge {

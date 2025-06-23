@@ -197,33 +197,64 @@ class CRMApp {
 
         emptyState.style.display = "none";
 
-        listContainer.innerHTML = this.customers
-            .map((customer) => {
-                const primaryContactName =
-                    customer.primaryContact?.name || "No primary contact";
-                const { noteText, noteTimestamp } = this.getLatestNoteInfo(
-                    customer.notes,
-                );
-
-                return `
-                <div class="customer-card" onclick="app.showCustomerDetail('${customer.id}')">
+        listContainer.innerHTML = this.customers.map(customer => {
+            const primaryContactName = customer.primaryContact?.name || 'No primary contact';
+            const { noteText, noteTimestamp } = this.getLatestNoteInfo(customer.notes);
+            const affiliatePartner = customer.affiliatePartner || 'No affiliate';
+            const nextStep = customer.nextStep || 'No next step defined';
+            
+            return `
+                <div class="customer-card">
                     <div class="customer-card-header">
-                        <h3>${this.escapeHtml(customer.companyName)}</h3>
-                        <span class="status-badge ${this.getStatusClass(customer.status)}">${customer.status}</span>
-                    </div>
-                    <div class="customer-card-details">
-                        <div class="contact-info">
-                            <strong>Primary Contact:</strong> ${this.escapeHtml(primaryContactName)}
+                        <div class="customer-title">
+                            <h3>${this.escapeHtml(customer.companyName)}</h3>
+                            <span class="status-badge ${this.getStatusClass(customer.status)}">${customer.status}</span>
                         </div>
-                        <div class="latest-note">
-                            <strong>Latest Note:</strong> ${noteText}
-                            ${noteTimestamp ? `<span class="note-timestamp">${noteTimestamp}</span>` : ""}
+                        <div class="card-actions">
+                            <button class="action-btn view-btn" onclick="app.showCustomerDetail('${customer.id}')" title="View Details">
+                                <span>View</span>
+                            </button>
+                            <button class="action-btn qbo-btn" onclick="app.createInQBO('${customer.id}')" title="Create in QuickBooks">
+                                <span>QBO</span>
+                            </button>
+                            <button class="action-btn agreement-btn" onclick="app.sendAgreement('${customer.id}')" title="Send Agreement">
+                                <span>Agreement</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="customer-card-body">
+                        <div class="card-row">
+                            <div class="field-group">
+                                <label>Primary Contact</label>
+                                <span>${this.escapeHtml(primaryContactName)}</span>
+                            </div>
+                            <div class="field-group">
+                                <label>Affiliate Partner</label>
+                                <span>${this.escapeHtml(affiliatePartner)}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="card-row">
+                            <div class="field-group full-width">
+                                <label>Next Step</label>
+                                <span class="next-step">${this.escapeHtml(nextStep)}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="card-row">
+                            <div class="field-group full-width">
+                                <label>Latest Note</label>
+                                <div class="latest-note-content">
+                                    <span>${noteText}</span>
+                                    ${noteTimestamp ? `<small class="note-timestamp">${noteTimestamp}</small>` : ''}
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             `;
-            })
-            .join("");
+        }).join('');
     }
 
     getLatestNoteInfo(notes) {
@@ -321,6 +352,8 @@ class CRMApp {
                     <h4>Basic Information</h4>
                     <div class="detail-field"><strong>Company Name:</strong> ${this.escapeHtml(customer.companyName)}</div>
                     <div class="detail-field"><strong>Status:</strong> <span class="status-badge ${this.getStatusClass(customer.status)}">${customer.status}</span></div>
+                    <div class="detail-field"><strong>Affiliate Partner:</strong> ${this.escapeHtml(customer.affiliatePartner) || "Not provided"}</div>
+                    <div class="detail-field"><strong>Next Step:</strong> ${this.escapeHtml(customer.nextStep) || "Not provided"}</div>
                 </div>
                 
                 <div class="detail-section">
@@ -497,6 +530,8 @@ class CRMApp {
         return {
             companyName: formData.get("companyName"),
             status: formData.get("status"),
+            affiliatePartner: formData.get("affiliatePartner"),
+            nextStep: formData.get("nextStep"),
             physicalAddress: formData.get("physicalAddress"),
             billingAddress: formData.get("billingAddress"),
             primaryContact: {

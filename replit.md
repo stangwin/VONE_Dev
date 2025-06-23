@@ -82,4 +82,10 @@ Preferred communication style: Simple, everyday language.
 ## Changelog
 
 Changelog:
-- June 20, 2025. Initial setup
+- June 20, 2025: Enhanced CRM with modern dashboard layout showing company name, status, affiliate partner, next step, and latest notes
+- June 20, 2025: Added quick action buttons for View Details, Create in QBO, and Send Agreement
+- June 20, 2025: Improved card-based grid layout with better information density
+- June 20, 2025: Added affiliate partner and next step fields to customer forms
+- June 20, 2025: Prepared PostgreSQL database integration structure
+- June 20, 2025: Added integration stubs for OpenAI, QuickBooks, and DocuSign APIs
+- June 20, 2025: Initial setup
