@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Import Data - One Time</title>
+</head>
+<body>
+    <h1>Importing Your Customer Data...</h1>
+    <div id="status">Processing...</div>
+
+    <script>
+        // Direct import of your Microsoft Lists data
+        const customers = [
+            {
+                "id": "customer_1719174000000",
+                "companyName": "My Pharmacist On Call",
+                "status": "Onboarding",
+                "affiliatePartner": "VOXO",
+                "nextStep": "Schedule Install",
+                "physicalAddress": "3426 Whittier Blvd, Los Angeles, CA, 90023",
+                "billingAddress": "3426 Whittier Blvd, Los Angeles, CA, 90023",
+                "primaryContact": {
+                    "name": "Jacqueline",
+                    "email": "ashers.assistant@gmail.com",
+                    "phone": "310-882-6661"
+                },
+                "authorizedSigner": {
+                    "name": "Asher Eghbali",
+                    "email": "asher.eghbali@gmail.com",
+                    "phone": ""
+                },
+                "billingContact": {
+                    "name": "Asher Eghbalie",
+                    "email": "ahsher.eghbali@gmail.com",
+                    "phone": "310-497-3109"
+                },
+                "notes": [
+                    {
+                        "content": "Mr. Manuel is the Voice contact at 323-408-3860.",
+                        "timestamp": "2025-06-23T20:00:00.000Z"
+                    }
+                ],
+                "createdAt": "2025-06-23T20:00:00.000Z",
+                "updatedAt": "2025-06-23T20:00:00.000Z"
+            },
+            {
+                "id": "customer_1719174000001",
+                "companyName": "Berea Drug",
+                "status": "Onboarding",
+                "affiliatePartner": "VOXO",
+                "nextStep": "Perform Install",
+                "physicalAddress": "402 Richmond Road North, Berea, KY, 40403",
+                "billingAddress": "402 Richmond Road North, Berea, KY, 40403",
+                "primaryContact": {
+                    "name": "Robert Little",
+                    "email": "bereadrug@yahoo.com",
+                    "phone": "859-986-4521"
+                },
+                "authorizedSigner": {
+                    "name": "Robert Little",
+                    "email": "bereadrug@yahoo.com",
+                    "phone": ""
+                },
+                "billingContact": {
+                    "name": "Robert Little",
+                    "email": "bereadrug@yahoo.com",
+                    "phone": "859-986-4521"
+                },
+                "notes": [
+                    {
+                        "content": "Installation Date: 2025-06-11T07:00:00Z",
+                        "timestamp": "2025-06-23T20:00:00.000Z"
+                    },
+                    {
+                        "content": "Per call with Sally on 6/5/2025 -- Hardware is on site.",
+                        "timestamp": "2025-06-23T20:00:00.000Z"
+                    }
+                ],
+                "createdAt": "2025-06-23T20:00:00.000Z",
+                "updatedAt": "2025-06-23T20:00:00.000Z"
+            },
+            {
+                "id": "customer_1719174000002",
+                "companyName": "Southeast Pharmacy",
+                "status": "Onboarding",
+                "affiliatePartner": "VOXO",
+                "nextStep": "Schedule Install",
+                "physicalAddress": "400 Parker Avenue North, STE 500A, Brooklet, GA, 30415",
+                "billingAddress": "400 Parker Avenue North, STE 500A, Brooklet, GA, 30415",
+                "primaryContact": {
+                    "name": "Shelby Hook",
+                    "email": "hookrx@gmail.com",
+                    "phone": "912-842-2040"
+                },
+                "authorizedSigner": {
+                    "name": "Shelby Hook",
+                    "email": "hookrx@gmail.com",
+                    "phone": ""
+                },
+                "billingContact": {
+                    "name": "Shelby Hook",
+                    "email": "hookrx@gmail.com",
+                    "phone": "912-842-2040"
+                },
+                "notes": [
+                    {
+                        "content": "Z3 is ordered from Network Tigers and shipped directly to the site.",
+                        "timestamp": "2025-06-23T20:00:00.000Z"
+                    }
+                ],
+                "createdAt": "2025-06-23T20:00:00.000Z",
+                "updatedAt": "2025-06-23T20:00:00.000Z"
+            },
+            {
+                "id": "customer_1719174000003",
+                "companyName": "Rancho Pueblo Pharmacy",
+                "status": "Quoted",
+                "affiliatePartner": "VOXO",
+                "nextStep": "Follow with VOXO AE",
+                "physicalAddress": "",
+                "billingAddress": "",
+                "primaryContact": {
+                    "name": "Yash Patel",
+                    "email": "yashpatel031998@gmail.com",
+                    "phone": "951-972-8822"
+                },
+                "authorizedSigner": {
+                    "name": "Yash Patel",
+                    "email": "yashpatel031998@gmail.com",
+                    "phone": ""
+                },
+                "billingContact": {
+                    "name": "",
+                    "email": "",
+                    "phone": ""
+                },
+                "notes": [
+                    {
+                        "content": "Spoke with Yash. He had an issue with price. Rusty needs to go back and explain to him the whole story instead of just the voice portion",
+                        "timestamp": "2025-06-23T20:00:00.000Z"
+                    }
+                ],
+                "createdAt": "2025-06-23T20:00:00.000Z",
+                "updatedAt": "2025-06-23T20:00:00.000Z"
+            },
+            {
+                "id": "customer_1719174000004",
+                "companyName": "CR Care Pharmacy",
+                "status": "Lead",
+                "affiliatePartner": "VOXO",
+                "nextStep": "Follow with VOXO AE",
+                "physicalAddress": "3100 E Avenue NW, Suite 102, Cedar Rapids, IA, 52405",
+                "billingAddress": "3100 E Avenue NW, Suite 102, Cedar Rapids, IA, 52405",
+                "primaryContact": {
+                    "name": "Jackie Fitzgerald",
+                    "email": "crcarerx@gmail.com",
+                    "phone": "319-200-1188"
+                },
+                "authorizedSigner": {
+                    "name": "Jackie Fitzgerald",
+                    "email": "crcarerx@gmail.com",
+                    "phone": ""
+                },
+                "billingContact": {
+                    "name": "",
+                    "email": "",
+                    "phone": ""
+                },
+                "notes": [
+                    {
+                        "content": "Neal is reaching out to Jackie",
+                        "timestamp": "2025-06-23T20:00:00.000Z"
+                    }
+                ],
+                "createdAt": "2025-06-23T20:00:00.000Z",
+                "updatedAt": "2025-06-23T20:00:00.000Z"
+            },
+            {
+                "id": "customer_1719174000005",
+                "companyName": "McCoy Tygart Drug",
+                "status": "Lead",
+                "affiliatePartner": "VOXO",
+                "nextStep": "",
+                "physicalAddress": "",
+                "billingAddress": "",
+                "primaryContact": {
+                    "name": "Casey Hedden",
+                    "email": "casey@mccoytygartdrug.com",
+                    "phone": ""
+                },
+                "authorizedSigner": {
+                    "name": "",
+                    "email": "",
+                    "phone": ""
+                },
+                "billingContact": {
+                    "name": "",
+                    "email": "",
+                    "phone": ""
+                },
+                "notes": [
+                    {
+                        "content": "6/10/2025 --> From Email from Casey -- We have 4 stores in a 30 mile radius that we need to get VPN connected with each other.",
+                        "timestamp": "2025-06-23T20:00:00.000Z"
+                    }
+                ],
+                "createdAt": "2025-06-23T20:00:00.000Z",
+                "updatedAt": "2025-06-23T20:00:00.000Z"
+            },
+            {
+                "id": "customer_1719174000006",
+                "companyName": "Sadler Hughes Apothecary",
+                "status": "Signed",
+                "affiliatePartner": "VOXO",
+                "nextStep": "Order Hardware and License",
+                "physicalAddress": "102 Jacobs Hwy, Clinton, SC, 29325",
+                "billingAddress": "102 Jacobs Hwy, Clinton, SC, 29325",
+                "primaryContact": {
+                    "name": "Walter Hughes",
+                    "email": "",
+                    "phone": ""
+                },
+                "authorizedSigner": {
+                    "name": "Walter Hughes",
+                    "email": "whughes@sadlerhughes.com",
+                    "phone": ""
+                },
+                "billingContact": {
+                    "name": "",
+                    "email": "",
+                    "phone": ""
+                },
+                "notes": [
+                    {
+                        "content": "6/10/2025 -- Sent email to Walter requesting information for SA",
+                        "timestamp": "2025-06-23T20:00:00.000Z"
+                    }
+                ],
+                "createdAt": "2025-06-23T20:00:00.000Z",
+                "updatedAt": "2025-06-23T20:00:00.000Z"
+            },
+            {
+                "id": "customer_1719174000007",
+                "companyName": "Blanco Pharmacy and Wellness",
+                "status": "Lead",
+                "affiliatePartner": "VOXO",
+                "nextStep": "",
+                "physicalAddress": "",
+                "billingAddress": "",
+                "primaryContact": {
+                    "name": "Blakelee Speer",
+                    "email": "blakelee2006@msn.com",
+                    "phone": "830-833-4815"
+                },
+                "authorizedSigner": {
+                    "name": "",
+                    "email": "",
+                    "phone": ""
+                },
+                "billingContact": {
+                    "name": "",
+                    "email": "",
+                    "phone": ""
+                },
+                "notes": [
+                    {
+                        "content": "AT Connect 2025 -- moving to VOXO. One location. VPN has been too slow.",
+                        "timestamp": "2025-06-23T20:00:00.000Z"
+                    }
+                ],
+                "createdAt": "2025-06-23T20:00:00.000Z",
+                "updatedAt": "2025-06-23T20:00:00.000Z"
+            },
+            {
+                "id": "customer_1719174000008",
+                "companyName": "Vital Care Infusion Services",
+                "status": "Lead",
+                "affiliatePartner": "",
+                "nextStep": "",
+                "physicalAddress": "",
+                "billingAddress": "",
+                "primaryContact": {
+                    "name": "Jonathan Sims",
+                    "email": "",
+                    "phone": "601-596-2800"
+                },
+                "authorizedSigner": {
+                    "name": "Jonathan Sims",
+                    "email": "",
+                    "phone": ""
+                },
+                "billingContact": {
+                    "name": "",
+                    "email": "",
+                    "phone": ""
+                },
+                "notes": [
+                    {
+                        "content": "Per Levi at Voxo I called Blake Tubbs to discuss needs for both of these businesses",
+                        "timestamp": "2025-06-23T20:00:00.000Z"
+                    }
+                ],
+                "createdAt": "2025-06-23T20:00:00.000Z",
+                "updatedAt": "2025-06-23T20:00:00.000Z"
+            },
+            {
+                "id": "customer_1719174000009",
+                "companyName": "The Compounder",
+                "status": "Lead",
+                "affiliatePartner": "",
+                "nextStep": "",
+                "physicalAddress": "",
+                "billingAddress": "",
+                "primaryContact": {
+                    "name": "Jonathan Sims",
+                    "email": "",
+                    "phone": "601-596-2800"
+                },
+                "authorizedSigner": {
+                    "name": "Jonathan Sims",
+                    "email": "",
+                    "phone": ""
+                },
+                "billingContact": {
+                    "name": "",
+                    "email": "",
+                    "phone": ""
+                },
+                "notes": [],
+                "createdAt": "2025-06-23T20:00:00.000Z",
+                "updatedAt": "2025-06-23T20:00:00.000Z"
+            },
+            {
+                "id": "customer_1719174000010",
+                "companyName": "Delta Pharmacy",
+                "status": "Lead",
+                "affiliatePartner": "VOXO",
+                "nextStep": "",
+                "physicalAddress": "",
+                "billingAddress": "",
+                "primaryContact": {
+                    "name": "Willis High",
+                    "email": "WHigh@delta-rx.com",
+                    "phone": "843-813-7874"
+                },
+                "authorizedSigner": {
+                    "name": "",
+                    "email": "",
+                    "phone": ""
+                },
+                "billingContact": {
+                    "name": "",
+                    "email": "",
+                    "phone": ""
+                },
+                "notes": [
+                    {
+                        "content": "This is eight locations. They can handle doing the installations themselves",
+                        "timestamp": "2025-06-23T20:00:00.000Z"
+                    }
+                ],
+                "createdAt": "2025-06-23T20:00:00.000Z",
+                "updatedAt": "2025-06-23T20:00:00.000Z"
+            },
+            {
+                "id": "customer_1719174000011",
+                "companyName": "Mac Pharmacy",
+                "status": "Lead",
+                "affiliatePartner": "VOXO",
+                "nextStep": "",
+                "physicalAddress": "",
+                "billingAddress": "",
+                "primaryContact": {
+                    "name": "Sherif Mankaryous",
+                    "email": "",
+                    "phone": ""
+                },
+                "authorizedSigner": {
+                    "name": "",
+                    "email": "",
+                    "phone": ""
+                },
+                "billingContact": {
+                    "name": "",
+                    "email": "",
+                    "phone": ""
+                },
+                "notes": [],
+                "createdAt": "2025-06-23T20:00:00.000Z",
+                "updatedAt": "2025-06-23T20:00:00.000Z"
+            }
+        ];
+
+        // Import all customers to localStorage
+        let imported = 0;
+        customers.forEach(customer => {
+            try {
+                localStorage.setItem(customer.id, JSON.stringify(customer));
+                imported++;
+            } catch (error) {
+                console.error('Error importing customer:', customer.companyName, error);
+            }
+        });
+
+        document.getElementById('status').innerHTML = `
+            <h2>Import Complete!</h2>
+            <p>Successfully imported ${imported} customers from your Microsoft Lists.</p>
+            <p><a href="/" style="color: #007bff; text-decoration: none; font-weight: bold;">← Go to CRM Dashboard</a></p>
+            <ul style="text-align: left; max-width: 400px; margin: 20px auto;">
+                <li>My Pharmacist On Call (Onboarding)</li>
+                <li>Berea Drug (Onboarding)</li>
+                <li>Southeast Pharmacy (Onboarding)</li>
+                <li>Rancho Pueblo Pharmacy (Quoted)</li>
+                <li>CR Care Pharmacy (Lead)</li>
+                <li>McCoy Tygart Drug (Lead)</li>
+                <li>Sadler Hughes Apothecary (Signed)</li>
+                <li>Blanco Pharmacy and Wellness (Lead)</li>
+                <li>Vital Care Infusion Services (Lead)</li>
+                <li>The Compounder (Lead)</li>
+                <li>Delta Pharmacy (Lead)</li>
+                <li>Mac Pharmacy (Lead)</li>
+            </ul>
+        `;
+
+        // Auto redirect to main CRM after 3 seconds
+        setTimeout(() => {
+            window.location.href = '/';
+        }, 3000);
+    </script>
+</body>
+</html>
