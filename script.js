@@ -64,6 +64,10 @@ class CRMApp {
         document
             .getElementById("add-customer-btn")
             .addEventListener("click", () => this.showAddCustomerForm());
+        const importBtn = document.getElementById("import-btn");
+        if (importBtn) {
+            importBtn.addEventListener("click", () => this.showImportView());
+        }
         document
             .getElementById("add-first-customer")
             .addEventListener("click", (e) => {
@@ -81,6 +85,10 @@ class CRMApp {
         document
             .getElementById("cancel-btn")
             .addEventListener("click", () => this.showView("dashboard"));
+        const backToDashboardFromImport = document.getElementById("back-to-dashboard-from-import");
+        if (backToDashboardFromImport) {
+            backToDashboardFromImport.addEventListener("click", () => this.showView("dashboard"));
+        }
 
         // Detail view events
         document
@@ -142,6 +150,19 @@ class CRMApp {
         document
             .getElementById("primary-phone")
             .addEventListener("input", () => this.updateCopiedFields());
+
+        // CSV Import functionality - check if elements exist before binding
+        const csvFileInput = document.getElementById('csv-file');
+        const previewCsvBtn = document.getElementById('preview-csv');
+        const importDataBtn = document.getElementById('import-data');
+        const cancelImportBtn = document.getElementById('cancel-import');
+        const viewImportedBtn = document.getElementById('view-imported-data');
+        
+        if (csvFileInput) csvFileInput.addEventListener('change', (e) => this.handleFileSelect(e));
+        if (previewCsvBtn) previewCsvBtn.addEventListener('click', () => this.previewCSV());
+        if (importDataBtn) importDataBtn.addEventListener('click', () => this.importCSVData());
+        if (cancelImportBtn) cancelImportBtn.addEventListener('click', () => this.cancelImport());
+        if (viewImportedBtn) viewImportedBtn.addEventListener('click', () => this.showView('dashboard'));
     }
 
     async loadCustomers() {
@@ -1082,6 +1103,290 @@ class CRMApp {
             "billing-phone",
         ];
         this.setFieldsReadOnly(allFields, false);
+    }
+    // CSV Import functionality
+    showImportView() {
+        this.showView('import');
+        // Reset import state
+        const csvFileInput = document.getElementById('csv-file');
+        const previewBtn = document.getElementById('preview-csv');
+        const csvPreview = document.getElementById('csv-preview');
+        const importResults = document.getElementById('import-results');
+        
+        if (csvFileInput) csvFileInput.value = '';
+        if (previewBtn) previewBtn.disabled = true;
+        if (csvPreview) csvPreview.style.display = 'none';
+        if (importResults) importResults.style.display = 'none';
+        this.csvData = null;
+    }
+
+    handleFileSelect(e) {
+        const file = e.target.files[0];
+        const previewBtn = document.getElementById('preview-csv');
+        
+        if (file && file.type === 'text/csv') {
+            if (previewBtn) previewBtn.disabled = false;
+            this.selectedFile = file;
+        } else {
+            if (previewBtn) previewBtn.disabled = true;
+            this.selectedFile = null;
+            if (file) {
+                alert('Please select a valid CSV file.');
+            }
+        }
+    }
+
+    previewCSV() {
+        if (!this.selectedFile) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const csvText = e.target.result;
+            this.parseMicrosoftListsCSV(csvText);
+        };
+        reader.readAsText(this.selectedFile);
+    }
+
+    parseMicrosoftListsCSV(csvText) {
+        try {
+            const lines = csvText.split('\n');
+            // Skip the first line (schema info) and get headers from second line
+            const headers = this.parseCSVLine(lines[1]);
+            const dataLines = lines.slice(2).filter(line => line.trim() && !line.startsWith(',,,,'));
+
+            const customers = [];
+            let customerId = Date.now();
+
+            for (const line of dataLines) {
+                if (!line.trim()) continue;
+                
+                const values = this.parseCSVLine(line);
+                if (values.length < headers.length) continue;
+
+                const customer = this.mapMicrosoftListsData(headers, values, customerId);
+                if (customer.companyName) {
+                    customers.push(customer);
+                    customerId++;
+                }
+            }
+
+            this.csvData = customers;
+            this.showPreview(customers);
+
+        } catch (error) {
+            console.error('Error parsing CSV:', error);
+            alert('Error parsing CSV file. Please check the file format.');
+        }
+    }
+
+    parseCSVLine(line) {
+        const result = [];
+        let current = '';
+        let inQuotes = false;
+        
+        for (let i = 0; i < line.length; i++) {
+            const char = line[i];
+            
+            if (char === '"') {
+                inQuotes = !inQuotes;
+            } else if (char === ',' && !inQuotes) {
+                result.push(current.trim());
+                current = '';
+            } else {
+                current += char;
+            }
+        }
+        
+        result.push(current.trim());
+        return result;
+    }
+
+    mapMicrosoftListsData(headers, values, customerId) {
+        const getField = (fieldName) => {
+            const index = headers.findIndex(h => h.toLowerCase().includes(fieldName.toLowerCase()));
+            return index >= 0 ? values[index]?.replace(/"/g, '').trim() : '';
+        };
+
+        const customer = {
+            id: `customer_${customerId}`,
+            companyName: getField('Title'),
+            status: getField('Status') || 'Lead',
+            affiliatePartner: getField('Affiliate Partner'),
+            nextStep: getField('Next Step'),
+            physicalAddress: this.buildAddress(
+                getField('Service Address - Street 1'),
+                getField('Service Address - Street 2'),
+                getField('Service Address - City'),
+                getField('Service Address - State'),
+                getField('Service Address - ZIP')
+            ),
+            billingAddress: '', // Will copy from physical if needed
+            primaryContact: {
+                name: getField('Primary Contact Name'),
+                email: getField('Primary Contact Email'),
+                phone: getField('Primary Contact Phone')
+            },
+            authorizedSigner: {
+                name: getField('Authorized Signer'),
+                email: getField('Authorized Signer Email'),
+                phone: ''
+            },
+            billingContact: {
+                name: getField('Billing Contact Name'),
+                email: getField('Billing Contact Email'),
+                phone: getField('Billing Contact Number')
+            },
+            notes: [],
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+        };
+
+        // Add installation date and notes from the original data
+        const installDate = getField('Installation Date');
+        const notesContent = values[values.length - 1] || ''; // Last column typically contains notes
+        
+        if (installDate && installDate !== '') {
+            customer.notes.push({
+                content: `Installation Date: ${installDate}`,
+                timestamp: new Date().toISOString()
+            });
+        }
+
+        if (notesContent && notesContent !== '' && notesContent !== 'False' && notesContent !== 'True') {
+            customer.notes.push({
+                content: notesContent,
+                timestamp: new Date().toISOString()
+            });
+        }
+
+        // Copy physical address to billing if billing is empty
+        if (!customer.billingContact.name && customer.physicalAddress) {
+            customer.billingAddress = customer.physicalAddress;
+        }
+
+        return customer;
+    }
+
+    buildAddress(street1, street2, city, state, zip) {
+        const parts = [street1, street2, city, state, zip].filter(part => part && part.trim());
+        return parts.join(', ');
+    }
+
+    showPreview(customers) {
+        const previewInfo = document.getElementById('preview-info');
+        const csvPreview = document.getElementById('csv-preview');
+        
+        if (!previewInfo || !csvPreview) return;
+        
+        const statusCounts = {};
+        
+        customers.forEach(customer => {
+            const status = customer.status || 'Unknown';
+            statusCounts[status] = (statusCounts[status] || 0) + 1;
+        });
+
+        let statusBreakdown = Object.entries(statusCounts)
+            .map(([status, count]) => `${status}: ${count}`)
+            .join(', ');
+
+        previewInfo.innerHTML = `
+            <div class="preview-stats">
+                <div class="stat-item">
+                    <div class="stat-number">${customers.length}</div>
+                    <div class="stat-label">Total Customers</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">${Object.keys(statusCounts).length}</div>
+                    <div class="stat-label">Different Statuses</div>
+                </div>
+            </div>
+            <p><strong>Status Breakdown:</strong> ${statusBreakdown}</p>
+            <p><strong>Ready to import:</strong> ${customers.length} customers with complete data</p>
+        `;
+
+        csvPreview.style.display = 'block';
+    }
+
+    async importCSVData() {
+        if (!this.csvData || this.csvData.length === 0) return;
+
+        try {
+            let imported = 0;
+            let skipped = 0;
+
+            for (const customerData of this.csvData) {
+                try {
+                    // Check for duplicates
+                    const existingCustomer = this.customers.find(c => 
+                        c.companyName.toLowerCase() === customerData.companyName.toLowerCase()
+                    );
+
+                    if (existingCustomer) {
+                        skipped++;
+                        continue;
+                    }
+
+                    await this.db.set(customerData.id, customerData);
+                    imported++;
+
+                } catch (error) {
+                    console.error('Error importing customer:', customerData.companyName, error);
+                    skipped++;
+                }
+            }
+
+            // Reload customers
+            await this.loadCustomers();
+
+            // Show results
+            const importSummary = document.getElementById('import-summary');
+            const csvPreview = document.getElementById('csv-preview');
+            const importResults = document.getElementById('import-results');
+            
+            if (importSummary) {
+                importSummary.innerHTML = `
+                    <div class="preview-stats">
+                        <div class="stat-item">
+                            <div class="stat-number">${imported}</div>
+                            <div class="stat-label">Successfully Imported</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">${skipped}</div>
+                            <div class="stat-label">Skipped (Duplicates)</div>
+                        </div>
+                    </div>
+                    <p>Import completed successfully!</p>
+                `;
+            }
+
+            if (csvPreview) csvPreview.style.display = 'none';
+            if (importResults) importResults.style.display = 'block';
+
+        } catch (error) {
+            console.error('Import failed:', error);
+            alert('Import failed. Please try again.');
+        }
+    }
+
+    cancelImport() {
+        this.showView('dashboard');
+    }
+
+    // Integration stub methods
+    createInQBO(customerId) {
+        const customer = this.customers.find(c => c.id === customerId);
+        if (!customer) return;
+        
+        alert(`QuickBooks integration coming soon!\n\nWould create customer: ${customer.companyName}`);
+        // TODO: Integrate with QuickBooks Online API
+    }
+
+    sendAgreement(customerId) {
+        const customer = this.customers.find(c => c.id === customerId);
+        if (!customer) return;
+        
+        alert(`DocuSign integration coming soon!\n\nWould send service agreement to: ${customer.companyName}`);
+        // TODO: Integrate with DocuSign API for automated agreement generation
     }
 }
 
