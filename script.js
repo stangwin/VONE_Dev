@@ -318,6 +318,7 @@ class CRMApp {
             }).join('');
 
             listContainer.innerHTML = customerHTML;
+            console.log(`Rendered ${this.customers.length} customers to the dashboard`);
                             <span class="status-badge ${this.getStatusClass(customer.status)}">${customer.status}</span>
                         </div>
                         <div class="card-actions">
