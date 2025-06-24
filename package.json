@@ -10,11 +10,16 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@neondatabase/serverless": "^1.0.1",
     "cors": "^2.8.5",
+    "debug": "^4.3.4",
     "dotenv": "^16.5.0",
+    "drizzle-kit": "^0.31.2",
+    "drizzle-orm": "^0.44.2",
     "express": "^5.1.0",
     "multer": "^2.0.1",
     "openai": "^5.7.0",
-    "pg": "^8.16.2"
+    "pg": "^8.16.2",
+    "ws": "^8.18.2"
   }
 }

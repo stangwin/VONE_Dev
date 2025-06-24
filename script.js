@@ -1,31 +1,71 @@
-// Simple Database Implementation for CRM
-class SimpleDB {
+// Database API client
+class DatabaseAPI {
     constructor() {
-        this.storageKey = "crm_data";
+        this.baseURL = '/api';
     }
 
-    async get(key) {
-        const data = this.getAllData();
-        return data[key] || null;
-    }
-
-    async set(key, value) {
-        const data = this.getAllData();
-        data[key] = value;
-        localStorage.setItem(this.storageKey, JSON.stringify(data));
-        return true;
-    }
-
-    async list(prefix = "") {
-        const data = this.getAllData();
-        return Object.keys(data).filter((key) => key.startsWith(prefix));
-    }
-
-    getAllData() {
+    async getCustomers() {
         try {
-            return JSON.parse(localStorage.getItem(this.storageKey) || "{}");
-        } catch {
-            return {};
+            const response = await fetch(`${this.baseURL}/customers`);
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            return await response.json();
+        } catch (error) {
+            console.error('Error fetching customers:', error);
+            throw error;
+        }
+    }
+
+    async getCustomer(customerId) {
+        try {
+            const response = await fetch(`${this.baseURL}/customers/${customerId}`);
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            return await response.json();
+        } catch (error) {
+            console.error('Error fetching customer:', error);
+            throw error;
+        }
+    }
+
+    async createCustomer(customerData) {
+        try {
+            const response = await fetch(`${this.baseURL}/customers`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(customerData)
+            });
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            return await response.json();
+        } catch (error) {
+            console.error('Error creating customer:', error);
+            throw error;
+        }
+    }
+
+    async updateCustomer(customerId, updates) {
+        try {
+            const response = await fetch(`${this.baseURL}/customers/${customerId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(updates)
+            });
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            return await response.json();
+        } catch (error) {
+            console.error('Error updating customer:', error);
+            throw error;
+        }
+    }
+
+    async deleteCustomer(customerId) {
+        try {
+            const response = await fetch(`${this.baseURL}/customers/${customerId}`, {
+                method: 'DELETE'
+            });
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            return await response.json();
+        } catch (error) {
+            console.error('Error deleting customer:', error);
+            throw error;
         }
     }
 }
@@ -33,11 +73,10 @@ class SimpleDB {
 // CRM Application
 class CRMApp {
     constructor() {
-        this.db = new SimpleDB();
+        this.api = new DatabaseAPI();
         this.customers = [];
         this.currentCustomer = null;
         this.currentCustomerId = null;
-        this.nextCustomerId = this.getNextCustomerId();
 
         this.init();
     }
@@ -63,15 +102,7 @@ class CRMApp {
     async init() {
         try {
             console.log('Initializing CRM...');
-            
-            // First check and auto-import data if needed
-            await this.checkAndAutoImport();
-            
-            // Then load customers
             await this.loadCustomers();
-            
-            console.log(`Loaded ${this.customers.length} customers`);
-            
             this.bindEvents();
             this.showView("dashboard");
         } catch (error) {
@@ -201,33 +232,14 @@ class CRMApp {
 
     async loadCustomers() {
         try {
-            console.log('📊 Loading customers from localStorage...');
+            console.log('Loading customers from database...');
             
             const loadingElement = document.getElementById("dashboard-loading");
             if (loadingElement) loadingElement.style.display = "block";
             
-            this.customers = [];
-
-            // Get all localStorage keys that start with "customer_"
-            const allKeys = Object.keys(localStorage);
-            const customerKeys = allKeys.filter(key => key.startsWith('customer_'));
+            this.customers = await this.api.getCustomers();
+            console.log(`Loaded ${this.customers.length} customers from PostgreSQL`);
             
-            console.log(`🔍 Found ${customerKeys.length} customer keys in localStorage`);
-
-            for (const key of customerKeys) {
-                try {
-                    const customerData = localStorage.getItem(key);
-                    if (customerData) {
-                        const customer = JSON.parse(customerData);
-                        this.customers.push(customer);
-                        console.log(`📝 Loaded: ${customer.companyName}`);
-                    }
-                } catch (error) {
-                    console.error(`Failed to load customer ${key}:`, error);
-                }
-            }
-
-            console.log(`✅ Total customers loaded: ${this.customers.length}`);
             this.renderCustomerList();
             
         } catch (error) {
@@ -256,16 +268,46 @@ class CRMApp {
 
         try {
             const customerHTML = this.customers.map(customer => {
-                const primaryContactName = customer.primaryContact?.name || 'No primary contact';
+                const primaryContactName = customer.primary_contact?.name || 'No primary contact';
                 const { noteText, noteTimestamp } = this.getLatestNoteInfo(customer.notes || []);
-                const affiliatePartner = customer.affiliatePartner || 'No affiliate';
-                const nextStep = customer.nextStep || 'No next step defined';
-            
-            return `
-                <div class="customer-card">
-                    <div class="customer-card-header">
-                        <div class="customer-title">
-                            <h3>${this.escapeHtml(customer.companyName)}</h3>
+
+                return `
+                    <div class="customer-card" onclick="app.showCustomerDetail('${customer.customer_id}')">
+                        <div class="customer-header">
+                            <h3 class="customer-name">${this.escapeHtml(customer.company_name)}</h3>
+                            <span class="status-badge ${this.getStatusClass(customer.status)}">${customer.status}</span>
+                        </div>
+                        <div class="customer-info">
+                            <div class="info-row">
+                                <span class="label">Contact:</span>
+                                <span>${this.escapeHtml(primaryContactName)}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="label">Affiliate:</span>
+                                <span>${this.escapeHtml(customer.affiliate_partner || 'None')}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="label">Next Step:</span>
+                                <span>${this.escapeHtml(customer.next_step || 'None')}</span>
+                            </div>
+                            ${noteText ? `
+                                <div class="info-row latest-note">
+                                    <span class="label">Latest Note:</span>
+                                    <span class="note-preview">${this.escapeHtml(noteText)}</span>
+                                    ${noteTimestamp ? `<small class="note-date">${new Date(noteTimestamp).toLocaleDateString()}</small>` : ''}
+                                </div>
+                            ` : ''}
+                        </div>
+                        <div class="customer-actions">
+                            <button class="btn btn-sm btn-primary" onclick="event.stopPropagation(); app.showCustomerDetail('${customer.customer_id}')">View Details</button>
+                            <button class="btn btn-sm btn-secondary" onclick="event.stopPropagation(); app.createInQBO('${customer.customer_id}')">Create in QBO</button>
+                            <button class="btn btn-sm btn-secondary" onclick="event.stopPropagation(); app.sendAgreement('${customer.customer_id}')">Send Agreement</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            listContainer.innerHTML = customerHTML;
                             <span class="status-badge ${this.getStatusClass(customer.status)}">${customer.status}</span>
                         </div>
                         <div class="card-actions">
@@ -285,36 +327,7 @@ class CRMApp {
                         <div class="card-row">
                             <div class="field-group">
                                 <label>Primary Contact</label>
-                                <span>${this.escapeHtml(primaryContactName)}</span>
-                            </div>
-                            <div class="field-group">
-                                <label>Affiliate Partner</label>
-                                <span>${this.escapeHtml(affiliatePartner)}</span>
-                            </div>
-                        </div>
-                        
-                        <div class="card-row">
-                            <div class="field-group full-width">
-                                <label>Next Step</label>
-                                <span class="next-step">${this.escapeHtml(nextStep)}</span>
-                            </div>
-                        </div>
-                        
-                        <div class="card-row">
-                            <div class="field-group full-width">
-                                <label>Latest Note</label>
-                                <div class="latest-note-content">
-                                    <span>${noteText}</span>
-                                    ${noteTimestamp ? `<small class="note-timestamp">${noteTimestamp}</small>` : ''}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `;
-            }).join('');
-            
-            listContainer.innerHTML = customerHTML;
+    
         } catch (error) {
             console.error('Error rendering customer list:', error);
             listContainer.innerHTML = '<p>Error loading customers. Please refresh the page.</p>';

@@ -19,15 +19,16 @@ The current implementation uses a client-side localStorage database for data per
 - **Styling**: Custom CSS with CSS variables for theming and consistent design system
 
 ### Backend Architecture
-- **Current**: Static file serving using Python's built-in HTTP server
-- **Future**: TypeScript backend with Drizzle ORM integration ready
-- **Database**: Currently localStorage with auto-import, with Neon Postgres infrastructure prepared
+- **Current**: Node.js/Express server with RESTful API endpoints
+- **Database**: PostgreSQL (Neon) with Drizzle ORM for type-safe operations
+- **API**: Full CRUD operations for customer management
+- **Infrastructure**: Production-ready with proper error handling and validation
 
 ### Data Storage
-- **Current Solution**: Browser localStorage with automatic customer ID generation (customer_001, customer_002, etc.)
-- **Auto-Import**: Microsoft Lists data automatically loads on first visit
-- **Future Solution**: Neon Postgres database with Drizzle ORM for multi-device sync
-- **ID Management**: Sequential customer numbering with automatic collision detection
+- **Database**: PostgreSQL with comprehensive customer schema
+- **ORM**: Drizzle ORM providing type safety and migrations
+- **Schema**: Customers table with JSONB for flexible contact data and notes
+- **ID Management**: Auto-incrementing primary keys plus custom customer IDs
 
 ## Key Components
 
