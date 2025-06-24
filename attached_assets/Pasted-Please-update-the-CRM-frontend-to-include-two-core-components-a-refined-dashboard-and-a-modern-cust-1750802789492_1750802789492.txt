@@ -1,0 +1,40 @@
+Please update the CRM frontend to include two core components: a refined dashboard and a modern customer detail page. The backend and PostgreSQL integration are already working correctly — do not alter any API logic, database schema, or fetch functions. Only update the frontend code to improve usability, layout, and routing.
+
+Dashboard View Instructions
+Redesign the existing dashboard page to use a clean, compact, professional table layout inspired by HubSpot. Remove the current large cards. The table should include the following columns:
+	•	Company Name (clickable hyperlink to detail page)
+	•	Status (inline editable dropdown)
+	•	Affiliate Partner (read-only for now)
+	•	Primary Contact (name only, view-only)
+	•	Phone
+	•	Next Step (inline editable dropdown or input field)
+	•	Last Note (latest note text, read-only)
+	•	Actions (optional buttons for QBO, Edit, etc.)
+
+Above the table, include top filter controls:
+	•	A Status dropdown
+	•	An Affiliate dropdown
+	•	A Search input (filters by company name or contact)
+
+Column headers should be sortable — allow toggling ascending/descending. Inline edits for Status and Next Step should trigger a PATCH API call to update the customer in the database and re-render the table without refreshing the page. Do not modify or overwrite the current API fetch structure — just hook the editable fields into the update route.
+
+Below the table, add a second section titled “Next Actions.” This should show a simple table listing customers with pending next_step values (i.e., not empty). Display Company Name, Next Step, Due Date (optional, if available), and an Edit button or inline input. Reuse the same data — no additional API needed.
+
+Routing
+Clicking on a customer’s Company Name should route to a clean detail page (e.g. /customer/:id). Pass the customer ID to the detail page and fetch that customer’s full record on load.
+
+Customer Detail Page Instructions
+Create a modern, minimal, professional-looking customer detail view with editable sections. Layout suggestion:
+	•	A slim top section showing Company Name, Status (editable), and Affiliate Partner
+	•	A main section with tabs or clean horizontal sections for:
+	1.	General Info (contact info, addresses — editable)
+	2.	Contacts (view, add/edit/remove individual contacts)
+	3.	Notes (chronological, timestamped notes with add box)
+	4.	Files (upload network/equipment photos or PDFs)
+	5.	Actions (buttons for Create in QBO, Send Agreement, etc.)
+
+All editable fields should be connected to the API via PATCH or POST calls using the existing database model. Do not introduce new schema changes — if a field doesn’t exist yet (e.g. due date or file upload), create a placeholder in the frontend only.
+
+Use consistent styling across dashboard and detail views, inspired by HubSpot and Apple UI principles: slim margins, soft borders, clear typography, hover cues, and compact buttons. The dashboard is for quick high-level access, and the detail page is for deeper updates and file/note management.
+
+Again — do not modify the backend, API route logic, or database structure. Keep all existing routes and fetch logic intact. Only update the frontend layout, inline editing, routing, and rendering to match the structure described.

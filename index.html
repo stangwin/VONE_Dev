@@ -31,28 +31,95 @@
                         <div class="loading" id="dashboard-loading" style="display: none;">
                             Loading customers...
                         </div>
-                        <div
-                            class="error-message"
-                            id="dashboard-error"
-                            style="display: none"
-                        ></div>
+                        <div class="error-message" id="dashboard-error" style="display: none"></div>
                     </div>
 
-                    <div class="customer-list customer-grid" id="customer-list">
-                        <!-- Customer list will be populated here -->
+                    <!-- Filters Section -->
+                    <div class="filters-section">
+                        <div class="filter-controls">
+                            <div class="filter-group">
+                                <label>Status:</label>
+                                <select id="status-filter">
+                                    <option value="">All Statuses</option>
+                                    <option value="Lead">Lead</option>
+                                    <option value="Quoted">Quoted</option>
+                                    <option value="Signed">Signed</option>
+                                    <option value="Onboarding">Onboarding</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label>Affiliate:</label>
+                                <select id="affiliate-filter">
+                                    <option value="">All Affiliates</option>
+                                    <option value="VOXO">VOXO</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label>Search:</label>
+                                <input type="text" id="search-filter" placeholder="Company name or contact...">
+                            </div>
+                        </div>
                     </div>
 
-                    <div
-                        class="empty-state"
-                        id="empty-state"
-                        style="display: none"
-                    >
-                        <p>
-                            No customers found.
-                            <a href="#" id="add-first-customer"
-                                >Add your first customer</a
-                            >
-                        </p>
+                    <!-- Customers Table -->
+                    <div class="table-container">
+                        <table class="customers-table" id="customers-table">
+                            <thead>
+                                <tr>
+                                    <th data-sort="company_name">Company Name <span class="sort-indicator"></span></th>
+                                    <th data-sort="status">Status <span class="sort-indicator"></span></th>
+                                    <th data-sort="affiliate_partner">Affiliate <span class="sort-indicator"></span></th>
+                                    <th data-sort="primary_contact">Contact <span class="sort-indicator"></span></th>
+                                    <th>Phone</th>
+                                    <th data-sort="next_step">Next Step <span class="sort-indicator"></span></th>
+                                    <th>Last Note</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="customers-table-body">
+                                <!-- Table rows will be populated here -->
+                            </tbody>
+                        </table>
+                        
+                        <div class="empty-state" id="empty-state" style="display: none">
+                            <p>No customers found. <a href="#" id="add-first-customer">Add your first customer</a></p>
+                        </div>
+                    </div>
+
+                    <!-- Next Actions Section -->
+                    <div class="next-actions-section">
+                        <h3>Next Actions</h3>
+                        <div class="table-container">
+                            <table class="next-actions-table" id="next-actions-table">
+                                <thead>
+                                    <tr>
+                                        <th>Company Name</th>
+                                        <th>Next Step</th>
+                                        <th>Due Date</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="next-actions-table-body">
+                                    <!-- Next actions will be populated here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Customer Detail View -->
+                <div id="customer-detail-view" class="view">
+                    <div class="detail-header">
+                        <button class="back-btn" id="back-to-dashboard">← Back to Dashboard</button>
+                        <div class="detail-actions">
+                            <button class="btn btn-secondary" id="edit-customer-btn">Edit</button>
+                            <button class="btn btn-primary" id="save-customer-btn" style="display: none;">Save</button>
+                            <button class="btn btn-outline" id="cancel-edit-btn" style="display: none;">Cancel</button>
+                        </div>
+                    </div>
+
+                    <div class="customer-detail-content" id="customer-detail-content">
+                        <!-- Customer detail content will be populated here -->
                     </div>
                 </div>
 

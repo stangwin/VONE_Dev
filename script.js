@@ -90,8 +90,11 @@ class CRMApp {
     constructor() {
         this.api = new DatabaseAPI();
         this.customers = [];
+        this.filteredCustomers = [];
         this.currentCustomer = null;
         this.currentCustomerId = null;
+        this.sortConfig = { key: null, direction: 'asc' };
+        this.filters = { status: '', affiliate: '', search: '' };
         this.init();
     }
 
@@ -139,7 +142,10 @@ class CRMApp {
             console.log('First customer sample:', this.customers[0]);
             console.log('All customer company names:', this.customers.map(c => c.company_name));
             
-            console.log('Step 4: Calling renderCustomerList...');
+            console.log('Step 4: Setting up filtered customers...');
+            this.filteredCustomers = [...this.customers];
+            
+            console.log('Step 5: Calling renderCustomerList...');
             this.renderCustomerList();
             
             console.log('=== LOAD CUSTOMERS DEBUG END ===');
@@ -159,23 +165,23 @@ class CRMApp {
 
     renderCustomerList() {
         console.log('=== RENDER DEBUG START ===');
-        console.log('Customers to render:', this.customers.length);
+        console.log('Customers to render:', this.filteredCustomers.length);
         
-        const listContainer = document.getElementById("customer-list");
+        const tableBody = document.getElementById("customers-table-body");
         const emptyState = document.getElementById("empty-state");
         
         console.log('DOM elements found:');
-        console.log('- customer-list container:', !!listContainer);
+        console.log('- customers-table-body:', !!tableBody);
         console.log('- empty-state element:', !!emptyState);
 
-        if (!listContainer) {
-            console.error('CRITICAL: customer-list element not found in DOM');
+        if (!tableBody) {
+            console.error('CRITICAL: customers-table-body element not found in DOM');
             return;
         }
 
-        if (this.customers.length === 0) {
+        if (this.filteredCustomers.length === 0) {
             console.log('No customers found, showing empty state');
-            listContainer.innerHTML = "";
+            tableBody.innerHTML = "";
             if (emptyState) {
                 emptyState.style.display = "block";
                 console.log('Empty state element shown');
@@ -190,84 +196,96 @@ class CRMApp {
         }
 
         try {
-            console.log('Generating HTML for customers...');
-            const customerHTML = this.customers.map((customer, index) => {
+            console.log('Generating table rows for customers...');
+            const rowsHTML = this.filteredCustomers.map((customer, index) => {
                 console.log(`Processing customer ${index + 1}: ${customer.company_name}`);
                 
-                const primaryContactName = customer.primary_contact?.name || 'No primary contact';
-                const { noteText, noteTimestamp } = this.getLatestNoteInfo(customer.notes || []);
+                const primaryContactName = customer.primary_contact?.name || '';
+                const primaryContactPhone = customer.primary_contact?.phone || '';
+                const lastNote = this.getLatestNote(customer.notes || []);
 
                 return `
-                    <div class="customer-card" onclick="app.showCustomerDetail('${customer.customer_id}')">
-                        <div class="customer-header">
-                            <h3 class="customer-name">${this.escapeHtml(customer.company_name)}</h3>
-                            <span class="status-badge ${this.getStatusClass(customer.status)}">${customer.status}</span>
-                        </div>
-                        <div class="customer-info">
-                            <div class="info-row">
-                                <span class="label">Contact:</span>
-                                <span>${this.escapeHtml(primaryContactName)}</span>
-                            </div>
-                            <div class="info-row">
-                                <span class="label">Affiliate:</span>
-                                <span>${this.escapeHtml(customer.affiliate_partner || 'None')}</span>
-                            </div>
-                            <div class="info-row">
-                                <span class="label">Next Step:</span>
-                                <span>${this.escapeHtml(customer.next_step || 'None')}</span>
-                            </div>
-                            ${noteText ? `
-                                <div class="info-row latest-note">
-                                    <span class="label">Latest Note:</span>
-                                    <span class="note-preview">${this.escapeHtml(noteText)}</span>
-                                    ${noteTimestamp ? `<small class="note-date">${new Date(noteTimestamp).toLocaleDateString()}</small>` : ''}
-                                </div>
-                            ` : ''}
-                        </div>
-                        <div class="customer-actions">
-                            <button class="btn btn-sm btn-primary" onclick="event.stopPropagation(); app.showCustomerDetail('${customer.customer_id}')">View Details</button>
-                            <button class="btn btn-sm btn-secondary" onclick="event.stopPropagation(); app.createInQBO('${customer.customer_id}')">Create in QBO</button>
-                            <button class="btn btn-sm btn-secondary" onclick="event.stopPropagation(); app.sendAgreement('${customer.customer_id}')">Send Agreement</button>
-                        </div>
-                    </div>
+                    <tr>
+                        <td>
+                            <a href="#" class="company-link" onclick="app.showCustomerDetail('${customer.customer_id}'); return false;">
+                                ${this.escapeHtml(customer.company_name)}
+                            </a>
+                        </td>
+                        <td class="status-cell">
+                            <select class="status-dropdown" data-customer-id="${customer.customer_id}" onchange="app.updateCustomerStatus(this)">
+                                <option value="Lead" ${customer.status === 'Lead' ? 'selected' : ''}>Lead</option>
+                                <option value="Quoted" ${customer.status === 'Quoted' ? 'selected' : ''}>Quoted</option>
+                                <option value="Signed" ${customer.status === 'Signed' ? 'selected' : ''}>Signed</option>
+                                <option value="Onboarding" ${customer.status === 'Onboarding' ? 'selected' : ''}>Onboarding</option>
+                            </select>
+                        </td>
+                        <td>${this.escapeHtml(customer.affiliate_partner || '')}</td>
+                        <td>${this.escapeHtml(primaryContactName)}</td>
+                        <td>${this.escapeHtml(primaryContactPhone)}</td>
+                        <td>
+                            <input type="text" class="next-step-input" 
+                                   value="${this.escapeHtml(customer.next_step || '')}" 
+                                   data-customer-id="${customer.customer_id}"
+                                   onblur="app.updateCustomerNextStep(this)"
+                                   onkeypress="if(event.key==='Enter') this.blur()">
+                        </td>
+                        <td class="last-note">${this.escapeHtml(lastNote)}</td>
+                        <td class="table-actions">
+                            <button class="btn btn-sm btn-secondary" onclick="app.createInQBO('${customer.customer_id}')">QBO</button>
+                            <button class="btn btn-sm btn-secondary" onclick="app.sendAgreement('${customer.customer_id}')">Agreement</button>
+                        </td>
+                    </tr>
                 `;
             }).join('');
 
-            console.log('Setting innerHTML with generated HTML...');
-            console.log('HTML length:', customerHTML.length);
-            console.log('Sample HTML preview:', customerHTML.substring(0, 200) + '...');
+            console.log('Setting table innerHTML...');
+            tableBody.innerHTML = rowsHTML;
             
-            listContainer.innerHTML = customerHTML;
-            
-            // Verify DOM update
-            const updatedContent = listContainer.innerHTML;
-            console.log('SUCCESS: Rendered customers to DOM');
-            console.log('Final container content length:', updatedContent.length);
-            console.log('Container children count:', listContainer.children.length);
-            console.log('First child element:', listContainer.children[0]?.tagName);
-            
-            // Force visual update for iframe environments
-            if (window !== window.top) {
-                console.log('Iframe detected: Forcing visual update');
-                listContainer.style.display = 'none';
-                setTimeout(() => {
-                    listContainer.style.display = '';
-                    console.log('Iframe: Visual update forced');
-                }, 10);
-            }
-            
+            console.log('SUCCESS: Rendered customers table');
             console.log('=== RENDER DEBUG END ===');
+            
+            // Render next actions
+            this.renderNextActions();
             
         } catch (error) {
             console.error('ERROR in renderCustomerList:', error);
             console.error('Error details:', error.stack);
-            listContainer.innerHTML = '<div style="color: red; padding: 20px;">Error loading customers. Check console for details.</div>';
+            tableBody.innerHTML = '<tr><td colspan="8" style="color: red; padding: 20px;">Error loading customers. Check console for details.</td></tr>';
         }
     }
 
-    getLatestNoteInfo(notes) {
+    renderNextActions() {
+        const nextActionsBody = document.getElementById("next-actions-table-body");
+        if (!nextActionsBody) return;
+
+        const customersWithNextSteps = this.customers.filter(c => c.next_step && c.next_step.trim());
+        
+        if (customersWithNextSteps.length === 0) {
+            nextActionsBody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: var(--text-secondary);">No pending next steps</td></tr>';
+            return;
+        }
+
+        const rowsHTML = customersWithNextSteps.map(customer => `
+            <tr>
+                <td>
+                    <a href="#" class="company-link" onclick="app.showCustomerDetail('${customer.customer_id}'); return false;">
+                        ${this.escapeHtml(customer.company_name)}
+                    </a>
+                </td>
+                <td>${this.escapeHtml(customer.next_step)}</td>
+                <td>-</td>
+                <td class="table-actions">
+                    <button class="btn btn-sm btn-primary" onclick="app.showCustomerDetail('${customer.customer_id}')">Edit</button>
+                </td>
+            </tr>
+        `).join('');
+
+        nextActionsBody.innerHTML = rowsHTML;
+    }
+
+    getLatestNote(notes) {
         if (!notes || notes.length === 0) {
-            return { noteText: "No notes yet.", noteTimestamp: null };
+            return "";
         }
 
         // Sort notes by timestamp, newest first
@@ -277,25 +295,121 @@ class CRMApp {
         const latestNote = sortedNotes[0];
 
         // Truncate note text if too long
-        const maxLength = 100;
+        const maxLength = 60;
         let noteText = latestNote.content;
         if (noteText.length > maxLength) {
             noteText = noteText.substring(0, maxLength) + "...";
         }
 
-        // Format timestamp
-        const noteDate = new Date(latestNote.timestamp);
-        const noteTimestamp = noteDate.toLocaleDateString("en-US", {
-            year: "numeric",
-            month: "short",
-            day: "numeric",
-        }) + " @ " + noteDate.toLocaleTimeString("en-US", {
-            hour: "numeric",
-            minute: "2-digit",
-            hour12: true,
+        return noteText;
+    }
+
+    applyFilters() {
+        this.filters.status = document.getElementById("status-filter")?.value || '';
+        this.filters.affiliate = document.getElementById("affiliate-filter")?.value || '';
+        this.filters.search = document.getElementById("search-filter")?.value.toLowerCase() || '';
+
+        this.filteredCustomers = this.customers.filter(customer => {
+            const statusMatch = !this.filters.status || customer.status === this.filters.status;
+            const affiliateMatch = !this.filters.affiliate || customer.affiliate_partner === this.filters.affiliate;
+            const searchMatch = !this.filters.search || 
+                customer.company_name.toLowerCase().includes(this.filters.search) ||
+                customer.primary_contact?.name?.toLowerCase().includes(this.filters.search) ||
+                customer.primary_contact?.email?.toLowerCase().includes(this.filters.search);
+
+            return statusMatch && affiliateMatch && searchMatch;
         });
 
-        return { noteText: this.escapeHtml(noteText), noteTimestamp };
+        this.renderCustomerList();
+    }
+
+    sortTable(key) {
+        if (this.sortConfig.key === key) {
+            this.sortConfig.direction = this.sortConfig.direction === 'asc' ? 'desc' : 'asc';
+        } else {
+            this.sortConfig.key = key;
+            this.sortConfig.direction = 'asc';
+        }
+
+        this.filteredCustomers.sort((a, b) => {
+            let aVal = a[key] || '';
+            let bVal = b[key] || '';
+
+            if (key === 'primary_contact') {
+                aVal = a.primary_contact?.name || '';
+                bVal = b.primary_contact?.name || '';
+            }
+
+            if (typeof aVal === 'string') {
+                aVal = aVal.toLowerCase();
+                bVal = bVal.toLowerCase();
+            }
+
+            if (aVal < bVal) return this.sortConfig.direction === 'asc' ? -1 : 1;
+            if (aVal > bVal) return this.sortConfig.direction === 'asc' ? 1 : -1;
+            return 0;
+        });
+
+        // Update sort indicators
+        document.querySelectorAll('.sort-indicator').forEach(indicator => {
+            indicator.classList.remove('asc', 'desc');
+        });
+
+        const currentHeader = document.querySelector(`th[data-sort="${key}"] .sort-indicator`);
+        if (currentHeader) {
+            currentHeader.classList.add(this.sortConfig.direction);
+        }
+
+        this.renderCustomerList();
+    }
+
+    async updateCustomerStatus(selectElement) {
+        const customerId = selectElement.dataset.customerId;
+        const newStatus = selectElement.value;
+
+        try {
+            await this.api.updateCustomer(customerId, { status: newStatus });
+            console.log(`Updated customer ${customerId} status to ${newStatus}`);
+            
+            // Update local data
+            const customer = this.customers.find(c => c.customer_id === customerId);
+            if (customer) {
+                customer.status = newStatus;
+            }
+        } catch (error) {
+            console.error('Failed to update customer status:', error);
+            // Revert the dropdown
+            const customer = this.customers.find(c => c.customer_id === customerId);
+            if (customer) {
+                selectElement.value = customer.status;
+            }
+        }
+    }
+
+    async updateCustomerNextStep(inputElement) {
+        const customerId = inputElement.dataset.customerId;
+        const newNextStep = inputElement.value.trim();
+
+        try {
+            await this.api.updateCustomer(customerId, { next_step: newNextStep });
+            console.log(`Updated customer ${customerId} next step to "${newNextStep}"`);
+            
+            // Update local data
+            const customer = this.customers.find(c => c.customer_id === customerId);
+            if (customer) {
+                customer.next_step = newNextStep;
+            }
+
+            // Re-render next actions section
+            this.renderNextActions();
+        } catch (error) {
+            console.error('Failed to update customer next step:', error);
+            // Revert the input
+            const customer = this.customers.find(c => c.customer_id === customerId);
+            if (customer) {
+                inputElement.value = customer.next_step || '';
+            }
+        }
     }
 
     getStatusClass(status) {
@@ -337,6 +451,36 @@ class CRMApp {
         if (addFirstCustomer) {
             addFirstCustomer.addEventListener("click", () => this.showAddCustomerForm());
         }
+
+        // Back to dashboard
+        const backBtn = document.getElementById("back-to-dashboard");
+        if (backBtn) {
+            backBtn.addEventListener("click", () => this.showView("dashboard"));
+        }
+
+        // Filter controls
+        const statusFilter = document.getElementById("status-filter");
+        if (statusFilter) {
+            statusFilter.addEventListener("change", () => this.applyFilters());
+        }
+
+        const affiliateFilter = document.getElementById("affiliate-filter");
+        if (affiliateFilter) {
+            affiliateFilter.addEventListener("change", () => this.applyFilters());
+        }
+
+        const searchFilter = document.getElementById("search-filter");
+        if (searchFilter) {
+            searchFilter.addEventListener("input", () => this.applyFilters());
+        }
+
+        // Table sorting
+        document.querySelectorAll("th[data-sort]").forEach(th => {
+            th.addEventListener("click", () => {
+                const sortKey = th.dataset.sort;
+                this.sortTable(sortKey);
+            });
+        });
     }
 
     showAddCustomerForm() {
@@ -353,13 +497,121 @@ class CRMApp {
                 return;
             }
 
-            // Simple customer detail display - can be enhanced later
-            alert(`Customer Details:\n\nCompany: ${this.currentCustomer.company_name}\nStatus: ${this.currentCustomer.status}\nContact: ${this.currentCustomer.primary_contact?.name || 'N/A'}`);
+            this.renderCustomerDetail();
+            this.showView("customer-detail");
 
         } catch (error) {
             console.error("Failed to show customer detail:", error);
             this.showError("dashboard-error", "Failed to load customer details.");
         }
+    }
+
+    renderCustomerDetail() {
+        const contentContainer = document.getElementById("customer-detail-content");
+        if (!contentContainer || !this.currentCustomer) return;
+
+        const customer = this.currentCustomer;
+        const primaryContact = customer.primary_contact || {};
+        const authorizedSigner = customer.authorized_signer || {};
+        const billingContact = customer.billing_contact || {};
+        const notes = customer.notes || [];
+
+        contentContainer.innerHTML = `
+            <!-- Header Section -->
+            <div class="detail-section">
+                <div class="detail-grid">
+                    <div class="detail-field">
+                        <label>Company Name</label>
+                        <input type="text" value="${this.escapeHtml(customer.company_name)}" disabled>
+                    </div>
+                    <div class="detail-field">
+                        <label>Status</label>
+                        <select disabled>
+                            <option value="Lead" ${customer.status === 'Lead' ? 'selected' : ''}>Lead</option>
+                            <option value="Quoted" ${customer.status === 'Quoted' ? 'selected' : ''}>Quoted</option>
+                            <option value="Signed" ${customer.status === 'Signed' ? 'selected' : ''}>Signed</option>
+                            <option value="Onboarding" ${customer.status === 'Onboarding' ? 'selected' : ''}>Onboarding</option>
+                        </select>
+                    </div>
+                    <div class="detail-field">
+                        <label>Affiliate Partner</label>
+                        <input type="text" value="${this.escapeHtml(customer.affiliate_partner || '')}" disabled>
+                    </div>
+                    <div class="detail-field">
+                        <label>Next Step</label>
+                        <input type="text" value="${this.escapeHtml(customer.next_step || '')}" disabled>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contact Information -->
+            <div class="detail-section">
+                <h3>Contact Information</h3>
+                <div class="detail-grid">
+                    <div class="detail-field">
+                        <label>Primary Contact Name</label>
+                        <input type="text" value="${this.escapeHtml(primaryContact.name || '')}" disabled>
+                    </div>
+                    <div class="detail-field">
+                        <label>Primary Email</label>
+                        <input type="email" value="${this.escapeHtml(primaryContact.email || '')}" disabled>
+                    </div>
+                    <div class="detail-field">
+                        <label>Primary Phone</label>
+                        <input type="tel" value="${this.escapeHtml(primaryContact.phone || '')}" disabled>
+                    </div>
+                    <div class="detail-field">
+                        <label>Authorized Signer</label>
+                        <input type="text" value="${this.escapeHtml(authorizedSigner.name || '')}" disabled>
+                    </div>
+                    <div class="detail-field">
+                        <label>Signer Email</label>
+                        <input type="email" value="${this.escapeHtml(authorizedSigner.email || '')}" disabled>
+                    </div>
+                    <div class="detail-field">
+                        <label>Billing Contact</label>
+                        <input type="text" value="${this.escapeHtml(billingContact.name || '')}" disabled>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Addresses -->
+            <div class="detail-section">
+                <h3>Addresses</h3>
+                <div class="detail-grid">
+                    <div class="detail-field">
+                        <label>Physical Address</label>
+                        <textarea rows="3" disabled>${this.escapeHtml(customer.physical_address || '')}</textarea>
+                    </div>
+                    <div class="detail-field">
+                        <label>Billing Address</label>
+                        <textarea rows="3" disabled>${this.escapeHtml(customer.billing_address || '')}</textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notes -->
+            <div class="detail-section">
+                <h3>Notes</h3>
+                <div class="notes-section">
+                    ${notes.length > 0 ? notes.map(note => `
+                        <div class="note-item">
+                            <div class="note-meta">${new Date(note.timestamp).toLocaleString()}</div>
+                            <div class="note-content">${this.escapeHtml(note.content)}</div>
+                        </div>
+                    `).join('') : '<p style="color: var(--text-secondary);">No notes available.</p>'}
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="detail-section">
+                <h3>Actions</h3>
+                <div style="display: flex; gap: 1rem;">
+                    <button class="btn btn-primary" onclick="app.createInQBO('${customer.customer_id}')">Create in QuickBooks</button>
+                    <button class="btn btn-secondary" onclick="app.sendAgreement('${customer.customer_id}')">Send Agreement</button>
+                </div>
+            </div>
+        `;
     }
 
     createInQBO(customerId) {

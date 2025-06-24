@@ -85,6 +85,10 @@ Preferred communication style: Simple, everyday language.
 ## Changelog
 
 Changelog:
+- June 24, 2025: Redesigned frontend with HubSpot-inspired table layout and customer detail pages
+- June 24, 2025: Added inline editing for Status and Next Step fields with real-time API updates
+- June 24, 2025: Implemented table sorting, filtering by status/affiliate/search, and Next Actions section
+- June 24, 2025: Created modern customer detail view with tabbed sections for contacts, notes, and actions
 - June 24, 2025: Identified Replit iframe rendering issue - CRM works perfectly in new tabs/mobile but not in embedded preview
 - June 24, 2025: Added comprehensive debug logging and environment detection for iframe/CORS issues  
 - June 24, 2025: Successfully migrated from localStorage to PostgreSQL database - 12 customers now stored persistently 
