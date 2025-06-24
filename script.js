@@ -37,9 +37,27 @@ class CRMApp {
         this.customers = [];
         this.currentCustomer = null;
         this.currentCustomerId = null;
-        this.nextCustomerId = 1;
+        this.nextCustomerId = this.getNextCustomerId();
 
         this.init();
+    }
+
+    getNextCustomerId() {
+        const existingKeys = Object.keys(localStorage).filter(key => key.startsWith('customer_'));
+        if (existingKeys.length === 0) return 1;
+        
+        const highestId = Math.max(...existingKeys.map(key => {
+            const idPart = key.replace('customer_', '');
+            return parseInt(idPart) || 0;
+        }));
+        
+        return highestId + 1;
+    }
+
+    generateCustomerId() {
+        const id = `customer_${this.nextCustomerId.toString().padStart(3, '0')}`;
+        this.nextCustomerId++;
+        return id;
     }
 
     async init() {

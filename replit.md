@@ -12,20 +12,22 @@ The current implementation uses a client-side localStorage database for data per
 - **Technology**: Vanilla HTML, CSS, and JavaScript
 - **Structure**: Single-page application (SPA) with view-based routing
 - **Components**: 
-  - Dashboard view for customer listing
-  - Add/Edit customer forms
-  - Navigation system
+  - Modern dashboard with card-based customer listing
+  - Add/Edit customer forms with dropdown validation
+  - Auto-import functionality for Microsoft Lists data
+  - Real-time duplicate detection and validation
 - **Styling**: Custom CSS with CSS variables for theming and consistent design system
 
 ### Backend Architecture
 - **Current**: Static file serving using Python's built-in HTTP server
 - **Future**: TypeScript backend with Drizzle ORM integration ready
-- **Database**: Currently localStorage, with Neon Postgres infrastructure prepared
+- **Database**: Currently localStorage with auto-import, with Neon Postgres infrastructure prepared
 
 ### Data Storage
-- **Current Solution**: Browser localStorage with a custom SimpleDB class
-- **Future Solution**: Neon Postgres database with Drizzle ORM
-- **Rationale**: localStorage provides immediate functionality without setup complexity, while the database infrastructure allows for easy migration to persistent storage
+- **Current Solution**: Browser localStorage with automatic customer ID generation (customer_001, customer_002, etc.)
+- **Auto-Import**: Microsoft Lists data automatically loads on first visit
+- **Future Solution**: Neon Postgres database with Drizzle ORM for multi-device sync
+- **ID Management**: Sequential customer numbering with automatic collision detection
 
 ## Key Components
 
