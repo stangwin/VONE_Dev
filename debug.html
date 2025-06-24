@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug CRM</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .debug-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; }
+        .debug-result { background: #f5f5f5; padding: 10px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <h1>CRM Debug Page</h1>
+    
+    <div class="debug-section">
+        <h2>1. Test API Direct</h2>
+        <button onclick="testAPI()">Test API</button>
+        <div id="api-result" class="debug-result"></div>
+    </div>
+
+    <div class="debug-section">
+        <h2>2. Test DatabaseAPI Class</h2>
+        <button onclick="testDatabaseAPI()">Test DatabaseAPI</button>
+        <div id="db-api-result" class="debug-result"></div>
+    </div>
+
+    <div class="debug-section">
+        <h2>3. Test Render Function</h2>
+        <button onclick="testRender()">Test Render</button>
+        <div id="render-result" class="debug-result"></div>
+        <div id="test-customer-list" style="border: 1px solid red; min-height: 100px;"></div>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        async function testAPI() {
+            const result = document.getElementById('api-result');
+            try {
+                const response = await fetch('/api/customers');
+                const data = await response.json();
+                result.innerHTML = `Success: ${data.length} customers found<br>First customer: ${data[0]?.company_name}`;
+            } catch (error) {
+                result.innerHTML = `Error: ${error.message}`;
+            }
+        }
+
+        async function testDatabaseAPI() {
+            const result = document.getElementById('db-api-result');
+            try {
+                const api = new DatabaseAPI();
+                const customers = await api.getCustomers();
+                result.innerHTML = `Success: ${customers.length} customers via DatabaseAPI<br>First customer: ${customers[0]?.company_name}`;
+            } catch (error) {
+                result.innerHTML = `Error: ${error.message}`;
+            }
+        }
+
+        async function testRender() {
+            const result = document.getElementById('render-result');
+            const listContainer = document.getElementById('test-customer-list');
+            
+            try {
+                const api = new DatabaseAPI();
+                const customers = await api.getCustomers();
+                
+                // Simple render test
+                if (customers.length > 0) {
+                    const customer = customers[0];
+                    listContainer.innerHTML = `
+                        <div style="border: 1px solid blue; padding: 10px; margin: 5px;">
+                            <h3>${customer.company_name}</h3>
+                            <p>Status: ${customer.status}</p>
+                            <p>Contact: ${customer.primary_contact?.name || 'N/A'}</p>
+                        </div>
+                    `;
+                    result.innerHTML = `Render test successful`;
+                } else {
+                    result.innerHTML = `No customers to render`;
+                }
+            } catch (error) {
+                result.innerHTML = `Render Error: ${error.message}`;
+            }
+        }
+    </script>
+</body>
+</html>

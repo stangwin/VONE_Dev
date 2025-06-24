@@ -319,16 +319,6 @@ class CRMApp {
 
             listContainer.innerHTML = customerHTML;
             console.log(`Rendered ${this.customers.length} customers to the dashboard`);
-                            <span class="status-badge ${this.getStatusClass(customer.status)}">${customer.status}</span>
-                        </div>
-                        <div class="card-actions">
-                            <button class="action-btn view-btn" onclick="app.showCustomerDetail('${customer.id}')" title="View Details">
-                                <span>View</span>
-                            </button>
-                            <button class="action-btn qbo-btn" onclick="app.createInQBO('${customer.id}')" title="Create in QuickBooks">
-                                <span>QBO</span>
-                            </button>
-                            <button class="action-btn agreement-btn" onclick="app.sendAgreement('${customer.id}')" title="Send Agreement">
                                 <span>Agreement</span>
                             </button>
                         </div>
