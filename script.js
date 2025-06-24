@@ -62,7 +62,16 @@ class CRMApp {
 
     async init() {
         try {
+            console.log('Initializing CRM...');
+            
+            // First check and auto-import data if needed
+            await this.checkAndAutoImport();
+            
+            // Then load customers
             await this.loadCustomers();
+            
+            console.log(`Loaded ${this.customers.length} customers`);
+            
             this.bindEvents();
             this.showView("dashboard");
         } catch (error) {
