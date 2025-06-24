@@ -172,33 +172,29 @@ class CRMApp {
 
     async loadCustomers() {
         try {
-            document.getElementById("dashboard-loading").style.display =
-                "block";
-
-            // Get all customer keys
-            const keys = await this.db.list("customer_");
+            document.getElementById("dashboard-loading").style.display = "block";
             this.customers = [];
 
-            // Load each customer
-            for (const key of keys) {
-                try {
-                    const customer = await this.db.get(key);
-                    if (customer) {
-                        this.customers.push({ id: key, ...customer });
+            // Get all localStorage keys that start with "customer_"
+            const allKeys = Object.keys(localStorage);
+            const customerKeys = allKeys.filter(key => key.startsWith('customer_'));
 
-                        // Update next customer ID
-                        const numericId = parseInt(
-                            key.replace("customer_", ""),
-                        );
-                        if (numericId >= this.nextCustomerId) {
-                            this.nextCustomerId = numericId + 1;
-                        }
+            console.log('Found customer keys:', customerKeys);
+
+            for (const key of customerKeys) {
+                try {
+                    const customerData = localStorage.getItem(key);
+                    if (customerData) {
+                        const customer = JSON.parse(customerData);
+                        this.customers.push(customer);
+                        console.log('Loaded customer:', customer.companyName);
                     }
                 } catch (error) {
                     console.error(`Failed to load customer ${key}:`, error);
                 }
             }
 
+            console.log('Total customers loaded:', this.customers.length);
             this.renderCustomerList();
         } catch (error) {
             console.error("Failed to load customers:", error);
