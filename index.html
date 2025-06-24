@@ -28,10 +28,9 @@
                 <div id="dashboard-view" class="view active">
                     <div class="dashboard-header">
                         <h2>Customers</h2>
-                        <div class="loading" id="dashboard-loading">
+                        <div class="loading" id="dashboard-loading" style="display: none;">
                             Loading customers...
                         </div>
-                        <div id="debug-status" style="background: #f0f0f0; padding: 10px; margin: 10px 0; border-radius: 4px; font-family: monospace; font-size: 12px; min-height: 20px;">Checking for customer data...</div>
                         <div
                             class="error-message"
                             id="dashboard-error"
@@ -46,16 +45,14 @@
                     <div
                         class="empty-state"
                         id="empty-state"
-                        style="display: block"
+                        style="display: none"
                     >
-                        <h3>No customers yet</h3>
-                        <p>Start building your customer database</p>
-                        <button id="add-first-customer" class="btn btn-primary">
-                            Add Your First Customer
-                        </button>
-                        <button id="import-microsoft-data" class="btn btn-secondary" style="margin-left: 10px;">
-                            Import Microsoft Lists Data
-                        </button>
+                        <p>
+                            No customers found.
+                            <a href="#" id="add-first-customer"
+                                >Add your first customer</a
+                            >
+                        </p>
                     </div>
                 </div>
 

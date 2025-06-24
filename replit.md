@@ -82,6 +82,9 @@ Preferred communication style: Simple, everyday language.
 ## Changelog
 
 Changelog:
+- June 24, 2025: Added automatic customer ID generation with sequential numbering (customer_001, customer_002, etc.)
+- June 24, 2025: Implemented auto-import of Microsoft Lists data on first load - no manual import needed
+- June 24, 2025: Fixed CRM data loading and auto-import functionality - customers now display properly on dashboard
 - June 23, 2025: Updated form fields to use dropdowns for data consistency (Status, Affiliate Partner, Next Step)
 - June 23, 2025: One-time import of Microsoft Lists customer data - 12 customers imported directly
 - June 20, 2025: Enhanced CRM with modern dashboard layout showing company name, status, affiliate partner, next step, and latest notes

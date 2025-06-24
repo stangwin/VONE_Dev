@@ -75,10 +75,8 @@ class CRMApp {
                 this.showAddCustomerForm();
             });
         
-        const importMicrosoftBtn = document.getElementById("import-microsoft-data");
-        if (importMicrosoftBtn) {
-            importMicrosoftBtn.addEventListener("click", () => this.importMicrosoftData());
-        }
+        // Initialize data import automatically if no customers exist
+        this.checkAndAutoImport();
 
         // Form events
         document
@@ -173,16 +171,11 @@ class CRMApp {
     async loadCustomers() {
         try {
             document.getElementById("dashboard-loading").style.display = "block";
-            const debugStatus = document.getElementById("debug-status");
             this.customers = [];
 
             // Get all localStorage keys that start with "customer_"
             const allKeys = Object.keys(localStorage);
             const customerKeys = allKeys.filter(key => key.startsWith('customer_'));
-
-            if (debugStatus) {
-                debugStatus.innerHTML = `Found ${customerKeys.length} customer keys in localStorage`;
-            }
 
             for (const key of customerKeys) {
                 try {
@@ -190,26 +183,15 @@ class CRMApp {
                     if (customerData) {
                         const customer = JSON.parse(customerData);
                         this.customers.push(customer);
-                        if (debugStatus) {
-                            debugStatus.innerHTML += `<br>Loaded: ${customer.companyName}`;
-                        }
                     }
                 } catch (error) {
-                    if (debugStatus) {
-                        debugStatus.innerHTML += `<br>Error loading ${key}: ${error.message}`;
-                    }
+                    console.error(`Failed to load customer ${key}:`, error);
                 }
             }
 
-            if (debugStatus) {
-                debugStatus.innerHTML += `<br>Total loaded: ${this.customers.length} customers`;
-            }
             this.renderCustomerList();
         } catch (error) {
-            const debugStatus = document.getElementById("debug-status");
-            if (debugStatus) {
-                debugStatus.innerHTML = `Error: ${error.message}`;
-            }
+            console.error("Failed to load customers:", error);
             this.showError(
                 "dashboard-error",
                 "Failed to load customers from database.",
@@ -222,24 +204,13 @@ class CRMApp {
     renderCustomerList() {
         const listContainer = document.getElementById("customer-list");
         const emptyState = document.getElementById("empty-state");
-        const debugStatus = document.getElementById("debug-status");
-
-        if (debugStatus) {
-            debugStatus.innerHTML += `<br>Rendering ${this.customers.length} customers`;
-        }
 
         if (this.customers.length === 0) {
-            if (debugStatus) {
-                debugStatus.innerHTML += `<br>No customers found - showing empty state`;
-            }
             listContainer.innerHTML = "";
             emptyState.style.display = "block";
             return;
         }
 
-        if (debugStatus) {
-            debugStatus.innerHTML += `<br>Hiding empty state, generating customer cards`;
-        }
         emptyState.style.display = "none";
 
         try {
@@ -303,16 +274,9 @@ class CRMApp {
             }).join('');
             
             listContainer.innerHTML = customerHTML;
-            const debugStatus = document.getElementById("debug-status");
-            if (debugStatus) {
-                debugStatus.innerHTML += `<br>✓ Customer cards rendered successfully`;
-            }
         } catch (error) {
-            const debugStatus = document.getElementById("debug-status");
-            if (debugStatus) {
-                debugStatus.innerHTML += `<br>❌ Error rendering: ${error.message}`;
-            }
-            listContainer.innerHTML = '<p>Error loading customers. Check debug status above.</p>';
+            console.error('Error rendering customer list:', error);
+            listContainer.innerHTML = '<p>Error loading customers. Please refresh the page.</p>';
         }
     }
 
@@ -1410,12 +1374,16 @@ class CRMApp {
         this.showView('dashboard');
     }
 
+    // Auto-import Microsoft Lists data if no customers exist
+    async checkAndAutoImport() {
+        const existingKeys = Object.keys(localStorage).filter(key => key.startsWith('customer_'));
+        if (existingKeys.length === 0) {
+            await this.importMicrosoftData();
+        }
+    }
+
     // Microsoft Lists Data Import
     async importMicrosoftData() {
-        if (!confirm('This will import 12 customers from your Microsoft Lists. Continue?')) {
-            return;
-        }
-
         const customers = {
             'customer_001': {"id":"customer_001","companyName":"My Pharmacist On Call","status":"Onboarding","affiliatePartner":"VOXO","nextStep":"Schedule Install","physicalAddress":"3426 Whittier Blvd, Los Angeles, CA, 90023","billingAddress":"3426 Whittier Blvd, Los Angeles, CA, 90023","primaryContact":{"name":"Jacqueline","email":"ashers.assistant@gmail.com","phone":"310-882-6661"},"authorizedSigner":{"name":"Asher Eghbali","email":"asher.eghbali@gmail.com","phone":""},"billingContact":{"name":"Asher Eghbali","email":"ahsher.eghbali@gmail.com","phone":"310-497-3109"},"notes":[{"content":"Mr. Manuel is the Voice contact at 323-408-3860.","timestamp":"2025-06-23T21:00:00.000Z"}],"createdAt":"2025-06-23T21:00:00.000Z","updatedAt":"2025-06-23T21:00:00.000Z"},
             'customer_002': {"id":"customer_002","companyName":"Berea Drug","status":"Onboarding","affiliatePartner":"VOXO","nextStep":"Perform Install","physicalAddress":"402 Richmond Road North, Berea, KY, 40403","billingAddress":"402 Richmond Road North, Berea, KY, 40403","primaryContact":{"name":"Robert Little","email":"bereadrug@yahoo.com","phone":"859-986-4521"},"authorizedSigner":{"name":"Robert Little","email":"bereadrug@yahoo.com","phone":""},"billingContact":{"name":"Robert Little","email":"bereadrug@yahoo.com","phone":"859-986-4521"},"notes":[{"content":"Installation Date: June 11, 2025","timestamp":"2025-06-23T21:00:00.000Z"},{"content":"Per call with Sally on 6/5/2025 -- Hardware is on site.","timestamp":"2025-06-23T21:00:00.000Z"}],"createdAt":"2025-06-23T21:00:00.000Z","updatedAt":"2025-06-23T21:00:00.000Z"},
@@ -1438,11 +1406,12 @@ class CRMApp {
                 imported++;
             }
             
-            alert(`Successfully imported ${imported} customers!`);
+            // Update next customer ID after import
+            this.nextCustomerId = this.getNextCustomerId();
+            
             await this.loadCustomers();
         } catch (error) {
             console.error('Import failed:', error);
-            alert('Import failed. Please try again.');
         }
     }
 
