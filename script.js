@@ -6,11 +6,26 @@ class DatabaseAPI {
 
     async getCustomers() {
         try {
+            console.log('DatabaseAPI: Making fetch request to', `${this.baseURL}/customers`);
+            console.log('Current window location:', window.location.href);
+            
             const response = await fetch(`${this.baseURL}/customers`);
-            if (!response.ok) throw new Error(`HTTP ${response.status}`);
-            return await response.json();
+            
+            console.log('DatabaseAPI: Response status:', response.status);
+            console.log('DatabaseAPI: Response ok:', response.ok);
+            console.log('DatabaseAPI: Response headers:', Object.fromEntries(response.headers.entries()));
+            
+            if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            
+            const data = await response.json();
+            console.log('DatabaseAPI: Successfully parsed JSON data');
+            
+            return data;
         } catch (error) {
-            console.error('Error fetching customers:', error);
+            console.error('DatabaseAPI Error Details:');
+            console.error('- Error type:', error.constructor.name);
+            console.error('- Error message:', error.message);
+            console.error('- Error stack:', error.stack);
             throw error;
         }
     }
@@ -161,12 +176,18 @@ class CRMApp {
         if (this.customers.length === 0) {
             console.log('No customers found, showing empty state');
             listContainer.innerHTML = "";
-            if (emptyState) emptyState.style.display = "block";
+            if (emptyState) {
+                emptyState.style.display = "block";
+                console.log('Empty state element shown');
+            }
             return;
         }
 
         console.log('Hiding empty state, rendering customers...');
-        if (emptyState) emptyState.style.display = "none";
+        if (emptyState) {
+            emptyState.style.display = "none";
+            console.log('Empty state element hidden');
+        }
 
         try {
             console.log('Generating HTML for customers...');
@@ -214,11 +235,27 @@ class CRMApp {
 
             console.log('Setting innerHTML with generated HTML...');
             console.log('HTML length:', customerHTML.length);
+            console.log('Sample HTML preview:', customerHTML.substring(0, 200) + '...');
             
             listContainer.innerHTML = customerHTML;
             
+            // Verify DOM update
+            const updatedContent = listContainer.innerHTML;
             console.log('SUCCESS: Rendered customers to DOM');
-            console.log('Final container content length:', listContainer.innerHTML.length);
+            console.log('Final container content length:', updatedContent.length);
+            console.log('Container children count:', listContainer.children.length);
+            console.log('First child element:', listContainer.children[0]?.tagName);
+            
+            // Force visual update for iframe environments
+            if (window !== window.top) {
+                console.log('Iframe detected: Forcing visual update');
+                listContainer.style.display = 'none';
+                setTimeout(() => {
+                    listContainer.style.display = '';
+                    console.log('Iframe: Visual update forced');
+                }, 10);
+            }
+            
             console.log('=== RENDER DEBUG END ===');
             
         } catch (error) {
@@ -363,15 +400,51 @@ class CRMApp {
     }
 }
 
+// Environment detection
+function detectEnvironment() {
+    const env = {
+        isIframe: window !== window.top,
+        isReplit: window.location.hostname.includes('replit') || window.location.hostname.includes('repl.co'),
+        userAgent: navigator.userAgent,
+        url: window.location.href,
+        referrer: document.referrer
+    };
+    
+    console.log('=== ENVIRONMENT DETECTION ===');
+    console.log('Environment details:', env);
+    console.log('Is iframe:', env.isIframe);
+    console.log('Is Replit:', env.isReplit);
+    
+    return env;
+}
+
 // Initialize the app when the page loads
 let app;
 document.addEventListener("DOMContentLoaded", () => {
     console.log('=== DOM LOADED ===');
+    
+    // Detect environment issues
+    const env = detectEnvironment();
+    
     console.log('Available elements in DOM:');
     console.log('- customer-list:', !!document.getElementById('customer-list'));
     console.log('- empty-state:', !!document.getElementById('empty-state'));
     console.log('- dashboard-loading:', !!document.getElementById('dashboard-loading'));
     console.log('- dashboard-error:', !!document.getElementById('dashboard-error'));
+    
+    // Add environment info to page for debugging
+    const debugInfo = document.createElement('div');
+    debugInfo.id = 'debug-info';
+    debugInfo.style.cssText = 'position: fixed; top: 0; right: 0; background: rgba(0,0,0,0.8); color: white; padding: 10px; font-size: 12px; z-index: 9999; max-width: 300px;';
+    debugInfo.innerHTML = `
+        <strong>Debug Info:</strong><br>
+        Iframe: ${env.isIframe}<br>
+        Replit: ${env.isReplit}<br>
+        URL: ${window.location.hostname}<br>
+        <button onclick="window.debugApp && window.debugApp.loadCustomers()" style="margin-top: 5px;">Reload Customers</button>
+        <button onclick="this.parentElement.style.display='none'" style="margin-top: 5px;">Hide</button>
+    `;
+    document.body.appendChild(debugInfo);
     
     console.log('Creating CRM app instance...');
     app = new CRMApp();
@@ -379,4 +452,18 @@ document.addEventListener("DOMContentLoaded", () => {
     // Make app globally accessible for debugging
     window.debugApp = app;
     console.log('App instance created and available as window.debugApp');
+    
+    // Additional debugging for iframe environments
+    if (env.isIframe) {
+        console.log('IFRAME DETECTED - Adding fallback measures');
+        
+        // Add a delay for iframe rendering
+        setTimeout(() => {
+            console.log('Iframe fallback: Re-checking DOM after delay');
+            if (app && app.customers && app.customers.length > 0) {
+                console.log('Iframe fallback: Re-rendering customers');
+                app.renderCustomerList();
+            }
+        }, 1000);
+    }
 });

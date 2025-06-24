@@ -85,6 +85,8 @@ Preferred communication style: Simple, everyday language.
 ## Changelog
 
 Changelog:
+- June 24, 2025: Identified Replit iframe rendering issue - CRM works perfectly in new tabs/mobile but not in embedded preview
+- June 24, 2025: Added comprehensive debug logging and environment detection for iframe/CORS issues  
 - June 24, 2025: Successfully migrated from localStorage to PostgreSQL database - 12 customers now stored persistently 
 - June 24, 2025: Implemented Node.js server with RESTful API endpoints for full CRUD operations
 - June 24, 2025: Fixed frontend-backend integration - dashboard now correctly displays all customers from database
