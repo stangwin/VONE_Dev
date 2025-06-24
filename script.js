@@ -224,11 +224,13 @@ class CRMApp {
         console.log('Customers found, hiding empty state');
         emptyState.style.display = "none";
 
-        listContainer.innerHTML = this.customers.map(customer => {
-            const primaryContactName = customer.primaryContact?.name || 'No primary contact';
-            const { noteText, noteTimestamp } = this.getLatestNoteInfo(customer.notes);
-            const affiliatePartner = customer.affiliatePartner || 'No affiliate';
-            const nextStep = customer.nextStep || 'No next step defined';
+        try {
+            const customerHTML = this.customers.map(customer => {
+                console.log('Processing customer:', customer.companyName);
+                const primaryContactName = customer.primaryContact?.name || 'No primary contact';
+                const { noteText, noteTimestamp } = this.getLatestNoteInfo(customer.notes || []);
+                const affiliatePartner = customer.affiliatePartner || 'No affiliate';
+                const nextStep = customer.nextStep || 'No next step defined';
             
             return `
                 <div class="customer-card">
@@ -281,7 +283,15 @@ class CRMApp {
                     </div>
                 </div>
             `;
-        }).join('');
+            }).join('');
+            
+            console.log('Generated HTML for customers:', customerHTML);
+            listContainer.innerHTML = customerHTML;
+            console.log('Customer list updated in DOM');
+        } catch (error) {
+            console.error('Error rendering customer list:', error);
+            listContainer.innerHTML = '<p>Error loading customers. Check console for details.</p>';
+        }
     }
 
     getLatestNoteInfo(notes) {
