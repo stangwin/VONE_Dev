@@ -211,12 +211,17 @@ class CRMApp {
         const listContainer = document.getElementById("customer-list");
         const emptyState = document.getElementById("empty-state");
 
+        console.log('Rendering customer list, count:', this.customers.length);
+        console.log('Customers:', this.customers);
+
         if (this.customers.length === 0) {
+            console.log('No customers, showing empty state');
             listContainer.innerHTML = "";
             emptyState.style.display = "block";
             return;
         }
 
+        console.log('Customers found, hiding empty state');
         emptyState.style.display = "none";
 
         listContainer.innerHTML = this.customers.map(customer => {
