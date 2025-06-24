@@ -75,9 +75,9 @@ class CRMApp {
                 this.showAddCustomerForm();
             });
         
-        const importBtn = document.getElementById("import-microsoft-data");
-        if (importBtn) {
-            importBtn.addEventListener("click", () => this.importMicrosoftData());
+        const importMicrosoftBtn = document.getElementById("import-microsoft-data");
+        if (importMicrosoftBtn) {
+            importMicrosoftBtn.addEventListener("click", () => this.importMicrosoftData());
         }
 
         // Form events

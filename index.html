@@ -114,41 +114,42 @@
 
                             <div class="form-group">
                                 <label for="affiliate-partner">Affiliate Partner</label>
-                                <input
-                                    type="text"
-                                    id="affiliate-partner"
-                                    name="affiliatePartner"
-                                    placeholder="Referring partner or source"
-                                />
+                                <select id="affiliate-partner" name="affiliatePartner">
+                                    <option value="">Select Affiliate Partner</option>
+                                    <option value="VOXO">VOXO</option>
+                                    <option value="Network Tigers">Network Tigers</option>
+                                    <option value="Rhino Networks">Rhino Networks</option>
+                                    <option value="Direct">Direct</option>
+                                    <option value="Other">Other</option>
+                                </select>
                             </div>
 
                             <div class="form-group">
                                 <label for="next-step">Next Step</label>
-                                <input
-                                    type="text"
-                                    id="next-step"
-                                    name="nextStep"
-                                    placeholder="What's the next action needed?"
-                                />
+                                <select id="next-step" name="nextStep">
+                                    <option value="">Select Next Step</option>
+                                    <option value="Follow with VOXO AE">Follow with VOXO AE</option>
+                                    <option value="Schedule Install">Schedule Install</option>
+                                    <option value="Perform Install">Perform Install</option>
+                                    <option value="Order Hardware and License">Order Hardware and License</option>
+                                    <option value="Send Quote">Send Quote</option>
+                                    <option value="Follow Up Call">Follow Up Call</option>
+                                    <option value="Send Agreement">Send Agreement</option>
+                                    <option value="Training Scheduled">Training Scheduled</option>
+                                    <option value="Go Live">Go Live</option>
+                                    <option value="No Action Needed">No Action Needed</option>
+                                </select>
                             </div>
 
                             <div class="form-group">
                                 <label for="status">Status</label>
                                 <select id="status" name="status">
                                     <option value="Lead">Lead</option>
-                                    <option value="Contacted">Contacted</option>
-                                    <option value="Qualified">Qualified</option>
-                                    <option value="Proposal Sent">
-                                        Proposal Sent
-                                    </option>
-                                    <option value="Onboarding">
-                                        Onboarding
-                                    </option>
+                                    <option value="Quoted">Quoted</option>
+                                    <option value="Signed">Signed</option>
+                                    <option value="Onboarding">Onboarding</option>
                                     <option value="Active">Active</option>
-                                    <option value="Paused">Paused</option>
-                                    <option value="At Risk">At Risk</option>
-                                    <option value="Closed">Closed</option>
-                                    <option value="Archived">Archived</option>
+                                    <option value="Inactive">Inactive</option>
                                 </select>
                             </div>
                         </div>
