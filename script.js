@@ -81,59 +81,98 @@ class CRMApp {
     }
 
     async init() {
+        console.log('=== CRM INIT DEBUG START ===');
+        
         try {
-            console.log('Initializing CRM...');
+            console.log('Step 1: CRM App starting initialization...');
+            
+            console.log('Step 2: Loading customers...');
             await this.loadCustomers();
+            
+            console.log('Step 3: Binding events...');
             this.bindEvents();
+            
+            console.log('Step 4: Showing dashboard view...');
             this.showView("dashboard");
-            console.log("CRM App initialized successfully");
+            
+            console.log("=== CRM INIT SUCCESSFUL ===");
         } catch (error) {
-            console.error("Failed to initialize app:", error);
+            console.error("CRITICAL: Failed to initialize app:", error);
+            console.error("Error stack:", error.stack);
             this.showError("dashboard-error", "Failed to load application data.");
         }
     }
 
     async loadCustomers() {
+        console.log('=== LOAD CUSTOMERS DEBUG START ===');
+        
         try {
-            console.log('Loading customers from database...');
-            
+            console.log('Step 1: Showing loading indicator...');
             const loadingElement = document.getElementById("dashboard-loading");
-            if (loadingElement) loadingElement.style.display = "block";
+            if (loadingElement) {
+                loadingElement.style.display = "block";
+                console.log('Loading element shown');
+            } else {
+                console.warn('Loading element not found');
+            }
             
+            console.log('Step 2: Calling API...');
             this.customers = await this.api.getCustomers();
-            console.log(`Loaded ${this.customers.length} customers from PostgreSQL`);
-            console.log('Sample customer:', this.customers[0]);
             
+            console.log('Step 3: API Response received');
+            console.log(`Loaded ${this.customers.length} customers from PostgreSQL`);
+            console.log('First customer sample:', this.customers[0]);
+            console.log('All customer company names:', this.customers.map(c => c.company_name));
+            
+            console.log('Step 4: Calling renderCustomerList...');
             this.renderCustomerList();
             
+            console.log('=== LOAD CUSTOMERS DEBUG END ===');
+            
         } catch (error) {
-            console.error("Failed to load customers:", error);
+            console.error("CRITICAL ERROR in loadCustomers:", error);
+            console.error("Error stack:", error.stack);
             this.showError("dashboard-error", `Failed to load customers: ${error.message}`);
         } finally {
             const loadingElement = document.getElementById("dashboard-loading");
-            if (loadingElement) loadingElement.style.display = "none";
+            if (loadingElement) {
+                loadingElement.style.display = "none";
+                console.log('Loading element hidden');
+            }
         }
     }
 
     renderCustomerList() {
+        console.log('=== RENDER DEBUG START ===');
+        console.log('Customers to render:', this.customers.length);
+        
         const listContainer = document.getElementById("customer-list");
         const emptyState = document.getElementById("empty-state");
+        
+        console.log('DOM elements found:');
+        console.log('- customer-list container:', !!listContainer);
+        console.log('- empty-state element:', !!emptyState);
 
         if (!listContainer) {
-            console.error('customer-list element not found');
+            console.error('CRITICAL: customer-list element not found in DOM');
             return;
         }
 
         if (this.customers.length === 0) {
+            console.log('No customers found, showing empty state');
             listContainer.innerHTML = "";
             if (emptyState) emptyState.style.display = "block";
             return;
         }
 
+        console.log('Hiding empty state, rendering customers...');
         if (emptyState) emptyState.style.display = "none";
 
         try {
-            const customerHTML = this.customers.map(customer => {
+            console.log('Generating HTML for customers...');
+            const customerHTML = this.customers.map((customer, index) => {
+                console.log(`Processing customer ${index + 1}: ${customer.company_name}`);
+                
                 const primaryContactName = customer.primary_contact?.name || 'No primary contact';
                 const { noteText, noteTimestamp } = this.getLatestNoteInfo(customer.notes || []);
 
@@ -173,12 +212,19 @@ class CRMApp {
                 `;
             }).join('');
 
+            console.log('Setting innerHTML with generated HTML...');
+            console.log('HTML length:', customerHTML.length);
+            
             listContainer.innerHTML = customerHTML;
-            console.log(`Rendered ${this.customers.length} customers to the dashboard`);
+            
+            console.log('SUCCESS: Rendered customers to DOM');
+            console.log('Final container content length:', listContainer.innerHTML.length);
+            console.log('=== RENDER DEBUG END ===');
             
         } catch (error) {
-            console.error('Error rendering customer list:', error);
-            listContainer.innerHTML = '<p>Error loading customers. Please refresh the page.</p>';
+            console.error('ERROR in renderCustomerList:', error);
+            console.error('Error details:', error.stack);
+            listContainer.innerHTML = '<div style="color: red; padding: 20px;">Error loading customers. Check console for details.</div>';
         }
     }
 
@@ -320,6 +366,17 @@ class CRMApp {
 // Initialize the app when the page loads
 let app;
 document.addEventListener("DOMContentLoaded", () => {
-    console.log('DOM loaded, initializing CRM app...');
+    console.log('=== DOM LOADED ===');
+    console.log('Available elements in DOM:');
+    console.log('- customer-list:', !!document.getElementById('customer-list'));
+    console.log('- empty-state:', !!document.getElementById('empty-state'));
+    console.log('- dashboard-loading:', !!document.getElementById('dashboard-loading'));
+    console.log('- dashboard-error:', !!document.getElementById('dashboard-error'));
+    
+    console.log('Creating CRM app instance...');
     app = new CRMApp();
+    
+    // Make app globally accessible for debugging
+    window.debugApp = app;
+    console.log('App instance created and available as window.debugApp');
 });
