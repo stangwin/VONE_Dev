@@ -353,16 +353,47 @@
                         </div>
 
                         <div class="form-section">
+                            <h3>AI-Powered Text Parser</h3>
+                            <div class="form-group">
+                                <label for="paste-note-email">
+                                    Paste Email or Text to Auto-Fill Form
+                                </label>
+                                <textarea
+                                    id="paste-note-email"
+                                    rows="5"
+                                    placeholder="Paste emails, notes, or any text containing customer information. AI will automatically extract and populate the form fields."
+                                ></textarea>
+                            </div>
+                            <div class="form-group">
+                                <button
+                                    type="button"
+                                    id="auto-fill-btn"
+                                    class="btn btn-secondary"
+                                    disabled
+                                >
+                                    Auto-Fill Form
+                                </button>
+                                <button
+                                    type="button"
+                                    id="clear-paste-btn"
+                                    class="btn btn-secondary"
+                                >
+                                    Clear
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="form-section">
                             <h3>Additional Information</h3>
                             <div class="form-group">
                                 <label for="paste-text"
-                                    >Paste Block of Text</label
+                                    >Notes</label
                                 >
                                 <textarea
                                     id="paste-text"
                                     name="pasteText"
-                                    rows="5"
-                                    placeholder="Paste emails, notes, or other text here for future processing"
+                                    rows="3"
+                                    placeholder="Additional notes or information"
                                 ></textarea>
                             </div>
                         </div>

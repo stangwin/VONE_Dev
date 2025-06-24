@@ -138,16 +138,20 @@ class CRMApp {
             .getElementById("primary-phone")
             .addEventListener("input", () => this.checkDuplicates());
 
-        // Auto-fill functionality
-        document
-            .getElementById("paste-note-email")
-            .addEventListener("input", (e) => this.handlePasteTextChange(e));
-        document
-            .getElementById("auto-fill-btn")
-            .addEventListener("click", () => this.autoFillForm());
-        document
-            .getElementById("clear-paste-btn")
-            .addEventListener("click", () => this.clearPasteText());
+        // Auto-fill functionality - check if elements exist
+        const pasteTextArea = document.getElementById("paste-note-email");
+        const autoFillBtn = document.getElementById("auto-fill-btn");
+        const clearPasteBtn = document.getElementById("clear-paste-btn");
+        
+        if (pasteTextArea) {
+            pasteTextArea.addEventListener("input", (e) => this.handlePasteTextChange(e));
+        }
+        if (autoFillBtn) {
+            autoFillBtn.addEventListener("click", () => this.autoFillForm());
+        }
+        if (clearPasteBtn) {
+            clearPasteBtn.addEventListener("click", () => this.clearPasteText());
+        }
 
         // Smart contact duplication
         document
@@ -797,20 +801,38 @@ class CRMApp {
     handlePasteTextChange(e) {
         const text = e.target.value.trim();
         const autoFillBtn = document.getElementById("auto-fill-btn");
-        autoFillBtn.disabled = text.length === 0;
+        if (autoFillBtn) {
+            autoFillBtn.disabled = text.length === 0;
+        }
     }
 
     clearPasteText() {
-        document.getElementById("paste-note-email").value = "";
-        document.getElementById("auto-fill-btn").disabled = true;
+        const pasteTextArea = document.getElementById("paste-note-email");
+        const autoFillBtn = document.getElementById("auto-fill-btn");
+        
+        if (pasteTextArea) pasteTextArea.value = "";
+        if (autoFillBtn) autoFillBtn.disabled = true;
     }
 
-    autoFillForm() {
+    async autoFillForm() {
         const text = document.getElementById("paste-note-email").value;
         if (!text.trim()) return;
 
-        const extractedData = this.parseTextForCustomerData(text);
-        this.populateFormFromExtractedData(extractedData);
+        // Show loading indicator
+        const autoFillBtn = document.getElementById("auto-fill-btn");
+        const originalText = autoFillBtn.textContent;
+        autoFillBtn.textContent = "Parsing...";
+        autoFillBtn.disabled = true;
+
+        try {
+            // Use AI parsing if available, otherwise fallback to regex
+            const extractedData = await this.parseTextWithAI(text);
+            this.populateFormFromExtractedData(extractedData);
+        } finally {
+            // Restore button
+            autoFillBtn.textContent = originalText;
+            autoFillBtn.disabled = false;
+        }
     }
 
     /*

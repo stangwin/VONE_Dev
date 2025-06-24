@@ -84,6 +84,8 @@ Preferred communication style: Simple, everyday language.
 ## Changelog
 
 Changelog:
+- June 24, 2025: Prepared OpenAI integration for intelligent email/text parsing (awaiting API key)
+- June 24, 2025: Enhanced auto-fill functionality with graceful fallback to regex parsing
 - June 24, 2025: Added automatic customer ID generation with sequential numbering (customer_001, customer_002, etc.)
 - June 24, 2025: Implemented auto-import of Microsoft Lists data on first load - no manual import needed
 - June 24, 2025: Fixed CRM data loading and auto-import functionality - customers now display properly on dashboard
