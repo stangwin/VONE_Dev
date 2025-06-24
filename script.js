@@ -201,12 +201,18 @@ class CRMApp {
 
     async loadCustomers() {
         try {
-            document.getElementById("dashboard-loading").style.display = "block";
+            console.log('📊 Loading customers from localStorage...');
+            
+            const loadingElement = document.getElementById("dashboard-loading");
+            if (loadingElement) loadingElement.style.display = "block";
+            
             this.customers = [];
 
             // Get all localStorage keys that start with "customer_"
             const allKeys = Object.keys(localStorage);
             const customerKeys = allKeys.filter(key => key.startsWith('customer_'));
+            
+            console.log(`🔍 Found ${customerKeys.length} customer keys in localStorage`);
 
             for (const key of customerKeys) {
                 try {
@@ -214,13 +220,16 @@ class CRMApp {
                     if (customerData) {
                         const customer = JSON.parse(customerData);
                         this.customers.push(customer);
+                        console.log(`📝 Loaded: ${customer.companyName}`);
                     }
                 } catch (error) {
                     console.error(`Failed to load customer ${key}:`, error);
                 }
             }
 
+            console.log(`✅ Total customers loaded: ${this.customers.length}`);
             this.renderCustomerList();
+            
         } catch (error) {
             console.error("Failed to load customers:", error);
             this.showError(
@@ -228,7 +237,8 @@ class CRMApp {
                 "Failed to load customers from database.",
             );
         } finally {
-            document.getElementById("dashboard-loading").style.display = "none";
+            const loadingElement = document.getElementById("dashboard-loading");
+            if (loadingElement) loadingElement.style.display = "none";
         }
     }
 
@@ -1426,16 +1436,26 @@ class CRMApp {
     // Auto-import Microsoft Lists data if no customers exist
     async checkAndAutoImport() {
         const existingKeys = Object.keys(localStorage).filter(key => key.startsWith('customer_'));
+        console.log(`🔍 Checking for existing customers: ${existingKeys.length} found`);
+        
         if (existingKeys.length === 0) {
+            console.log('🚀 No customers found, starting auto-import...');
             await this.importMicrosoftData();
+        } else {
+            console.log('✅ Customers already exist, skipping import');
         }
     }
 
     // Microsoft Lists Data Import
     async importMicrosoftData() {
-        const customers = {
-            'customer_001': {"id":"customer_001","companyName":"My Pharmacist On Call","status":"Onboarding","affiliatePartner":"VOXO","nextStep":"Schedule Install","physicalAddress":"3426 Whittier Blvd, Los Angeles, CA, 90023","billingAddress":"3426 Whittier Blvd, Los Angeles, CA, 90023","primaryContact":{"name":"Jacqueline","email":"ashers.assistant@gmail.com","phone":"310-882-6661"},"authorizedSigner":{"name":"Asher Eghbali","email":"asher.eghbali@gmail.com","phone":""},"billingContact":{"name":"Asher Eghbali","email":"ahsher.eghbali@gmail.com","phone":"310-497-3109"},"notes":[{"content":"Mr. Manuel is the Voice contact at 323-408-3860.","timestamp":"2025-06-23T21:00:00.000Z"}],"createdAt":"2025-06-23T21:00:00.000Z","updatedAt":"2025-06-23T21:00:00.000Z"},
-            'customer_002': {"id":"customer_002","companyName":"Berea Drug","status":"Onboarding","affiliatePartner":"VOXO","nextStep":"Perform Install","physicalAddress":"402 Richmond Road North, Berea, KY, 40403","billingAddress":"402 Richmond Road North, Berea, KY, 40403","primaryContact":{"name":"Robert Little","email":"bereadrug@yahoo.com","phone":"859-986-4521"},"authorizedSigner":{"name":"Robert Little","email":"bereadrug@yahoo.com","phone":""},"billingContact":{"name":"Robert Little","email":"bereadrug@yahoo.com","phone":"859-986-4521"},"notes":[{"content":"Installation Date: June 11, 2025","timestamp":"2025-06-23T21:00:00.000Z"},{"content":"Per call with Sally on 6/5/2025 -- Hardware is on site.","timestamp":"2025-06-23T21:00:00.000Z"}],"createdAt":"2025-06-23T21:00:00.000Z","updatedAt":"2025-06-23T21:00:00.000Z"},
+        console.log('🚀 Starting Microsoft data import...');
+        
+        // Clear any existing import flags for testing
+        localStorage.removeItem('vantix_data_imported');
+        
+        const customers = [
+            {"id":"customer_001","companyName":"My Pharmacist On Call","status":"Onboarding","affiliatePartner":"VOXO","nextStep":"Schedule Install","physicalAddress":"3426 Whittier Blvd, Los Angeles, CA, 90023","billingAddress":"3426 Whittier Blvd, Los Angeles, CA, 90023","primaryContact":{"name":"Jacqueline","email":"ashers.assistant@gmail.com","phone":"310-882-6661"},"authorizedSigner":{"name":"Asher Eghbali","email":"asher.eghbali@gmail.com","phone":""},"billingContact":{"name":"Asher Eghbali","email":"ahsher.eghbali@gmail.com","phone":"310-497-3109"},"notes":[{"content":"Mr. Manuel is the Voice contact at 323-408-3860.","timestamp":"2025-06-23T21:00:00.000Z"}],"createdAt":"2025-06-23T21:00:00.000Z","updatedAt":"2025-06-23T21:00:00.000Z"},
+            {"id":"customer_002","companyName":"Berea Drug","status":"Onboarding","affiliatePartner":"VOXO","nextStep":"Perform Install","physicalAddress":"402 Richmond Road North, Berea, KY, 40403","billingAddress":"402 Richmond Road North, Berea, KY, 40403","primaryContact":{"name":"Robert Little","email":"bereadrug@yahoo.com","phone":"859-986-4521"},"authorizedSigner":{"name":"Robert Little","email":"bereadrug@yahoo.com","phone":""},"billingContact":{"name":"Robert Little","email":"bereadrug@yahoo.com","phone":"859-986-4521"},"notes":[{"content":"Installation Date: June 11, 2025","timestamp":"2025-06-23T21:00:00.000Z"},{"content":"Per call with Sally on 6/5/2025 -- Hardware is on site.","timestamp":"2025-06-23T21:00:00.000Z"}],"createdAt":"2025-06-23T21:00:00.000Z","updatedAt":"2025-06-23T21:00:00.000Z"},
             'customer_003': {"id":"customer_003","companyName":"Southeast Pharmacy","status":"Onboarding","affiliatePartner":"VOXO","nextStep":"Schedule Install","physicalAddress":"400 Parker Avenue North, STE 500A, Brooklet, GA, 30415","billingAddress":"400 Parker Avenue North, STE 500A, Brooklet, GA, 30415","primaryContact":{"name":"Shelby Hook","email":"hookrx@gmail.com","phone":"912-842-2040"},"authorizedSigner":{"name":"Shelby Hook","email":"hookrx@gmail.com","phone":""},"billingContact":{"name":"Shelby Hook","email":"hookrx@gmail.com","phone":"912-842-2040"},"notes":[{"content":"Z3 is ordered from Network Tigers and shipped directly to the site.","timestamp":"2025-06-23T21:00:00.000Z"}],"createdAt":"2025-06-23T21:00:00.000Z","updatedAt":"2025-06-23T21:00:00.000Z"},
             'customer_004': {"id":"customer_004","companyName":"Rancho Pueblo Pharmacy","status":"Quoted","affiliatePartner":"VOXO","nextStep":"Follow with VOXO AE","physicalAddress":"","billingAddress":"","primaryContact":{"name":"Yash Patel","email":"yashpatel031998@gmail.com","phone":"951-972-8822"},"authorizedSigner":{"name":"Yash Patel","email":"yashpatel031998@gmail.com","phone":""},"billingContact":{"name":"","email":"","phone":""},"notes":[{"content":"Spoke with Yash. He had an issue with price. Rusty needs to go back and explain to him the whole story instead of just the voice portion","timestamp":"2025-06-23T21:00:00.000Z"}],"createdAt":"2025-06-23T21:00:00.000Z","updatedAt":"2025-06-23T21:00:00.000Z"},
             'customer_005': {"id":"customer_005","companyName":"CR Care Pharmacy","status":"Lead","affiliatePartner":"VOXO","nextStep":"Follow with VOXO AE","physicalAddress":"3100 E Avenue NW, Suite 102, Cedar Rapids, IA, 52405","billingAddress":"3100 E Avenue NW, Suite 102, Cedar Rapids, IA, 52405","primaryContact":{"name":"Jackie Fitzgerald","email":"crcarerx@gmail.com","phone":"319-200-1188"},"authorizedSigner":{"name":"Jackie Fitzgerald","email":"crcarerx@gmail.com","phone":""},"billingContact":{"name":"","email":"","phone":""},"notes":[{"content":"Neal is reaching out to Jackie -- From Connect 2025. Saw her there. She is purposely waiting a few months to move forward with Voxo until she gets some folks back in the office.","timestamp":"2025-06-23T21:00:00.000Z"}],"createdAt":"2025-06-23T21:00:00.000Z","updatedAt":"2025-06-23T21:00:00.000Z"},
@@ -1445,22 +1465,30 @@ class CRMApp {
             'customer_009': {"id":"customer_009","companyName":"Vital Care Infusion Services","status":"Lead","affiliatePartner":"","nextStep":"","physicalAddress":"","billingAddress":"","primaryContact":{"name":"Jonathan Sims","email":"","phone":"601-596-2800"},"authorizedSigner":{"name":"Jonathan Sims","email":"","phone":""},"billingContact":{"name":"","email":"","phone":""},"notes":[{"content":"Per Levi at Voxo I called Blake Tubbs to discuss needs for both of these businesses. He has a vital care pharmacy and the compounder here in Hattiesburg. Vital care is a franchise and he also has another one in Baton Rouge.","timestamp":"2025-06-23T21:00:00.000Z"}],"createdAt":"2025-06-23T21:00:00.000Z","updatedAt":"2025-06-23T21:00:00.000Z"},
             'customer_010': {"id":"customer_010","companyName":"The Compounder","status":"Lead","affiliatePartner":"","nextStep":"","physicalAddress":"","billingAddress":"","primaryContact":{"name":"Jonathan Sims","email":"","phone":"601-596-2800"},"authorizedSigner":{"name":"Jonathan Sims","email":"","phone":""},"billingContact":{"name":"","email":"","phone":""},"notes":[],"createdAt":"2025-06-23T21:00:00.000Z","updatedAt":"2025-06-23T21:00:00.000Z"},
             'customer_011': {"id":"customer_011","companyName":"Delta Pharmacy","status":"Lead","affiliatePartner":"VOXO","nextStep":"","physicalAddress":"","billingAddress":"","primaryContact":{"name":"Willis High","email":"WHigh@delta-rx.com","phone":"843-813-7874"},"authorizedSigner":{"name":"","email":"","phone":""},"billingContact":{"name":"","email":"","phone":""},"notes":[{"content":"This is eight locations. They can handle doing the installations themselves although they did ask about Turkey. Each location is going to be a firewall and they need Wi-Fi turned up.","timestamp":"2025-06-23T21:00:00.000Z"}],"createdAt":"2025-06-23T21:00:00.000Z","updatedAt":"2025-06-23T21:00:00.000Z"},
-            'customer_012': {"id":"customer_012","companyName":"Mac Pharmacy","status":"Lead","affiliatePartner":"VOXO","nextStep":"","physicalAddress":"","billingAddress":"","primaryContact":{"name":"Sherif Mankaryous","email":"","phone":""},"authorizedSigner":{"name":"","email":"","phone":""},"billingContact":{"name":"","email":"","phone":""},"notes":[],"createdAt":"2025-06-23T21:00:00.000Z","updatedAt":"2025-06-23T21:00:00.000Z"}
-        };
+            {"id":"customer_012","companyName":"Mac Pharmacy","status":"Lead","affiliatePartner":"VOXO","nextStep":"","physicalAddress":"","billingAddress":"","primaryContact":{"name":"Sherif Mankaryous","email":"","phone":""},"authorizedSigner":{"name":"","email":"","phone":""},"billingContact":{"name":"","email":"","phone":""},"notes":[],"createdAt":"2025-06-23T21:00:00.000Z","updatedAt":"2025-06-23T21:00:00.000Z"}
+        ];
 
         try {
+            console.log(`📦 Importing ${customers.length} customers...`);
+            
             let imported = 0;
-            for (const [id, customer] of Object.entries(customers)) {
-                await this.db.set(id, customer);
+            for (const customer of customers) {
+                // Save directly to localStorage
+                localStorage.setItem(customer.id, JSON.stringify(customer));
+                console.log(`✅ Saved ${customer.companyName} (${customer.id})`);
                 imported++;
             }
+            
+            console.log(`🎉 Successfully imported ${imported} customers`);
             
             // Update next customer ID after import
             this.nextCustomerId = this.getNextCustomerId();
             
-            await this.loadCustomers();
+            // Mark as imported
+            localStorage.setItem('vantix_data_imported', 'true');
+            
         } catch (error) {
-            console.error('Import failed:', error);
+            console.error('❌ Import failed:', error);
         }
     }
 
