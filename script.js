@@ -173,13 +173,16 @@ class CRMApp {
     async loadCustomers() {
         try {
             document.getElementById("dashboard-loading").style.display = "block";
+            const debugStatus = document.getElementById("debug-status");
             this.customers = [];
 
             // Get all localStorage keys that start with "customer_"
             const allKeys = Object.keys(localStorage);
             const customerKeys = allKeys.filter(key => key.startsWith('customer_'));
 
-            console.log('Found customer keys:', customerKeys);
+            if (debugStatus) {
+                debugStatus.innerHTML = `Found ${customerKeys.length} customer keys in localStorage`;
+            }
 
             for (const key of customerKeys) {
                 try {
@@ -187,17 +190,26 @@ class CRMApp {
                     if (customerData) {
                         const customer = JSON.parse(customerData);
                         this.customers.push(customer);
-                        console.log('Loaded customer:', customer.companyName);
+                        if (debugStatus) {
+                            debugStatus.innerHTML += `<br>Loaded: ${customer.companyName}`;
+                        }
                     }
                 } catch (error) {
-                    console.error(`Failed to load customer ${key}:`, error);
+                    if (debugStatus) {
+                        debugStatus.innerHTML += `<br>Error loading ${key}: ${error.message}`;
+                    }
                 }
             }
 
-            console.log('Total customers loaded:', this.customers.length);
+            if (debugStatus) {
+                debugStatus.innerHTML += `<br>Total loaded: ${this.customers.length} customers`;
+            }
             this.renderCustomerList();
         } catch (error) {
-            console.error("Failed to load customers:", error);
+            const debugStatus = document.getElementById("debug-status");
+            if (debugStatus) {
+                debugStatus.innerHTML = `Error: ${error.message}`;
+            }
             this.showError(
                 "dashboard-error",
                 "Failed to load customers from database.",
@@ -210,23 +222,28 @@ class CRMApp {
     renderCustomerList() {
         const listContainer = document.getElementById("customer-list");
         const emptyState = document.getElementById("empty-state");
+        const debugStatus = document.getElementById("debug-status");
 
-        console.log('Rendering customer list, count:', this.customers.length);
-        console.log('Customers:', this.customers);
+        if (debugStatus) {
+            debugStatus.innerHTML += `<br>Rendering ${this.customers.length} customers`;
+        }
 
         if (this.customers.length === 0) {
-            console.log('No customers, showing empty state');
+            if (debugStatus) {
+                debugStatus.innerHTML += `<br>No customers found - showing empty state`;
+            }
             listContainer.innerHTML = "";
             emptyState.style.display = "block";
             return;
         }
 
-        console.log('Customers found, hiding empty state');
+        if (debugStatus) {
+            debugStatus.innerHTML += `<br>Hiding empty state, generating customer cards`;
+        }
         emptyState.style.display = "none";
 
         try {
             const customerHTML = this.customers.map(customer => {
-                console.log('Processing customer:', customer.companyName);
                 const primaryContactName = customer.primaryContact?.name || 'No primary contact';
                 const { noteText, noteTimestamp } = this.getLatestNoteInfo(customer.notes || []);
                 const affiliatePartner = customer.affiliatePartner || 'No affiliate';
@@ -285,12 +302,17 @@ class CRMApp {
             `;
             }).join('');
             
-            console.log('Generated HTML for customers:', customerHTML);
             listContainer.innerHTML = customerHTML;
-            console.log('Customer list updated in DOM');
+            const debugStatus = document.getElementById("debug-status");
+            if (debugStatus) {
+                debugStatus.innerHTML += `<br>✓ Customer cards rendered successfully`;
+            }
         } catch (error) {
-            console.error('Error rendering customer list:', error);
-            listContainer.innerHTML = '<p>Error loading customers. Check console for details.</p>';
+            const debugStatus = document.getElementById("debug-status");
+            if (debugStatus) {
+                debugStatus.innerHTML += `<br>❌ Error rendering: ${error.message}`;
+            }
+            listContainer.innerHTML = '<p>Error loading customers. Check debug status above.</p>';
         }
     }
 
