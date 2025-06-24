@@ -105,6 +105,7 @@ class CRMApp {
             await this.loadCustomers();
             this.bindEvents();
             this.showView("dashboard");
+            console.log("CRM App initialized successfully");
         } catch (error) {
             console.error("Failed to initialize app:", error);
             this.showError(
@@ -319,16 +320,7 @@ class CRMApp {
 
             listContainer.innerHTML = customerHTML;
             console.log(`Rendered ${this.customers.length} customers to the dashboard`);
-                                <span>Agreement</span>
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <div class="customer-card-body">
-                        <div class="card-row">
-                            <div class="field-group">
-                                <label>Primary Contact</label>
-    
+            
         } catch (error) {
             console.error('Error rendering customer list:', error);
             listContainer.innerHTML = '<p>Error loading customers. Please refresh the page.</p>';
@@ -1527,17 +1519,9 @@ class CRMApp {
 // Initialize the app when the page loads
 let app;
 document.addEventListener("DOMContentLoaded", () => {
+    console.log('DOM loaded, initializing CRM app...');
     app = new CRMApp();
 });
-document
-    .getElementById("sameAsPhysical")
-    .addEventListener("change", function () {
-        const isChecked = this.checked;
-
-        const fields = ["street1", "street2", "city", "state", "zip"];
-        fields.forEach((field) => {
-            const phys = document.getElementById(`phys_${field}`);
-            const bill = document.getElementById(`bill_${field}`);
 
             if (isChecked) {
                 bill.value = phys.value;
