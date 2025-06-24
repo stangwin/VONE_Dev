@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>API Test</title>
+</head>
+<body>
+    <h1>Testing API Connection</h1>
+    <button id="testBtn">Test API</button>
+    <div id="result"></div>
+
+    <script>
+        document.getElementById('testBtn').addEventListener('click', async () => {
+            const resultDiv = document.getElementById('result');
+            try {
+                console.log('Testing API...');
+                const response = await fetch('/api/customers');
+                console.log('Response status:', response.status);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                
+                const customers = await response.json();
+                console.log('Customers:', customers);
+                
+                resultDiv.innerHTML = `
+                    <h2>Success!</h2>
+                    <p>Found ${customers.length} customers</p>
+                    <pre>${JSON.stringify(customers[0], null, 2)}</pre>
+                `;
+            } catch (error) {
+                console.error('Error:', error);
+                resultDiv.innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+            }
+        });
+    </script>
+</body>
+</html>

@@ -237,16 +237,26 @@ class CRMApp {
             const loadingElement = document.getElementById("dashboard-loading");
             if (loadingElement) loadingElement.style.display = "block";
             
-            this.customers = await this.api.getCustomers();
+            // Test API connection first
+            const response = await fetch('/api/customers');
+            console.log('API response status:', response.status);
+            
+            if (!response.ok) {
+                throw new Error(`API returned ${response.status}`);
+            }
+            
+            this.customers = await response.json();
             console.log(`Loaded ${this.customers.length} customers from PostgreSQL`);
+            console.log('Sample customer:', this.customers[0]);
             
             this.renderCustomerList();
             
         } catch (error) {
             console.error("Failed to load customers:", error);
+            console.error("Error details:", error.message);
             this.showError(
                 "dashboard-error",
-                "Failed to load customers from database.",
+                `Failed to load customers: ${error.message}`,
             );
         } finally {
             const loadingElement = document.getElementById("dashboard-loading");
