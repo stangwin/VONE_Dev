@@ -844,6 +844,27 @@ class CRMApp {
         this.updateDetailActionButtons();
     }
 
+    updateNextStepOptions() {
+        const statusSelect = document.getElementById('edit-status');
+        const nextStepSelect = document.getElementById('edit-next-step');
+        
+        if (!statusSelect || !nextStepSelect) return;
+        
+        const selectedStatus = statusSelect.value;
+        const nextStepOptions = this.getNextStepOptions(selectedStatus);
+        
+        // Clear current options
+        nextStepSelect.innerHTML = '<option value="">Select Next Step</option>';
+        
+        // Add new options
+        nextStepOptions.forEach(option => {
+            const optionElement = document.createElement('option');
+            optionElement.value = option;
+            optionElement.textContent = option;
+            nextStepSelect.appendChild(optionElement);
+        });
+    }
+
     createInQBO(customerId) {
         const customer = this.customers.find(c => c.customer_id === customerId);
         if (!customer) return;

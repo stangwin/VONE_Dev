@@ -786,11 +786,15 @@ nav {
     }
     
     .customer-detail-content {
-        padding: 0 1rem;
+        padding: 0 16px;
     }
     
     .detail-grid {
         grid-template-columns: 1fr;
+    }
+    
+    .detail-field {
+        margin-bottom: 12px;
     }
     
     .detail-header {

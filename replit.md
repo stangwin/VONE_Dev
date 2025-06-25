@@ -1,8 +1,8 @@
-# Simple CRM Application
+# Vantix CRM Application
 
 ## Overview
 
-This is a simple Customer Relationship Management (CRM) application built as a frontend-focused web application with a hybrid architecture. The application serves as a customer management system allowing users to track and manage customer information and interactions.
+This is the Vantix Customer Relationship Management (CRM) application built as a frontend-focused web application with a hybrid architecture. The application serves as a customer management system allowing users to track and manage customer information and interactions.
 
 The current implementation uses a client-side localStorage database for data persistence, but includes infrastructure for migrating to a Postgres database with Drizzle ORM when needed.
 
@@ -86,6 +86,7 @@ UI preferences: Minimal, compact interfaces - avoid large/obtrusive action butto
 ## Changelog
 
 Changelog:
+- June 25, 2025: Rebranded application as "Vantix CRM" with updated title and professional typography
 - June 24, 2025: Enhanced customer detail page with full edit mode, modern styling, and interactive notes section
 - June 24, 2025: Added comprehensive editing for all customer fields with save/cancel functionality
 - June 24, 2025: Implemented chronological notes display with add note capability and database persistence
