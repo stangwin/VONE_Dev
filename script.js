@@ -95,6 +95,7 @@ class CRMApp {
         this.currentCustomerId = null;
         this.sortConfig = { key: null, direction: 'asc' };
         this.filters = { status: '', affiliate: '', search: '' };
+        this.isEditingCustomer = false;
         this.init();
     }
 
@@ -412,6 +413,130 @@ class CRMApp {
         }
     }
 
+    toggleEditMode(isEditing) {
+        this.isEditingCustomer = isEditing;
+        this.renderCustomerDetail();
+    }
+
+    updateDetailActionButtons() {
+        const editBtn = document.getElementById("edit-customer-btn");
+        const saveBtn = document.getElementById("save-customer-btn");
+        const cancelBtn = document.getElementById("cancel-edit-btn");
+
+        if (editBtn) editBtn.style.display = this.isEditingCustomer ? "none" : "inline-flex";
+        if (saveBtn) saveBtn.style.display = this.isEditingCustomer ? "inline-flex" : "none";
+        if (cancelBtn) cancelBtn.style.display = this.isEditingCustomer ? "inline-flex" : "none";
+    }
+
+    async saveCustomerChanges() {
+        if (!this.currentCustomer) return;
+
+        try {
+            // Collect form data
+            const updatedData = {
+                company_name: document.getElementById("edit-company-name")?.value || '',
+                status: document.getElementById("edit-status")?.value || '',
+                affiliate_partner: document.getElementById("edit-affiliate-partner")?.value || '',
+                next_step: document.getElementById("edit-next-step")?.value || '',
+                physical_address: document.getElementById("edit-physical-address")?.value || '',
+                billing_address: document.getElementById("edit-billing-address")?.value || '',
+                primary_contact: {
+                    name: document.getElementById("edit-primary-name")?.value || '',
+                    email: document.getElementById("edit-primary-email")?.value || '',
+                    phone: document.getElementById("edit-primary-phone")?.value || ''
+                },
+                authorized_signer: {
+                    name: document.getElementById("edit-signer-name")?.value || '',
+                    email: document.getElementById("edit-signer-email")?.value || '',
+                    phone: ''
+                },
+                billing_contact: {
+                    name: document.getElementById("edit-billing-name")?.value || '',
+                    email: document.getElementById("edit-billing-email")?.value || '',
+                    phone: document.getElementById("edit-billing-phone")?.value || ''
+                }
+            };
+
+            // Save to API
+            await this.api.updateCustomer(this.currentCustomerId, updatedData);
+            
+            // Update local data
+            Object.assign(this.currentCustomer, updatedData);
+            
+            // Update customers list
+            const customerIndex = this.customers.findIndex(c => c.customer_id === this.currentCustomerId);
+            if (customerIndex >= 0) {
+                Object.assign(this.customers[customerIndex], updatedData);
+            }
+
+            console.log('Customer updated successfully');
+            this.toggleEditMode(false);
+
+        } catch (error) {
+            console.error('Failed to save customer changes:', error);
+            alert('Failed to save changes. Please try again.');
+        }
+    }
+
+    async addNote() {
+        const noteContent = document.getElementById("new-note-content")?.value.trim();
+        if (!noteContent || !this.currentCustomer) return;
+
+        try {
+            const newNote = {
+                content: noteContent,
+                timestamp: new Date().toISOString()
+            };
+
+            // Add note to customer's notes array
+            const currentNotes = this.currentCustomer.notes || [];
+            const updatedNotes = [...currentNotes, newNote];
+
+            // Update customer with new notes
+            await this.api.updateCustomer(this.currentCustomerId, { notes: updatedNotes });
+
+            // Update local data
+            this.currentCustomer.notes = updatedNotes;
+            
+            // Update customers list
+            const customerIndex = this.customers.findIndex(c => c.customer_id === this.currentCustomerId);
+            if (customerIndex >= 0) {
+                this.customers[customerIndex].notes = updatedNotes;
+            }
+
+            console.log('Note added successfully');
+            
+            // Clear input and re-render
+            document.getElementById("new-note-content").value = '';
+            this.renderCustomerDetail();
+
+        } catch (error) {
+            console.error('Failed to add note:', error);
+            alert('Failed to add note. Please try again.');
+        }
+    }
+
+    clearNewNote() {
+        const noteInput = document.getElementById("new-note-content");
+        if (noteInput) {
+            noteInput.value = '';
+            noteInput.focus();
+        }
+    }
+
+    formatNoteTimestamp(timestamp) {
+        const date = new Date(timestamp);
+        return date.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        }) + ' at ' + date.toLocaleTimeString('en-US', {
+            hour: 'numeric',
+            minute: '2-digit',
+            hour12: true
+        });
+    }
+
     getStatusClass(status) {
         return "status-" + status.toLowerCase().replace(/\s+/g, "-");
     }
@@ -456,6 +581,22 @@ class CRMApp {
         const backBtn = document.getElementById("back-to-dashboard");
         if (backBtn) {
             backBtn.addEventListener("click", () => this.showView("dashboard"));
+        }
+
+        // Detail page edit controls
+        const editBtn = document.getElementById("edit-customer-btn");
+        if (editBtn) {
+            editBtn.addEventListener("click", () => this.toggleEditMode(true));
+        }
+
+        const saveBtn = document.getElementById("save-customer-btn");
+        if (saveBtn) {
+            saveBtn.addEventListener("click", () => this.saveCustomerChanges());
+        }
+
+        const cancelBtn = document.getElementById("cancel-edit-btn");
+        if (cancelBtn) {
+            cancelBtn.addEventListener("click", () => this.toggleEditMode(false));
         }
 
         // Filter controls
@@ -515,18 +656,20 @@ class CRMApp {
         const authorizedSigner = customer.authorized_signer || {};
         const billingContact = customer.billing_contact || {};
         const notes = customer.notes || [];
+        const isEditing = this.isEditingCustomer || false;
 
         contentContainer.innerHTML = `
-            <!-- Header Section -->
+            <!-- General Information -->
             <div class="detail-section">
+                <h3>General Information</h3>
                 <div class="detail-grid">
                     <div class="detail-field">
                         <label>Company Name</label>
-                        <input type="text" value="${this.escapeHtml(customer.company_name)}" disabled>
+                        <input type="text" id="edit-company-name" value="${this.escapeHtml(customer.company_name)}" ${isEditing ? '' : 'disabled'}>
                     </div>
                     <div class="detail-field">
                         <label>Status</label>
-                        <select disabled>
+                        <select id="edit-status" ${isEditing ? '' : 'disabled'}>
                             <option value="Lead" ${customer.status === 'Lead' ? 'selected' : ''}>Lead</option>
                             <option value="Quoted" ${customer.status === 'Quoted' ? 'selected' : ''}>Quoted</option>
                             <option value="Signed" ${customer.status === 'Signed' ? 'selected' : ''}>Signed</option>
@@ -535,11 +678,14 @@ class CRMApp {
                     </div>
                     <div class="detail-field">
                         <label>Affiliate Partner</label>
-                        <input type="text" value="${this.escapeHtml(customer.affiliate_partner || '')}" disabled>
+                        <select id="edit-affiliate-partner" ${isEditing ? '' : 'disabled'}>
+                            <option value="">None</option>
+                            <option value="VOXO" ${customer.affiliate_partner === 'VOXO' ? 'selected' : ''}>VOXO</option>
+                        </select>
                     </div>
                     <div class="detail-field">
                         <label>Next Step</label>
-                        <input type="text" value="${this.escapeHtml(customer.next_step || '')}" disabled>
+                        <input type="text" id="edit-next-step" value="${this.escapeHtml(customer.next_step || '')}" ${isEditing ? '' : 'disabled'}>
                     </div>
                 </div>
             </div>
@@ -550,27 +696,35 @@ class CRMApp {
                 <div class="detail-grid">
                     <div class="detail-field">
                         <label>Primary Contact Name</label>
-                        <input type="text" value="${this.escapeHtml(primaryContact.name || '')}" disabled>
+                        <input type="text" id="edit-primary-name" value="${this.escapeHtml(primaryContact.name || '')}" ${isEditing ? '' : 'disabled'}>
                     </div>
                     <div class="detail-field">
                         <label>Primary Email</label>
-                        <input type="email" value="${this.escapeHtml(primaryContact.email || '')}" disabled>
+                        <input type="email" id="edit-primary-email" value="${this.escapeHtml(primaryContact.email || '')}" ${isEditing ? '' : 'disabled'}>
                     </div>
                     <div class="detail-field">
                         <label>Primary Phone</label>
-                        <input type="tel" value="${this.escapeHtml(primaryContact.phone || '')}" disabled>
+                        <input type="tel" id="edit-primary-phone" value="${this.escapeHtml(primaryContact.phone || '')}" ${isEditing ? '' : 'disabled'}>
                     </div>
                     <div class="detail-field">
-                        <label>Authorized Signer</label>
-                        <input type="text" value="${this.escapeHtml(authorizedSigner.name || '')}" disabled>
+                        <label>Authorized Signer Name</label>
+                        <input type="text" id="edit-signer-name" value="${this.escapeHtml(authorizedSigner.name || '')}" ${isEditing ? '' : 'disabled'}>
                     </div>
                     <div class="detail-field">
                         <label>Signer Email</label>
-                        <input type="email" value="${this.escapeHtml(authorizedSigner.email || '')}" disabled>
+                        <input type="email" id="edit-signer-email" value="${this.escapeHtml(authorizedSigner.email || '')}" ${isEditing ? '' : 'disabled'}>
                     </div>
                     <div class="detail-field">
-                        <label>Billing Contact</label>
-                        <input type="text" value="${this.escapeHtml(billingContact.name || '')}" disabled>
+                        <label>Billing Contact Name</label>
+                        <input type="text" id="edit-billing-name" value="${this.escapeHtml(billingContact.name || '')}" ${isEditing ? '' : 'disabled'}>
+                    </div>
+                    <div class="detail-field">
+                        <label>Billing Contact Email</label>
+                        <input type="email" id="edit-billing-email" value="${this.escapeHtml(billingContact.email || '')}" ${isEditing ? '' : 'disabled'}>
+                    </div>
+                    <div class="detail-field">
+                        <label>Billing Contact Phone</label>
+                        <input type="tel" id="edit-billing-phone" value="${this.escapeHtml(billingContact.phone || '')}" ${isEditing ? '' : 'disabled'}>
                     </div>
                 </div>
             </div>
@@ -581,11 +735,11 @@ class CRMApp {
                 <div class="detail-grid">
                     <div class="detail-field">
                         <label>Physical Address</label>
-                        <textarea rows="3" disabled>${this.escapeHtml(customer.physical_address || '')}</textarea>
+                        <textarea id="edit-physical-address" rows="3" ${isEditing ? '' : 'disabled'}>${this.escapeHtml(customer.physical_address || '')}</textarea>
                     </div>
                     <div class="detail-field">
                         <label>Billing Address</label>
-                        <textarea rows="3" disabled>${this.escapeHtml(customer.billing_address || '')}</textarea>
+                        <textarea id="edit-billing-address" rows="3" ${isEditing ? '' : 'disabled'}>${this.escapeHtml(customer.billing_address || '')}</textarea>
                     </div>
                 </div>
             </div>
@@ -594,24 +748,42 @@ class CRMApp {
             <div class="detail-section">
                 <h3>Notes</h3>
                 <div class="notes-section">
-                    ${notes.length > 0 ? notes.map(note => `
-                        <div class="note-item">
-                            <div class="note-meta">${new Date(note.timestamp).toLocaleString()}</div>
-                            <div class="note-content">${this.escapeHtml(note.content)}</div>
+                    <div class="notes-list">
+                        ${notes.length > 0 ? notes
+                            .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+                            .map(note => `
+                                <div class="note-item">
+                                    <div class="note-meta">${this.formatNoteTimestamp(note.timestamp)}</div>
+                                    <div class="note-content">${this.escapeHtml(note.content)}</div>
+                                </div>
+                            `).join('') : '<p style="color: var(--text-secondary); text-align: center; padding: 2rem;">No notes available.</p>'}
+                    </div>
+                    
+                    <div class="add-note-section">
+                        <h4>Add New Note</h4>
+                        <div class="note-input-group">
+                            <textarea id="new-note-content" class="note-input" placeholder="Enter your note here..."></textarea>
+                            <div class="note-actions">
+                                <button class="btn btn-outline btn-sm" onclick="app.clearNewNote()">Clear</button>
+                                <button class="btn btn-primary btn-sm" onclick="app.addNote()">Add Note</button>
+                            </div>
                         </div>
-                    `).join('') : '<p style="color: var(--text-secondary);">No notes available.</p>'}
+                    </div>
                 </div>
             </div>
 
             <!-- Actions -->
             <div class="detail-section">
                 <h3>Actions</h3>
-                <div style="display: flex; gap: 1rem;">
+                <div class="actions-section">
                     <button class="btn btn-primary" onclick="app.createInQBO('${customer.customer_id}')">Create in QuickBooks</button>
                     <button class="btn btn-secondary" onclick="app.sendAgreement('${customer.customer_id}')">Send Agreement</button>
                 </div>
             </div>
         `;
+
+        // Update detail action buttons based on edit mode
+        this.updateDetailActionButtons();
     }
 
     createInQBO(customerId) {
