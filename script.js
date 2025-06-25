@@ -213,7 +213,7 @@ class CRMApp {
                             </a>
                         </td>
                         <td class="status-cell">
-                            <select class="status-dropdown" data-customer-id="${customer.customer_id}" onchange="app.updateCustomerStatus(this)">
+                            <select class="status-dropdown" data-customer-id="${customer.customer_id}" data-original-value="${customer.status}" onchange="app.updateCustomerStatus(this)">
                                 <option value="Lead" ${customer.status === 'Lead' ? 'selected' : ''}>Lead</option>
                                 <option value="Quoted" ${customer.status === 'Quoted' ? 'selected' : ''}>Quoted</option>
                                 <option value="Signed" ${customer.status === 'Signed' ? 'selected' : ''}>Signed</option>
@@ -232,8 +232,8 @@ class CRMApp {
                         </td>
                         <td class="last-note">${this.escapeHtml(lastNote)}</td>
                         <td class="table-actions">
-                            <button class="btn btn-sm btn-secondary" onclick="app.createInQBO('${customer.customer_id}')">QBO</button>
-                            <button class="btn btn-sm btn-secondary" onclick="app.sendAgreement('${customer.customer_id}')">Agreement</button>
+                            <button class="action-icon" onclick="app.createInQBO('${customer.customer_id}')" title="Create in QuickBooks">💼</button>
+                            <button class="action-icon" onclick="app.sendAgreement('${customer.customer_id}')" title="Send Agreement">📄</button>
                         </td>
                     </tr>
                 `;
@@ -276,7 +276,7 @@ class CRMApp {
                 <td>${this.escapeHtml(customer.next_step)}</td>
                 <td>-</td>
                 <td class="table-actions">
-                    <button class="btn btn-sm btn-primary" onclick="app.showCustomerDetail('${customer.customer_id}')">Edit</button>
+                    <button class="action-icon" onclick="app.showCustomerDetail('${customer.customer_id}')" title="Edit Customer">✏️</button>
                 </td>
             </tr>
         `).join('');
@@ -367,23 +367,41 @@ class CRMApp {
     async updateCustomerStatus(selectElement) {
         const customerId = selectElement.dataset.customerId;
         const newStatus = selectElement.value;
+        const originalValue = selectElement.dataset.originalValue || selectElement.value;
+
+        // Store original value for rollback
+        if (!selectElement.dataset.originalValue) {
+            selectElement.dataset.originalValue = originalValue;
+        }
 
         try {
+            console.log(`Updating customer ${customerId} status from ${originalValue} to ${newStatus}`);
+            
             await this.api.updateCustomer(customerId, { status: newStatus });
-            console.log(`Updated customer ${customerId} status to ${newStatus}`);
+            console.log(`Successfully updated customer ${customerId} status to ${newStatus}`);
             
             // Update local data
             const customer = this.customers.find(c => c.customer_id === customerId);
             if (customer) {
                 customer.status = newStatus;
             }
+
+            // Update filtered customers as well
+            const filteredCustomer = this.filteredCustomers.find(c => c.customer_id === customerId);
+            if (filteredCustomer) {
+                filteredCustomer.status = newStatus;
+            }
+
+            // Update the original value
+            selectElement.dataset.originalValue = newStatus;
+            
         } catch (error) {
             console.error('Failed to update customer status:', error);
-            // Revert the dropdown
-            const customer = this.customers.find(c => c.customer_id === customerId);
-            if (customer) {
-                selectElement.value = customer.status;
-            }
+            console.error('Error details:', error);
+            
+            // Revert the dropdown to original value
+            selectElement.value = selectElement.dataset.originalValue;
+            alert('Failed to update status. Please try again.');
         }
     }
 
@@ -432,30 +450,38 @@ class CRMApp {
         if (!this.currentCustomer) return;
 
         try {
-            // Collect form data
+            // Collect form data with validation
+            const companyName = document.getElementById("edit-company-name")?.value?.trim();
+            if (!companyName) {
+                alert('Company name is required.');
+                return;
+            }
+
             const updatedData = {
-                company_name: document.getElementById("edit-company-name")?.value || '',
-                status: document.getElementById("edit-status")?.value || '',
-                affiliate_partner: document.getElementById("edit-affiliate-partner")?.value || '',
-                next_step: document.getElementById("edit-next-step")?.value || '',
-                physical_address: document.getElementById("edit-physical-address")?.value || '',
-                billing_address: document.getElementById("edit-billing-address")?.value || '',
+                company_name: companyName,
+                status: document.getElementById("edit-status")?.value || this.currentCustomer.status,
+                affiliate_partner: document.getElementById("edit-affiliate-partner")?.value || null,
+                next_step: document.getElementById("edit-next-step")?.value?.trim() || null,
+                physical_address: document.getElementById("edit-physical-address")?.value?.trim() || null,
+                billing_address: document.getElementById("edit-billing-address")?.value?.trim() || null,
                 primary_contact: {
-                    name: document.getElementById("edit-primary-name")?.value || '',
-                    email: document.getElementById("edit-primary-email")?.value || '',
-                    phone: document.getElementById("edit-primary-phone")?.value || ''
+                    name: document.getElementById("edit-primary-name")?.value?.trim() || null,
+                    email: document.getElementById("edit-primary-email")?.value?.trim() || null,
+                    phone: document.getElementById("edit-primary-phone")?.value?.trim() || null
                 },
                 authorized_signer: {
-                    name: document.getElementById("edit-signer-name")?.value || '',
-                    email: document.getElementById("edit-signer-email")?.value || '',
-                    phone: ''
+                    name: document.getElementById("edit-signer-name")?.value?.trim() || null,
+                    email: document.getElementById("edit-signer-email")?.value?.trim() || null,
+                    phone: null
                 },
                 billing_contact: {
-                    name: document.getElementById("edit-billing-name")?.value || '',
-                    email: document.getElementById("edit-billing-email")?.value || '',
-                    phone: document.getElementById("edit-billing-phone")?.value || ''
+                    name: document.getElementById("edit-billing-name")?.value?.trim() || null,
+                    email: document.getElementById("edit-billing-email")?.value?.trim() || null,
+                    phone: document.getElementById("edit-billing-phone")?.value?.trim() || null
                 }
             };
+
+            console.log('Saving customer data:', updatedData);
 
             // Save to API
             await this.api.updateCustomer(this.currentCustomerId, updatedData);
@@ -467,6 +493,12 @@ class CRMApp {
             const customerIndex = this.customers.findIndex(c => c.customer_id === this.currentCustomerId);
             if (customerIndex >= 0) {
                 Object.assign(this.customers[customerIndex], updatedData);
+            }
+
+            // Update filtered customers as well
+            const filteredIndex = this.filteredCustomers.findIndex(c => c.customer_id === this.currentCustomerId);
+            if (filteredIndex >= 0) {
+                Object.assign(this.filteredCustomers[filteredIndex], updatedData);
             }
 
             console.log('Customer updated successfully');

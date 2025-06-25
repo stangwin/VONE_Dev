@@ -81,6 +81,7 @@ The current implementation uses a client-side localStorage database for data per
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
+UI preferences: Minimal, compact interfaces - avoid large/obtrusive action buttons.
 
 ## Changelog
 
