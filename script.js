@@ -691,16 +691,26 @@ class CRMApp {
 
     async showCustomerDetail(customerId) {
         try {
+            console.log("showCustomerDetail called with:", customerId);
             this.currentCustomer = await this.api.getCustomer(customerId);
             this.currentCustomerId = customerId;
+            console.log("Customer loaded:", this.currentCustomer);
 
             if (!this.currentCustomer) {
                 this.showError("customer-detail-error", "Customer not found.");
                 return;
             }
 
+            // Initialize edit mode
+            this.editMode = false;
+            
             this.showView("customer-detail");
-            this.renderCustomerDetail();
+            console.log("View switched to customer-detail");
+            
+            // Small delay to ensure DOM is ready
+            setTimeout(() => {
+                this.renderCustomerDetail();
+            }, 100);
 
         } catch (error) {
             console.error("Failed to show customer detail:", error);
@@ -946,6 +956,22 @@ class CRMApp {
         this.updateDetailActionButtons();
     }
 
+    getNextStepOptions(status) {
+        const statusNextStepMapping = {
+            "Lead": ["Initial Contact", "Send Info", "Schedule Demo"],
+            "Quoted": ["Follow Up", "Send Contract", "Schedule Meeting"],
+            "Signed": ["Order Hardware and License", "Schedule Install"],
+            "Onboarding": ["Schedule Install", "Perform Install", "Verify Network"],
+            "Active": ["Support", "Renewal", "Follow-up"]
+        };
+        return statusNextStepMapping[status] || [];
+    }
+
+    toggleEditMode(editing) {
+        this.editMode = editing;
+        this.renderCustomerDetail();
+    }
+
     updateNextStepOptions() {
         const statusSelect = document.getElementById('edit-status');
         const nextStepSelect = document.getElementById('edit-next-step');
@@ -1006,6 +1032,50 @@ class CRMApp {
         } catch (error) {
             console.error('Failed to add note:', error);
             alert('Failed to add note. Please try again.');
+        }
+    }
+
+    async saveCustomerChanges() {
+        if (!this.currentCustomer) return;
+
+        try {
+            // Collect form data
+            const updates = {
+                company_name: document.getElementById('edit-company-name')?.value || '',
+                status: document.getElementById('edit-status')?.value || '',
+                affiliate_partner: document.getElementById('edit-affiliate-partner')?.value || '',
+                next_step: document.getElementById('edit-next-step')?.value || '',
+                physical_address: document.getElementById('edit-physical-address')?.value || '',
+                billing_address: document.getElementById('edit-billing-address')?.value || '',
+                primary_contact: {
+                    name: document.getElementById('edit-primary-name')?.value || '',
+                    email: document.getElementById('edit-primary-email')?.value || '',
+                    phone: document.getElementById('edit-primary-phone')?.value || ''
+                },
+                authorized_signer: {
+                    name: document.getElementById('edit-signer-name')?.value || '',
+                    email: document.getElementById('edit-signer-email')?.value || ''
+                },
+                billing_contact: {
+                    name: document.getElementById('edit-billing-name')?.value || '',
+                    email: document.getElementById('edit-billing-email')?.value || '',
+                    phone: document.getElementById('edit-billing-phone')?.value || ''
+                }
+            };
+
+            await this.api.updateCustomer(this.currentCustomer.customer_id, updates);
+            
+            // Update local data
+            Object.assign(this.currentCustomer, updates);
+            
+            // Exit edit mode and refresh display
+            this.editMode = false;
+            this.renderCustomerDetail();
+            
+            console.log('Customer updated successfully');
+        } catch (error) {
+            console.error('Failed to save customer:', error);
+            alert('Failed to save changes. Please try again.');
         }
     }
 
