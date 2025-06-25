@@ -709,17 +709,27 @@ class CRMApp {
     }
 
     renderCustomerDetail() {
+        console.log("renderCustomerDetail called");
         const contentContainer = document.getElementById("customer-detail-content");
-        if (!contentContainer || !this.currentCustomer) return;
+        console.log("contentContainer:", contentContainer);
+        console.log("currentCustomer:", this.currentCustomer);
+        
+        if (!contentContainer || !this.currentCustomer) {
+            console.log("Early return: missing container or customer");
+            return;
+        }
 
         const customer = this.currentCustomer;
         const primaryContact = customer.primary_contact || {};
         const authorizedSigner = customer.authorized_signer || {};
         const billingContact = customer.billing_contact || {};
         const notes = customer.notes || [];
-        const isEditing = this.editMode;
+        const isEditing = this.editMode || false;
 
+        console.log("About to get next step options for status:", customer.status);
         const nextStepOptions = this.getNextStepOptions(customer.status);
+        console.log("Next step options:", nextStepOptions);
+        
         const nextStepOptionsHtml = nextStepOptions.map(option => 
             `<option value="${option}" ${customer.next_step === option ? 'selected' : ''}>${option}</option>`
         ).join('');
@@ -931,6 +941,7 @@ class CRMApp {
             </div>
         `;
 
+        console.log("Customer detail HTML generated, setting innerHTML");
         // Update detail action buttons based on edit mode
         this.updateDetailActionButtons();
     }

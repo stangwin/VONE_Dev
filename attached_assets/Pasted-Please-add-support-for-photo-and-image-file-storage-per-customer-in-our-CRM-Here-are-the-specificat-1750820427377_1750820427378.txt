@@ -1,0 +1,35 @@
+Please add support for photo and image file storage per customer in our CRM. Here are the specifications:
+
+1. **Upload UI**
+   - Add a new section on the Customer Detail Page titled **“Photos”** just above the “Notes” section.
+   - Include an “Upload Photo” button that allows users to upload image files (PNG, JPG, JPEG, GIF).
+   - Use drag-and-drop or file picker input.
+   - Allow multiple files to be uploaded per customer.
+   - Only show this section when in Edit Mode for now.
+
+2. **Backend**
+   - Store uploaded images in the project’s local file system (e.g., `public/uploads/{customer_id}/filename.jpg`).
+   - Use `customer_id` to associate uploaded photos.
+   - Save metadata (file name, upload date, customer ID) to the existing `customers.json` file or create a new `photos.json` if preferred.
+
+3. **Display UI**
+   - Below the upload button, show thumbnails (max height 100px) of previously uploaded images.
+   - Clicking a thumbnail should open the full-size image in a modal/lightbox view.
+   - Style the photo section using a clean grid layout with spacing between thumbnails.
+
+4. **File Handling**
+   - Validate file types and sizes (max 5MB each).
+   - Use a UUID or timestamp-based filename to prevent collisions.
+   - If an image already exists with that name, rename the new file automatically.
+
+5. **Security and Stability**
+   - Sanitize file names before saving.
+   - Prevent upload of scripts or non-image files.
+   - Ensure the file paths used for rendering are safe and correct.
+
+6. **Styling**
+   - Match the rest of the UI: modern, minimal styling with subtle borders and consistent spacing.
+   - Header: “Photos” with styling same as other section titles (20px, #2e3a59).
+   - Thumbnails should have `border-radius: 6px` and subtle hover effect (light border or slight zoom).
+
+This feature will allow us to attach images to each customer — for example, photos of hardware installs, NVRs, or storefronts. Get this fully working and tested on the detail page first. We’ll later extend support to upload from the dashboard or mobile view.
