@@ -603,8 +603,11 @@ class CRMApp {
         // Hide all views
         document.querySelectorAll(".view").forEach((view) => view.classList.remove("active"));
 
-        // Show selected view
-        const targetView = document.getElementById(`${viewName}-view`);
+        // Show selected view - handle both naming conventions
+        let targetView = document.getElementById(`${viewName}-view`);
+        if (!targetView) {
+            targetView = document.getElementById(viewName);
+        }
         if (targetView) targetView.classList.add("active");
 
         // Update navigation
@@ -696,8 +699,8 @@ class CRMApp {
                 return;
             }
 
-            this.renderCustomerDetail();
             this.showView("customer-detail");
+            this.renderCustomerDetail();
 
         } catch (error) {
             console.error("Failed to show customer detail:", error);
