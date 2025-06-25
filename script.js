@@ -714,39 +714,115 @@ class CRMApp {
         const authorizedSigner = customer.authorized_signer || {};
         const billingContact = customer.billing_contact || {};
         const notes = customer.notes || [];
-        const isEditing = this.isEditingCustomer || false;
+        const isEditing = this.editMode;
+
+        const nextStepOptions = this.getNextStepOptions(customer.status);
+        const nextStepOptionsHtml = nextStepOptions.map(option => 
+            `<option value="${option}" ${customer.next_step === option ? 'selected' : ''}>${option}</option>`
+        ).join('');
 
         contentContainer.innerHTML = `
-            <!-- General Information -->
-            <div class="detail-section">
-                <h3>General Information</h3>
-                <div class="detail-grid">
-                    <div class="detail-field">
-                        <label>Company Name</label>
-                        <input type="text" id="edit-company-name" value="${this.escapeHtml(customer.company_name)}" ${isEditing ? '' : 'disabled'}>
+            <div class="customer-detail-view">
+                <div class="customer-detail-content">
+                    <!-- Header with breadcrumb and edit button -->
+                    <div class="detail-header">
+                        <button class="back-btn" onclick="app.showView('dashboard')">← Back to Dashboard</button>
+                        <div class="detail-actions">
+                            <button class="btn btn-primary" onclick="app.toggleEditMode(!app.editMode)" id="edit-btn">
+                                ${isEditing ? 'Cancel' : 'Edit'}
+                            </button>
+                            ${isEditing ? '<button class="btn btn-primary" onclick="app.saveCustomerChanges()">Save</button>' : ''}
+                        </div>
                     </div>
-                    <div class="detail-field">
-                        <label>Status</label>
-                        <select id="edit-status" ${isEditing ? '' : 'disabled'}>
-                            <option value="Lead" ${customer.status === 'Lead' ? 'selected' : ''}>Lead</option>
-                            <option value="Quoted" ${customer.status === 'Quoted' ? 'selected' : ''}>Quoted</option>
-                            <option value="Signed" ${customer.status === 'Signed' ? 'selected' : ''}>Signed</option>
-                            <option value="Onboarding" ${customer.status === 'Onboarding' ? 'selected' : ''}>Onboarding</option>
-                        </select>
+
+                    <!-- General Information -->
+                    <div class="detail-section">
+                        <h3>General Information</h3>
+                        <div class="detail-grid">
+                            <div class="detail-field">
+                                <label>Company Name</label>
+                                <input type="text" id="edit-company-name" value="${this.escapeHtml(customer.company_name)}" ${isEditing ? '' : 'disabled'}>
+                            </div>
+                            <div class="detail-field">
+                                <label>Status</label>
+                                <select id="edit-status" ${isEditing ? '' : 'disabled'} onchange="app.updateNextStepOptions()">
+                                    <option value="Lead" ${customer.status === 'Lead' ? 'selected' : ''}>Lead</option>
+                                    <option value="Quoted" ${customer.status === 'Quoted' ? 'selected' : ''}>Quoted</option>
+                                    <option value="Signed" ${customer.status === 'Signed' ? 'selected' : ''}>Signed</option>
+                                    <option value="Onboarding" ${customer.status === 'Onboarding' ? 'selected' : ''}>Onboarding</option>
+                                    <option value="Active" ${customer.status === 'Active' ? 'selected' : ''}>Active</option>
+                                </select>
+                            </div>
+                            <div class="detail-field">
+                                <label>Affiliate Partner</label>
+                                <select id="edit-affiliate-partner" ${isEditing ? '' : 'disabled'}>
+                                    <option value="">None</option>
+                                    <option value="VOXO" ${customer.affiliate_partner === 'VOXO' ? 'selected' : ''}>VOXO</option>
+                                </select>
+                            </div>
+                            <div class="detail-field">
+                                <label>Next Step</label>
+                                <select id="edit-next-step" ${isEditing ? '' : 'disabled'}>
+                                    <option value="">Select Next Step</option>
+                                    ${nextStepOptionsHtml}
+                                </select>
+                            </div>
+                        </div>
                     </div>
-                    <div class="detail-field">
-                        <label>Affiliate Partner</label>
-                        <select id="edit-affiliate-partner" ${isEditing ? '' : 'disabled'}>
-                            <option value="">None</option>
-                            <option value="VOXO" ${customer.affiliate_partner === 'VOXO' ? 'selected' : ''}>VOXO</option>
-                        </select>
+
+                    <!-- Contact Information -->
+                    <div class="detail-section">
+                        <h3>Contact Information</h3>
+                        <div class="detail-grid">
+                            <div class="detail-field">
+                                <label>Primary Contact Name</label>
+                                <input type="text" id="edit-primary-name" value="${this.escapeHtml(primaryContact.name || '')}" ${isEditing ? '' : 'disabled'}>
+                            </div>
+                            <div class="detail-field">
+                                <label>Primary Email</label>
+                                <input type="email" id="edit-primary-email" value="${this.escapeHtml(primaryContact.email || '')}" ${isEditing ? '' : 'disabled'}>
+                            </div>
+                            <div class="detail-field">
+                                <label>Primary Phone</label>
+                                <input type="tel" id="edit-primary-phone" value="${this.escapeHtml(primaryContact.phone || '')}" ${isEditing ? '' : 'disabled'}>
+                            </div>
+                            <div class="detail-field">
+                                <label>Authorized Signer Name</label>
+                                <input type="text" id="edit-signer-name" value="${this.escapeHtml(authorizedSigner.name || '')}" ${isEditing ? '' : 'disabled'}>
+                            </div>
+                            <div class="detail-field">
+                                <label>Signer Email</label>
+                                <input type="email" id="edit-signer-email" value="${this.escapeHtml(authorizedSigner.email || '')}" ${isEditing ? '' : 'disabled'}>
+                            </div>
+                            <div class="detail-field">
+                                <label>Billing Contact Name</label>
+                                <input type="text" id="edit-billing-name" value="${this.escapeHtml(billingContact.name || '')}" ${isEditing ? '' : 'disabled'}>
+                            </div>
+                            <div class="detail-field">
+                                <label>Billing Contact Email</label>
+                                <input type="email" id="edit-billing-email" value="${this.escapeHtml(billingContact.email || '')}" ${isEditing ? '' : 'disabled'}>
+                            </div>
+                            <div class="detail-field">
+                                <label>Billing Contact Phone</label>
+                                <input type="tel" id="edit-billing-phone" value="${this.escapeHtml(billingContact.phone || '')}" ${isEditing ? '' : 'disabled'}>
+                            </div>
+                        </div>
                     </div>
-                    <div class="detail-field">
-                        <label>Next Step</label>
-                        <input type="text" id="edit-next-step" value="${this.escapeHtml(customer.next_step || '')}" ${isEditing ? '' : 'disabled'}>
+
+                    <!-- Addresses -->
+                    <div class="detail-section">
+                        <h3>Addresses</h3>
+                        <div class="detail-grid">
+                            <div class="detail-field">
+                                <label>Physical Address</label>
+                                <textarea id="edit-physical-address" rows="3" ${isEditing ? '' : 'disabled'}>${this.escapeHtml(customer.physical_address || '')}</textarea>
+                            </div>
+                            <div class="detail-field">
+                                <label>Billing Address</label>
+                                <textarea id="edit-billing-address" rows="3" ${isEditing ? '' : 'disabled'}>${this.escapeHtml(customer.billing_address || '')}</textarea>
+                            </div>
+                        </div>
                     </div>
-                </div>
-            </div>
 
             <!-- Contact Information -->
             <div class="detail-section">
@@ -802,40 +878,52 @@ class CRMApp {
                 </div>
             </div>
 
-            <!-- Notes -->
-            <div class="detail-section">
-                <h3>Notes</h3>
-                <div class="notes-section">
-                    <div class="notes-list">
-                        ${notes.length > 0 ? notes
-                            .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
-                            .map(note => `
-                                <div class="note-item">
-                                    <div class="note-meta">${this.formatNoteTimestamp(note.timestamp)}</div>
-                                    <div class="note-content">${this.escapeHtml(note.content)}</div>
-                                </div>
-                            `).join('') : '<p style="color: var(--text-secondary); text-align: center; padding: 2rem;">No notes available.</p>'}
-                    </div>
-                    
-                    <div class="add-note-section">
-                        <h4>Add New Note</h4>
-                        <div class="note-input-group">
-                            <textarea id="new-note-content" class="note-input" placeholder="Enter your note here..."></textarea>
-                            <div class="note-actions">
-                                <button class="btn btn-outline btn-sm" onclick="app.clearNewNote()">Clear</button>
-                                <button class="btn btn-primary btn-sm" onclick="app.addNote()">Add Note</button>
+                    <!-- Notes -->
+                    <div class="detail-section">
+                        <h3>Notes</h3>
+                        <div class="notes-section">
+                            <div class="notes-list">
+                                ${notes.length > 0 ? notes
+                                    .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+                                    .map(note => `
+                                        <div class="note-item">
+                                            <div class="note-meta">${this.formatNoteTimestamp(note.timestamp)}</div>
+                                            <div class="note-content">${this.escapeHtml(note.content)}</div>
+                                        </div>
+                                    `).join('') : '<p style="color: #6c757d; text-align: center; padding: 24px;">No notes available.</p>'}
                             </div>
+                            
+                            ${isEditing ? `
+                                <div class="add-note-section">
+                                    <h4>Add New Note</h4>
+                                    <div class="note-input-group">
+                                        <textarea id="new-note-content" class="note-input" placeholder="Enter your note here..."></textarea>
+                                        <div class="note-actions">
+                                            <button class="btn btn-outline btn-sm" onclick="app.clearNewNote()">Clear</button>
+                                            <button class="btn btn-primary btn-sm" onclick="app.addNote()">Add Note</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            ` : ''}
                         </div>
                     </div>
-                </div>
-            </div>
 
-            <!-- Actions -->
-            <div class="detail-section">
-                <h3>Actions</h3>
-                <div class="actions-section">
-                    <button class="btn btn-primary" onclick="app.createInQBO('${customer.customer_id}')">Create in QuickBooks</button>
-                    <button class="btn btn-secondary" onclick="app.sendAgreement('${customer.customer_id}')">Send Agreement</button>
+                    <!-- Actions -->
+                    <div class="detail-section">
+                        <h3>Actions</h3>
+                        <div class="actions-section">
+                            <button class="btn btn-primary" onclick="app.createInQBO('${customer.customer_id}')">Create in QuickBooks</button>
+                            <button class="btn btn-primary" onclick="app.sendAgreement('${customer.customer_id}')">Send Agreement</button>
+                        </div>
+                    </div>
+
+                    <!-- Files & Media Placeholder -->
+                    <div class="detail-section">
+                        <h3>Files & Media</h3>
+                        <div class="placeholder-section">
+                            You'll be able to upload files and photos here in a future update.
+                        </div>
+                    </div>
                 </div>
             </div>
         `;
@@ -863,6 +951,48 @@ class CRMApp {
             optionElement.textContent = option;
             nextStepSelect.appendChild(optionElement);
         });
+    }
+
+    clearNewNote() {
+        const noteInput = document.getElementById('new-note-content');
+        if (noteInput) {
+            noteInput.value = '';
+        }
+    }
+
+    async addNote() {
+        const noteInput = document.getElementById('new-note-content');
+        if (!noteInput || !this.currentCustomer) return;
+
+        const noteContent = noteInput.value.trim();
+        if (!noteContent) {
+            alert('Please enter a note before adding.');
+            return;
+        }
+
+        try {
+            const newNote = {
+                content: noteContent,
+                timestamp: new Date().toISOString()
+            };
+
+            const updatedNotes = [...(this.currentCustomer.notes || []), newNote];
+            
+            await this.api.updateCustomer(this.currentCustomer.customer_id, {
+                notes: updatedNotes
+            });
+
+            // Update local data
+            this.currentCustomer.notes = updatedNotes;
+            
+            // Re-render the detail view
+            this.renderCustomerDetail();
+
+            console.log('Note added successfully');
+        } catch (error) {
+            console.error('Failed to add note:', error);
+            alert('Failed to add note. Please try again.');
+        }
     }
 
     createInQBO(customerId) {

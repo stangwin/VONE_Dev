@@ -1,0 +1,84 @@
+Please-update-the-Customer-Detail-Page-with-the-following-detailed-design-and-functionality-improvem-1750817957598_1750817957599.txt
+Please update the Customer Detail Page with the following detailed design and functionality improvements. Retain the current "Edit Mode" functionality for now. These changes should match a modern, professional UI similar to HubSpot or Apple and improve clarity and user experience.
+
+1. **Page Layout & Container**
+   - Center the content in a container with `max-width: 900px`.
+   - Apply generous side padding (at least `24px` on each side).
+   - Use a consistent system font stack: `system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif`.
+
+2. **Section Styling**
+   - Group content into visual cards with light background (`#ffffff`) and subtle box-shadow.
+   - Add internal padding of `24px` and `margin-bottom: 24px` between sections.
+   - Use `#f9fafb` background color for outer page body to create contrast between cards and background.
+   - Section titles like “General Information”, “Contact Information”, etc. should use:
+     - `font-size: 20px`
+     - `font-weight: 500`
+     - `color: #2e3a59`
+     - `margin-bottom: 12px`
+
+3. **Form Field Styling**
+   - Arrange all fields in a responsive 2-column layout with 16px gutter.
+   - On narrow screens (below 768px), stack fields vertically.
+   - Field labels:
+     - `font-size: 14px`
+     - `color: #5f6b7c`
+     - Positioned above the input.
+   - Input text:
+     - `font-size: 16px`
+     - `color: #33475b`
+   - Inputs and textareas:
+     - `border: 1px solid #cbd6e2`
+     - `border-radius: 6px`
+     - `padding: 8px 12px`
+     - `width: 100%`
+     - On focus: `border-color: #0058c5`
+
+4. **Status and Next Step Fields**
+   - Make `Status` and `Next Step` fields dropdowns with pre-defined values.
+   - When a user selects a Status, auto-filter the `Next Step` options based on a mapping such as:
+     ```javascript
+     {
+       "Lead": ["Initial Contact", "Send Info", "Schedule Demo"],
+       "Onboarding": ["Schedule Install", "Perform Install", "Verify Network"],
+       "Active": ["Support", "Renewal", "Follow-up"]
+     }
+     ```
+
+5. **Notes Section**
+   - Render each note inside a card with:
+     - Background: `#f4f6f8`
+     - `border-radius: 6px`
+     - `padding: 12px`
+     - `margin-bottom: 12px`
+     - Font-size: `14px`
+   - Display the timestamp at the top in bold.
+   - Display the note content below it.
+
+6. **Breadcrumb**
+   - Add a clean breadcrumb link `← Back to Dashboard` at the top left.
+   - Style it light gray (`#5f6b7c`) with hover underline.
+
+7. **Edit Button**
+   - Place the “Edit” button in the top-right of the page.
+   - Style:
+     - `background-color: #0058c5`
+     - `color: white`
+     - `font-weight: 500`
+     - `padding: 8px 16px`
+     - `border-radius: 6px`
+
+8. **Actions Section**
+   - Place “Create in QuickBooks” and “Send Agreement” buttons at the bottom inside a styled card like other sections.
+   - Space the buttons out with at least 12px between them.
+   - Keep button styles consistent with Edit button.
+
+9. **Future Placeholder**
+   - Add a placeholder section at the bottom titled “Files & Media” for future use.
+   - Use the same card style with a message like: “You’ll be able to upload files and photos here in a future update.”
+
+10. **General UX and Visual Consistency**
+    - Use consistent margin and padding across all elements.
+    - Avoid blocky or cramped visuals.
+    - Maintain a lightweight, modern, and approachable feel throughout the layout.
+
+Please apply these changes across both “view” and “edit” modes, keeping the view mode clean and static while maintaining form controls and input fields only in edit mode.

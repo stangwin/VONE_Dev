@@ -556,6 +556,269 @@ nav {
     text-decoration: underline;
 }
 
+/* Customer Detail Page Styles */
+.customer-detail-view {
+    background: #f9fafb;
+    min-height: 100vh;
+    padding: 24px 0;
+}
+
+.detail-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 0 24px 0;
+}
+
+.back-btn {
+    background: none;
+    border: none;
+    color: #5f6b7c;
+    font-size: 14px;
+    cursor: pointer;
+    padding: 0;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    font-family: system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+.back-btn:hover {
+    color: #33475b;
+    text-decoration: underline;
+}
+
+.detail-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.customer-detail-content {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 24px;
+}
+
+.detail-section {
+    background: #ffffff;
+    border-radius: 8px;
+    padding: 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.detail-section h3 {
+    margin: 0 0 12px 0;
+    color: #2e3a59;
+    font-weight: 500;
+    font-size: 20px;
+    font-family: system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+.detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.detail-field {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 16px;
+}
+
+.detail-field label {
+    font-weight: 500;
+    color: #5f6b7c;
+    font-size: 14px;
+    margin-bottom: 4px;
+    font-family: system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+.detail-field input,
+.detail-field select,
+.detail-field textarea {
+    padding: 8px 12px;
+    border: 1px solid #cbd6e2;
+    border-radius: 6px;
+    font-size: 16px;
+    color: #33475b;
+    font-family: system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    transition: border-color 0.2s ease;
+    background: white;
+    width: 100%;
+}
+
+.detail-field input:focus,
+.detail-field select:focus,
+.detail-field textarea:focus {
+    outline: none;
+    border-color: #0058c5;
+}
+
+.detail-field input:disabled,
+.detail-field select:disabled,
+.detail-field textarea:disabled {
+    background: #f8f9fa;
+    color: #6c757d;
+    border-color: #e9ecef;
+    cursor: not-allowed;
+}
+
+.detail-field textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+/* Notes Section */
+.notes-section {
+    margin-top: 0;
+}
+
+.notes-list {
+    margin-bottom: 24px;
+}
+
+.note-item {
+    background: #f4f6f8;
+    border-radius: 6px;
+    padding: 12px;
+    margin-bottom: 12px;
+}
+
+.note-meta {
+    font-size: 14px;
+    color: #2e3a59;
+    margin-bottom: 8px;
+    font-weight: 600;
+    font-family: system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+.note-content {
+    color: #33475b;
+    line-height: 1.5;
+    font-size: 14px;
+    font-family: system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+.add-note-section {
+    background: transparent;
+    padding: 0;
+    border: none;
+}
+
+.add-note-section h4 {
+    margin: 0 0 12px 0;
+    color: #2e3a59;
+    font-size: 18px;
+    font-weight: 500;
+    font-family: system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+.note-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.note-input {
+    padding: 8px 12px;
+    border: 1px solid #cbd6e2;
+    border-radius: 6px;
+    font-size: 16px;
+    min-height: 80px;
+    resize: vertical;
+    color: #33475b;
+    font-family: system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: white;
+}
+
+.note-input:focus {
+    outline: none;
+    border-color: #0058c5;
+}
+
+.note-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+}
+
+/* Button Styles */
+.btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-family: system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+.btn-primary {
+    background: #0058c5;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #004494;
+}
+
+.btn-secondary {
+    background: #6b7280;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: #4b5563;
+}
+
+.btn-outline {
+    background: white;
+    color: #5f6b7c;
+    border: 1px solid #cbd6e2;
+}
+
+.btn-outline:hover {
+    background: #f8f9fa;
+    border-color: #5f6b7c;
+    color: #33475b;
+}
+
+.btn-sm {
+    padding: 6px 12px;
+    font-size: 13px;
+}
+
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Action Buttons Section */
+.actions-section {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.actions-section .btn {
+    flex: 0 0 auto;
+}
+
+/* Placeholder Section */
+.placeholder-section {
+    text-align: center;
+    color: #6c757d;
+    font-style: italic;
+    padding: 24px;
+}
+
 /* HubSpot-Inspired Table Styles */
 .filters-section {
     background: white;
@@ -795,6 +1058,16 @@ nav {
     
     .detail-field {
         margin-bottom: 12px;
+    }
+    
+    .detail-section {
+        padding: 16px;
+        margin-bottom: 16px;
+    }
+    
+    .detail-section h3 {
+        font-size: 18px;
+        margin-bottom: 8px;
     }
     
     .detail-header {
