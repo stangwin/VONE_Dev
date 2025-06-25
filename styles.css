@@ -610,7 +610,7 @@ nav {
 .next-actions-table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 0.8rem;
+    font-size: 0.875rem;
     font-family: system-ui, "Segoe UI", "Helvetica Neue", sans-serif;
 }
 
@@ -618,32 +618,33 @@ nav {
 .customers-table td,
 .next-actions-table th,
 .next-actions-table td {
-    padding: 8px 12px;
+    padding: 12px 16px;
     text-align: left;
     vertical-align: middle;
     border-bottom: 1px solid #e0e0e0;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    height: 48px;
 }
 
 .customers-table th,
 .next-actions-table th {
-    background: #f8f9fa;
+    background: #f5f8fa;
     font-weight: 600;
-    color: #33475b;
+    color: #2e3a59;
     position: sticky;
     top: 0;
     cursor: pointer;
     user-select: none;
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+    font-size: 0.875rem;
+    border-bottom: 1px solid #d3d3d3;
+    height: 48px;
 }
 
 .customers-table th:hover,
 .next-actions-table th:hover {
-    background: #f0f2f5;
+    background: #eff5f9;
 }
 
 .customers-table tbody tr,
@@ -651,6 +652,7 @@ nav {
     background: white;
     cursor: pointer;
     transition: background-color 0.15s ease;
+    height: 48px;
 }
 
 .customers-table tbody tr:hover,
@@ -658,10 +660,16 @@ nav {
     background: #f5f8fa;
 }
 
+.customers-table tbody td,
+.next-actions-table tbody td {
+    color: #33475b;
+}
+
 .sort-indicator {
     opacity: 0.4;
     margin-left: 0.5rem;
-    font-size: 0.7rem;
+    font-size: 0.75rem;
+    color: #2e3a59;
 }
 
 .sort-indicator.asc::after {
@@ -675,14 +683,14 @@ nav {
 }
 
 .company-link {
-    color: #0066cc;
+    color: #0058c5;
     text-decoration: none;
     font-weight: 500;
-    font-size: 0.8rem;
+    font-size: 0.875rem;
 }
 
 .company-link:hover {
-    color: #0052aa;
+    color: #0058c5;
     text-decoration: underline;
 }
 
@@ -691,9 +699,10 @@ nav {
     background: transparent;
     padding: 0.25rem 0.5rem;
     border-radius: 4px;
-    font-size: 0.75rem;
+    font-size: 0.875rem;
     cursor: pointer;
     font-family: system-ui, "Segoe UI", "Helvetica Neue", sans-serif;
+    color: #33475b;
 }
 
 .status-dropdown:hover {
@@ -706,8 +715,9 @@ nav {
     padding: 0.25rem 0.5rem;
     border-radius: 4px;
     width: 100%;
-    font-size: 0.75rem;
+    font-size: 0.875rem;
     font-family: system-ui, "Segoe UI", "Helvetica Neue", sans-serif;
+    color: #33475b;
 }
 
 .next-step-input:hover,
@@ -719,7 +729,12 @@ nav {
 .table-actions {
     display: flex;
     gap: 0.25rem;
-    justify-content: center;
+    justify-content: flex-end;
+}
+
+.customers-table td:nth-child(5),
+.next-actions-table td:nth-child(5) {
+    text-align: right;
 }
 
 .action-icon {
@@ -745,13 +760,13 @@ nav {
 }
 
 .last-note {
-    max-width: 180px;
+    max-width: 200px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
     color: #6c757d;
     font-style: italic;
-    font-size: 0.75rem;
+    font-size: 0.875rem;
 }
 
 .next-actions-section {
