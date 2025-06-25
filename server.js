@@ -108,20 +108,111 @@ const server = http.createServer(async (req, res) => {
     if (pathname.startsWith('/api/customers/') && req.method === 'PUT') {
       const customerId = pathname.split('/')[3];
       const body = await parseJsonBody(req);
-      const {
-        companyName, status, affiliatePartner, nextStep,
-        physicalAddress, billingAddress, primaryContact, authorizedSigner, billingContact, notes
-      } = body;
       
-      const result = await pool.query(
-        `UPDATE customers SET 
-         company_name = $2, status = $3, affiliate_partner = $4, next_step = $5,
-         physical_address = $6, billing_address = $7, primary_contact = $8, 
-         authorized_signer = $9, billing_contact = $10, notes = $11, updated_at = NOW()
-         WHERE customer_id = $1 RETURNING *`,
-        [customerId, companyName, status, affiliatePartner, nextStep, physicalAddress, billingAddress,
-         JSON.stringify(primaryContact), JSON.stringify(authorizedSigner), JSON.stringify(billingContact), JSON.stringify(notes)]
+      console.log('Update request for customer:', customerId);
+      console.log('Request body:', body);
+      
+      // Get current customer data first
+      const currentResult = await pool.query(
+        'SELECT * FROM customers WHERE customer_id = $1',
+        [customerId]
       );
+      
+      if (currentResult.rows.length === 0) {
+        res.writeHead(404, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Customer not found' }));
+        return;
+      }
+      
+      const currentCustomer = currentResult.rows[0];
+      
+      // Build update query dynamically to only update provided fields
+      const updateFields = [];
+      const updateValues = [customerId];
+      let paramIndex = 2;
+      
+      // Only update fields that are explicitly provided
+      if ('company_name' in body && body.company_name !== undefined) {
+        if (!body.company_name || body.company_name.trim() === '') {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Company name cannot be empty' }));
+          return;
+        }
+        updateFields.push(`company_name = $${paramIndex}`);
+        updateValues.push(body.company_name.trim());
+        paramIndex++;
+      }
+      
+      if ('status' in body && body.status !== undefined) {
+        updateFields.push(`status = $${paramIndex}`);
+        updateValues.push(body.status);
+        paramIndex++;
+      }
+      
+      if ('affiliate_partner' in body) {
+        updateFields.push(`affiliate_partner = $${paramIndex}`);
+        updateValues.push(body.affiliate_partner || null);
+        paramIndex++;
+      }
+      
+      if ('next_step' in body) {
+        updateFields.push(`next_step = $${paramIndex}`);
+        updateValues.push(body.next_step || null);
+        paramIndex++;
+      }
+      
+      if ('physical_address' in body) {
+        updateFields.push(`physical_address = $${paramIndex}`);
+        updateValues.push(body.physical_address || null);
+        paramIndex++;
+      }
+      
+      if ('billing_address' in body) {
+        updateFields.push(`billing_address = $${paramIndex}`);
+        updateValues.push(body.billing_address || null);
+        paramIndex++;
+      }
+      
+      if ('primary_contact' in body) {
+        updateFields.push(`primary_contact = $${paramIndex}`);
+        updateValues.push(JSON.stringify(body.primary_contact || null));
+        paramIndex++;
+      }
+      
+      if ('authorized_signer' in body) {
+        updateFields.push(`authorized_signer = $${paramIndex}`);
+        updateValues.push(JSON.stringify(body.authorized_signer || null));
+        paramIndex++;
+      }
+      
+      if ('billing_contact' in body) {
+        updateFields.push(`billing_contact = $${paramIndex}`);
+        updateValues.push(JSON.stringify(body.billing_contact || null));
+        paramIndex++;
+      }
+      
+      if ('notes' in body) {
+        updateFields.push(`notes = $${paramIndex}`);
+        updateValues.push(JSON.stringify(body.notes || []));
+        paramIndex++;
+      }
+      
+      // Always update the timestamp
+      updateFields.push(`updated_at = NOW()`);
+      
+      if (updateFields.length === 1) {
+        // Only timestamp update, nothing to change
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify(currentCustomer));
+        return;
+      }
+      
+      const updateQuery = `UPDATE customers SET ${updateFields.join(', ')} WHERE customer_id = $1 RETURNING *`;
+      
+      console.log('Update query:', updateQuery);
+      console.log('Update values:', updateValues);
+      
+      const result = await pool.query(updateQuery, updateValues);
       
       if (result.rows.length === 0) {
         res.writeHead(404, { 'Content-Type': 'application/json' });

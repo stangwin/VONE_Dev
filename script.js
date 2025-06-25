@@ -377,7 +377,10 @@ class CRMApp {
         try {
             console.log(`Updating customer ${customerId} status from ${originalValue} to ${newStatus}`);
             
-            await this.api.updateCustomer(customerId, { status: newStatus });
+            // Only send the status field to avoid affecting other fields
+            const updateData = { status: newStatus };
+            
+            await this.api.updateCustomer(customerId, updateData);
             console.log(`Successfully updated customer ${customerId} status to ${newStatus}`);
             
             // Update local data
@@ -401,16 +404,29 @@ class CRMApp {
             
             // Revert the dropdown to original value
             selectElement.value = selectElement.dataset.originalValue;
-            alert('Failed to update status. Please try again.');
+            
+            // Show user-friendly error message
+            const errorMsg = error.message || 'Failed to update status. Please try again.';
+            alert(errorMsg);
         }
     }
 
     async updateCustomerNextStep(inputElement) {
         const customerId = inputElement.dataset.customerId;
         const newNextStep = inputElement.value.trim();
+        const originalValue = inputElement.dataset.originalValue || '';
+
+        // Store original value for rollback
+        if (!inputElement.dataset.originalValue) {
+            const customer = this.customers.find(c => c.customer_id === customerId);
+            inputElement.dataset.originalValue = customer?.next_step || '';
+        }
 
         try {
-            await this.api.updateCustomer(customerId, { next_step: newNextStep });
+            // Only send the next_step field
+            const updateData = { next_step: newNextStep || null };
+            
+            await this.api.updateCustomer(customerId, updateData);
             console.log(`Updated customer ${customerId} next step to "${newNextStep}"`);
             
             // Update local data
@@ -419,15 +435,25 @@ class CRMApp {
                 customer.next_step = newNextStep;
             }
 
+            // Update filtered customers as well
+            const filteredCustomer = this.filteredCustomers.find(c => c.customer_id === customerId);
+            if (filteredCustomer) {
+                filteredCustomer.next_step = newNextStep;
+            }
+
+            // Update original value
+            inputElement.dataset.originalValue = newNextStep;
+
             // Re-render next actions section
             this.renderNextActions();
         } catch (error) {
             console.error('Failed to update customer next step:', error);
-            // Revert the input
-            const customer = this.customers.find(c => c.customer_id === customerId);
-            if (customer) {
-                inputElement.value = customer.next_step || '';
-            }
+            
+            // Revert the input to original value
+            inputElement.value = inputElement.dataset.originalValue;
+            
+            const errorMsg = error.message || 'Failed to update next step. Please try again.';
+            alert(errorMsg);
         }
     }
 
