@@ -83,6 +83,66 @@ class DatabaseAPI {
             throw error;
         }
     }
+
+    // File management methods
+    async uploadFiles(customerId, files) {
+        try {
+            const formData = new FormData();
+            
+            for (let i = 0; i < files.length; i++) {
+                formData.append('files', files[i]);
+            }
+
+            const response = await fetch(`${this.baseURL}/customers/${customerId}/files`, {
+                method: 'POST',
+                body: formData
+            });
+
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.error || 'Failed to upload files');
+            }
+
+            return await response.json();
+        } catch (error) {
+            console.error('Error uploading files:', error);
+            throw error;
+        }
+    }
+
+    async getCustomerFiles(customerId) {
+        try {
+            const response = await fetch(`${this.baseURL}/customers/${customerId}/files`);
+            
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.error || 'Failed to fetch files');
+            }
+
+            return await response.json();
+        } catch (error) {
+            console.error('Error fetching files:', error);
+            throw error;
+        }
+    }
+
+    async deleteFile(customerId, fileId) {
+        try {
+            const response = await fetch(`${this.baseURL}/customers/${customerId}/files/${fileId}`, {
+                method: 'DELETE'
+            });
+
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.error || 'Failed to delete file');
+            }
+
+            return await response.json();
+        } catch (error) {
+            console.error('Error deleting file:', error);
+            throw error;
+        }
+    }
 }
 
 // CRM Application
@@ -940,11 +1000,29 @@ class CRMApp {
                         </div>
                     </div>
 
-                    <!-- Files & Media Placeholder -->
+                    <!-- Files & Media -->
                     <div class="detail-section">
                         <h3>Files & Media</h3>
-                        <div class="placeholder-section">
-                            You'll be able to upload files and photos here in a future update.
+                        <div class="files-section">
+                            ${isEditing ? `
+                                <div class="file-upload-section">
+                                    <div class="upload-area" id="upload-area">
+                                        <input type="file" id="file-input" multiple accept="image/*,.pdf" style="display: none;">
+                                        <div class="upload-content">
+                                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                                <polyline points="7,10 12,15 17,10"></polyline>
+                                                <line x1="12" y1="15" x2="12" y2="3"></line>
+                                            </svg>
+                                            <p>Drop files here or click to upload</p>
+                                            <p class="upload-hint">Images (PNG, JPG, GIF) and PDFs up to 5MB each</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            ` : ''}
+                            <div class="files-grid" id="files-grid">
+                                <!-- Files will be loaded here -->
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -952,8 +1030,202 @@ class CRMApp {
         `;
 
         console.log("Customer detail HTML generated, setting innerHTML");
+        
+        // Load customer files
+        this.loadCustomerFiles();
+        
+        // Set up file upload if in edit mode
+        if (isEditing) {
+            this.setupFileUpload();
+        }
+        
         // Update detail action buttons based on edit mode
         this.updateDetailActionButtons();
+    }
+
+    async loadCustomerFiles() {
+        if (!this.currentCustomer) return;
+
+        try {
+            const files = await this.api.getCustomerFiles(this.currentCustomer.customer_id);
+            this.renderFilesGrid(files);
+        } catch (error) {
+            console.error('Failed to load customer files:', error);
+        }
+    }
+
+    renderFilesGrid(files) {
+        const filesGrid = document.getElementById('files-grid');
+        if (!filesGrid) return;
+
+        if (files.length === 0) {
+            filesGrid.innerHTML = '<p class="no-files">No files uploaded yet.</p>';
+            return;
+        }
+
+        const filesHtml = files.map(file => {
+            const isImage = file.file_type.startsWith('image/');
+            const fileIcon = isImage ? 
+                `<img src="${file.file_url}" alt="${file.original_name}" class="file-thumbnail">` :
+                `<div class="file-icon pdf-icon">📄</div>`;
+
+            return `
+                <div class="file-item" data-file-id="${file.id}">
+                    <div class="file-preview" onclick="app.openFileModal('${file.file_url}', '${file.original_name}', '${file.file_type}')">
+                        ${fileIcon}
+                    </div>
+                    <div class="file-info">
+                        <div class="file-name" title="${file.original_name}">${file.original_name}</div>
+                        <div class="file-meta">
+                            ${this.formatFileSize(file.file_size)} • ${this.formatFileDate(file.upload_date)}
+                        </div>
+                    </div>
+                    ${this.editMode ? `<button class="file-delete-btn" onclick="app.deleteCustomerFile(${file.id})" title="Delete file">×</button>` : ''}
+                </div>
+            `;
+        }).join('');
+
+        filesGrid.innerHTML = filesHtml;
+    }
+
+    setupFileUpload() {
+        const uploadArea = document.getElementById('upload-area');
+        const fileInput = document.getElementById('file-input');
+
+        if (!uploadArea || !fileInput) return;
+
+        // Click to upload
+        uploadArea.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        // File input change
+        fileInput.addEventListener('change', (e) => {
+            this.handleFileUpload(e.target.files);
+        });
+
+        // Drag and drop
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            this.handleFileUpload(e.dataTransfer.files);
+        });
+    }
+
+    async handleFileUpload(files) {
+        if (!files || files.length === 0) return;
+
+        const validFiles = Array.from(files).filter(file => {
+            const isValidType = file.type.startsWith('image/') || file.type === 'application/pdf';
+            const isValidSize = file.size <= 5 * 1024 * 1024; // 5MB
+
+            if (!isValidType) {
+                alert(`${file.name}: Only images and PDFs are allowed.`);
+                return false;
+            }
+            if (!isValidSize) {
+                alert(`${file.name}: File size must be less than 5MB.`);
+                return false;
+            }
+            return true;
+        });
+
+        if (validFiles.length === 0) return;
+
+        try {
+            const uploadArea = document.getElementById('upload-area');
+            if (uploadArea) {
+                uploadArea.classList.add('uploading');
+                uploadArea.querySelector('.upload-content p').textContent = 'Uploading...';
+            }
+
+            await this.api.uploadFiles(this.currentCustomer.customer_id, validFiles);
+            
+            // Reload files
+            await this.loadCustomerFiles();
+
+            // Reset file input
+            const fileInput = document.getElementById('file-input');
+            if (fileInput) fileInput.value = '';
+
+        } catch (error) {
+            console.error('Upload failed:', error);
+            alert('Upload failed: ' + error.message);
+        } finally {
+            const uploadArea = document.getElementById('upload-area');
+            if (uploadArea) {
+                uploadArea.classList.remove('uploading');
+                uploadArea.querySelector('.upload-content p').textContent = 'Drop files here or click to upload';
+            }
+        }
+    }
+
+    async deleteCustomerFile(fileId) {
+        if (!confirm('Are you sure you want to delete this file?')) return;
+
+        try {
+            await this.api.deleteFile(this.currentCustomer.customer_id, fileId);
+            await this.loadCustomerFiles();
+        } catch (error) {
+            console.error('Failed to delete file:', error);
+            alert('Failed to delete file: ' + error.message);
+        }
+    }
+
+    openFileModal(fileUrl, fileName, fileType) {
+        const modal = document.createElement('div');
+        modal.className = 'file-modal';
+        modal.onclick = (e) => {
+            if (e.target === modal) modal.remove();
+        };
+
+        const content = fileType.startsWith('image/') ?
+            `<img src="${fileUrl}" alt="${fileName}" class="modal-image">` :
+            `<iframe src="${fileUrl}" class="modal-pdf"></iframe>`;
+
+        modal.innerHTML = `
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>${fileName}</h3>
+                    <button class="modal-close" onclick="this.closest('.file-modal').remove()">×</button>
+                </div>
+                <div class="modal-body">
+                    ${content}
+                </div>
+                <div class="modal-footer">
+                    <a href="${fileUrl}" download="${fileName}" class="btn btn-primary">Download</a>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+    }
+
+    formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+
+    formatFileDate(dateString) {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric'
+        });
     }
 
     getNextStepOptions(status) {

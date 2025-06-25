@@ -3,6 +3,8 @@ const url = require('url');
 const path = require('path');
 const fs = require('fs');
 const { Pool } = require('pg');
+const { IncomingForm } = require('formidable');
+const crypto = require('crypto');
 
 const PORT = process.env.PORT || 5000;
 
@@ -240,10 +242,157 @@ const server = http.createServer(async (req, res) => {
       return;
     }
 
+    // File upload endpoint
+    if (req.method === 'POST' && pathname.match(/^\/api\/customers\/[^\/]+\/files$/)) {
+      const customerId = pathname.split('/')[3];
+      
+      const form = new IncomingForm({
+        uploadDir: `./public/uploads/${customerId}`,
+        keepExtensions: true,
+        maxFileSize: 5 * 1024 * 1024, // 5MB
+        filter: ({ mimetype }) => {
+          return mimetype && (
+            mimetype.startsWith('image/') || 
+            mimetype === 'application/pdf'
+          );
+        }
+      });
+
+      // Ensure upload directory exists
+      const uploadDir = `./public/uploads/${customerId}`;
+      if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir, { recursive: true });
+      }
+
+      form.parse(req, async (err, fields, files) => {
+        if (err) {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Upload failed: ' + err.message }));
+          return;
+        }
+
+        try {
+          const fileArray = Array.isArray(files.files) ? files.files : [files.files];
+          const fileRecords = [];
+
+          for (const file of fileArray) {
+            if (!file) continue;
+
+            // Generate unique filename
+            const timestamp = Date.now();
+            const randomSuffix = Math.round(Math.random() * 1E9);
+            const ext = path.extname(file.originalFilename);
+            const fileName = `${timestamp}-${randomSuffix}${ext}`;
+            const newPath = path.join(uploadDir, fileName);
+
+            // Move file to final location
+            fs.renameSync(file.filepath, newPath);
+
+            // Save to database
+            const query = `
+              INSERT INTO customer_files (customer_id, file_name, original_name, file_url, file_type, file_size)
+              VALUES ($1, $2, $3, $4, $5, $6)
+              RETURNING *
+            `;
+            const values = [
+              customerId,
+              fileName,
+              file.originalFilename,
+              `/uploads/${customerId}/${fileName}`,
+              file.mimetype,
+              file.size
+            ];
+
+            const result = await pool.query(query, values);
+            fileRecords.push(result.rows[0]);
+          }
+
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ message: 'Files uploaded successfully', files: fileRecords }));
+        } catch (error) {
+          console.error('File upload error:', error);
+          res.writeHead(500, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Failed to save file metadata' }));
+        }
+      });
+      return;
+    }
+
+    // Get files for customer
+    if (req.method === 'GET' && pathname.match(/^\/api\/customers\/[^\/]+\/files$/)) {
+      const customerId = pathname.split('/')[3];
+      
+      const query = 'SELECT * FROM customer_files WHERE customer_id = $1 ORDER BY upload_date DESC';
+      const result = await pool.query(query, [customerId]);
+      
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify(result.rows));
+      return;
+    }
+
+    // Delete file
+    if (req.method === 'DELETE' && pathname.match(/^\/api\/customers\/[^\/]+\/files\/\d+$/)) {
+      const pathParts = pathname.split('/');
+      const customerId = pathParts[3];
+      const fileId = pathParts[5];
+      
+      // Get file record
+      const selectQuery = 'SELECT * FROM customer_files WHERE id = $1 AND customer_id = $2';
+      const fileResult = await pool.query(selectQuery, [fileId, customerId]);
+      
+      if (fileResult.rows.length === 0) {
+        res.writeHead(404, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'File not found' }));
+        return;
+      }
+
+      const file = fileResult.rows[0];
+      
+      // Delete physical file
+      const filePath = `./public${file.file_url}`;
+      try {
+        fs.unlinkSync(filePath);
+      } catch (fsError) {
+        console.warn('Could not delete physical file:', fsError.message);
+      }
+
+      // Delete database record
+      const deleteQuery = 'DELETE FROM customer_files WHERE id = $1';
+      await pool.query(deleteQuery, [fileId]);
+
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ message: 'File deleted successfully' }));
+      return;
+    }
+
     if (pathname === '/api/health') {
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ status: 'OK', timestamp: new Date().toISOString() }));
       return;
+    }
+
+    // Serve uploaded files
+    if (pathname.startsWith('/uploads/')) {
+      let filePath = `./public${pathname}`;
+      
+      // Security check
+      if (filePath.includes('..')) {
+        res.writeHead(403);
+        res.end('Forbidden');
+        return;
+      }
+
+      try {
+        const content = fs.readFileSync(filePath);
+        const mimeType = getMimeType(filePath);
+        res.writeHead(200, { 'Content-Type': mimeType });
+        res.end(content);
+        return;
+      } catch {
+        res.writeHead(404);
+        res.end('File not found');
+        return;
+      }
     }
 
     // Serve static files

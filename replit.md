@@ -86,6 +86,12 @@ UI preferences: Minimal, compact interfaces - avoid large/obtrusive action butto
 ## Changelog
 
 Changelog:
+- June 25, 2025: Implemented comprehensive Files & Media section with complete file upload/management functionality
+- June 25, 2025: Added customer_files database table with PostgreSQL backend for file metadata storage
+- June 25, 2025: Built drag-and-drop file upload interface with image thumbnails and PDF support
+- June 25, 2025: Created file modal viewer with download capability and delete functionality in edit mode
+- June 25, 2025: Added file validation (5MB limit, images/PDFs only) and secure file handling
+- June 25, 2025: Implemented modern file grid layout with hover effects and professional styling
 - June 25, 2025: Rebranded application as "Vantix CRM" with updated title and professional typography
 - June 24, 2025: Enhanced customer detail page with full edit mode, modern styling, and interactive notes section
 - June 24, 2025: Added comprehensive editing for all customer fields with save/cancel functionality
