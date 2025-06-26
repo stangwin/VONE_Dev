@@ -1338,7 +1338,10 @@ class CRMApp {
                             ${this.formatFileSize(file.file_size)} • ${this.formatFileDate(file.upload_date)}
                         </div>
                     </div>
-                    <button class="file-delete-btn" onclick="app.deleteCustomerFile(${file.id})" title="Delete file">×</button>
+                    ${this.editingSections.has('files') ? 
+                        `<button class="file-delete-btn" onclick="app.deleteCustomerFile(${file.id})" title="Delete file">×</button>` : 
+                        ''
+                    }
                 </div>
             `;
         }).join('');
