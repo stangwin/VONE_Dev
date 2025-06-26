@@ -1499,11 +1499,28 @@ class CRMApp {
         const image = document.getElementById('modal-image');
         const container = image.parentElement;
         
+        // Initialize pan state
+        this.panState = {
+            isDragging: false,
+            startX: 0,
+            startY: 0,
+            imageX: 0,
+            imageY: 0,
+            initialImageX: 0,
+            initialImageY: 0
+        };
+
+        // Set initial position
+        this.centerImage();
+
         // Mouse wheel zoom
         container.addEventListener('wheel', (e) => {
             e.preventDefault();
+            const rect = container.getBoundingClientRect();
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
             const delta = e.deltaY > 0 ? -0.1 : 0.1;
-            this.zoomImage(delta);
+            this.zoomImageAtPoint(delta, centerX, centerY);
         });
 
         // Double-click to reset zoom
@@ -1511,68 +1528,230 @@ class CRMApp {
             this.resetZoom();
         });
 
-        // Pan functionality for zoomed images
-        let isDragging = false;
-        let startX, startY, scrollLeft, scrollTop;
-
-        image.addEventListener('mousedown', (e) => {
-            if (this.currentZoom > 1) {
-                isDragging = true;
-                image.style.cursor = 'grabbing';
-                startX = e.pageX - container.offsetLeft;
-                startY = e.pageY - container.offsetTop;
-                scrollLeft = container.scrollLeft;
-                scrollTop = container.scrollTop;
+        // Cursor management
+        container.addEventListener('mousemove', (e) => {
+            if (!this.panState.isDragging) {
+                image.style.cursor = this.currentZoom > 1 ? 'grab' : 'default';
             }
         });
 
         container.addEventListener('mouseleave', () => {
-            isDragging = false;
-            image.style.cursor = this.currentZoom > 1 ? 'grab' : 'default';
+            if (!this.panState.isDragging) {
+                image.style.cursor = 'default';
+            }
         });
 
-        container.addEventListener('mouseup', () => {
-            isDragging = false;
-            image.style.cursor = this.currentZoom > 1 ? 'grab' : 'default';
+        // Mouse pan functionality
+        image.addEventListener('mousedown', (e) => {
+            if (this.currentZoom > 1) {
+                e.preventDefault();
+                this.startPan(e.clientX, e.clientY);
+                image.style.cursor = 'grabbing';
+                
+                // Prevent text selection during drag
+                document.body.style.userSelect = 'none';
+            }
         });
 
-        container.addEventListener('mousemove', (e) => {
-            if (!isDragging || this.currentZoom <= 1) return;
+        document.addEventListener('mousemove', (e) => {
+            if (this.panState.isDragging && this.currentZoom > 1) {
+                e.preventDefault();
+                this.updatePan(e.clientX, e.clientY);
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            if (this.panState.isDragging) {
+                this.endPan();
+                image.style.cursor = this.currentZoom > 1 ? 'grab' : 'default';
+                document.body.style.userSelect = '';
+            }
+        });
+
+        // Touch support for mobile
+        let initialDistance = 0;
+        let initialZoom = 1;
+
+        image.addEventListener('touchstart', (e) => {
             e.preventDefault();
-            const x = e.pageX - container.offsetLeft;
-            const y = e.pageY - container.offsetTop;
-            const walkX = (x - startX) * 2;
-            const walkY = (y - startY) * 2;
-            container.scrollLeft = scrollLeft - walkX;
-            container.scrollTop = scrollTop - walkY;
+            
+            if (e.touches.length === 1 && this.currentZoom > 1) {
+                // Single touch pan
+                const touch = e.touches[0];
+                this.startPan(touch.clientX, touch.clientY);
+            } else if (e.touches.length === 2) {
+                // Two finger pinch zoom
+                const touch1 = e.touches[0];
+                const touch2 = e.touches[1];
+                initialDistance = this.getTouchDistance(touch1, touch2);
+                initialZoom = this.currentZoom;
+            }
         });
+
+        image.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            
+            if (e.touches.length === 1 && this.panState.isDragging) {
+                // Single touch pan
+                const touch = e.touches[0];
+                this.updatePan(touch.clientX, touch.clientY);
+            } else if (e.touches.length === 2) {
+                // Two finger pinch zoom
+                const touch1 = e.touches[0];
+                const touch2 = e.touches[1];
+                const currentDistance = this.getTouchDistance(touch1, touch2);
+                const scale = currentDistance / initialDistance;
+                const newZoom = Math.max(0.5, Math.min(3, initialZoom * scale));
+                
+                // Calculate center point between fingers
+                const centerX = (touch1.clientX + touch2.clientX) / 2;
+                const centerY = (touch1.clientY + touch2.clientY) / 2;
+                const rect = container.getBoundingClientRect();
+                const relativeX = centerX - rect.left;
+                const relativeY = centerY - rect.top;
+                
+                this.setZoom(newZoom);
+                this.updateZoomDisplay();
+            }
+        });
+
+        image.addEventListener('touchend', (e) => {
+            if (this.panState.isDragging) {
+                this.endPan();
+            }
+        });
+    }
+
+    getTouchDistance(touch1, touch2) {
+        const dx = touch1.clientX - touch2.clientX;
+        const dy = touch1.clientY - touch2.clientY;
+        return Math.sqrt(dx * dx + dy * dy);
+    }
+
+    startPan(clientX, clientY) {
+        this.panState.isDragging = true;
+        this.panState.startX = clientX;
+        this.panState.startY = clientY;
+        this.panState.initialImageX = this.panState.imageX;
+        this.panState.initialImageY = this.panState.imageY;
+    }
+
+    updatePan(clientX, clientY) {
+        if (!this.panState.isDragging) return;
+
+        const deltaX = clientX - this.panState.startX;
+        const deltaY = clientY - this.panState.startY;
+        
+        const newX = this.panState.initialImageX + deltaX;
+        const newY = this.panState.initialImageY + deltaY;
+        
+        // Apply bounds checking
+        const bounded = this.applyBounds(newX, newY);
+        this.panState.imageX = bounded.x;
+        this.panState.imageY = bounded.y;
+        
+        this.updateImagePosition();
+    }
+
+    endPan() {
+        this.panState.isDragging = false;
+    }
+
+    applyBounds(x, y) {
+        const image = document.getElementById('modal-image');
+        const container = image.parentElement;
+        
+        const containerRect = container.getBoundingClientRect();
+        const imageRect = image.getBoundingClientRect();
+        
+        const scaledWidth = image.naturalWidth * this.currentZoom;
+        const scaledHeight = image.naturalHeight * this.currentZoom;
+        
+        // Calculate bounds - prevent image from being dragged completely outside container
+        const minX = Math.min(0, containerRect.width - scaledWidth);
+        const maxX = Math.max(0, containerRect.width - scaledWidth);
+        const minY = Math.min(0, containerRect.height - scaledHeight);
+        const maxY = Math.max(0, containerRect.height - scaledHeight);
+        
+        return {
+            x: Math.max(minX, Math.min(maxX, x)),
+            y: Math.max(minY, Math.min(maxY, y))
+        };
+    }
+
+    centerImage() {
+        this.panState.imageX = 0;
+        this.panState.imageY = 0;
+        this.updateImagePosition();
+    }
+
+    updateImagePosition() {
+        const image = document.getElementById('modal-image');
+        if (image) {
+            image.style.transform = `scale(${this.currentZoom}) translate(${this.panState.imageX / this.currentZoom}px, ${this.panState.imageY / this.currentZoom}px)`;
+        }
     }
 
     zoomImage(delta) {
-        const image = document.getElementById('modal-image');
-        const zoomLevel = document.getElementById('zoom-level');
-        
-        if (!image || !zoomLevel) return;
+        const newZoom = Math.max(0.5, Math.min(3, this.currentZoom + delta));
+        this.setZoom(newZoom);
+        this.updateZoomDisplay();
+    }
 
-        this.currentZoom = Math.max(0.5, Math.min(3, this.currentZoom + delta));
-        image.style.transform = `scale(${this.currentZoom})`;
-        image.style.cursor = this.currentZoom > 1 ? 'grab' : 'default';
-        zoomLevel.textContent = Math.round(this.currentZoom * 100) + '%';
+    zoomImageAtPoint(delta, pointX, pointY) {
+        const oldZoom = this.currentZoom;
+        const newZoom = Math.max(0.5, Math.min(3, this.currentZoom + delta));
+        
+        if (oldZoom !== newZoom) {
+            // Calculate zoom center offset
+            const zoomRatio = newZoom / oldZoom;
+            const container = document.getElementById('modal-image').parentElement;
+            const rect = container.getBoundingClientRect();
+            
+            // Adjust pan position to zoom towards the point
+            const offsetX = (pointX - rect.width / 2) * (1 - zoomRatio);
+            const offsetY = (pointY - rect.height / 2) * (1 - zoomRatio);
+            
+            this.panState.imageX = this.panState.imageX * zoomRatio + offsetX;
+            this.panState.imageY = this.panState.imageY * zoomRatio + offsetY;
+            
+            this.setZoom(newZoom);
+            
+            // Apply bounds after zoom
+            const bounded = this.applyBounds(this.panState.imageX, this.panState.imageY);
+            this.panState.imageX = bounded.x;
+            this.panState.imageY = bounded.y;
+        }
+        
+        this.updateZoomDisplay();
+    }
+
+    setZoom(zoom) {
+        this.currentZoom = zoom;
+        this.updateImagePosition();
+        
+        const image = document.getElementById('modal-image');
+        if (image) {
+            image.style.cursor = this.currentZoom > 1 ? 'grab' : 'default';
+        }
+    }
+
+    updateZoomDisplay() {
+        const zoomLevel = document.getElementById('zoom-level');
+        if (zoomLevel) {
+            zoomLevel.textContent = Math.round(this.currentZoom * 100) + '%';
+        }
     }
 
     resetZoom() {
-        const image = document.getElementById('modal-image');
-        const zoomLevel = document.getElementById('zoom-level');
-        const container = image.parentElement;
-        
-        if (!image || !zoomLevel) return;
-
         this.currentZoom = 1;
-        image.style.transform = 'scale(1)';
-        image.style.cursor = 'default';
-        container.scrollLeft = 0;
-        container.scrollTop = 0;
-        zoomLevel.textContent = '100%';
+        this.centerImage();
+        this.updateZoomDisplay();
+        
+        const image = document.getElementById('modal-image');
+        if (image) {
+            image.style.cursor = 'default';
+        }
     }
 
     formatFileSize(bytes) {

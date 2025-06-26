@@ -121,6 +121,10 @@ UI preferences: Minimal, compact interfaces - avoid large/obtrusive action butto
 ## Changelog
 
 Changelog:
+- June 26, 2025: **COMPLETED** - Enhanced image zoom/pan system with professional-grade functionality matching Google Photos/Apple Photos
+- June 26, 2025: Implemented smooth 2D panning with proper bounds checking and cursor management (grab/grabbing states)
+- June 26, 2025: Added touch support for mobile with two-finger pinch zoom and single-finger pan gestures
+- June 26, 2025: Enhanced zoom behavior with zoom-to-point functionality and fluid transform animations
 - June 26, 2025: **COMPLETED** - Added zoom functionality to image modal popups with zoom in/out controls, mouse wheel zoom, and pan capability
 - June 26, 2025: Improved zoom controls layout - moved to bottom left with better spacing and semi-transparent background overlay
 - June 26, 2025: Implemented zoom controls (buttons, percentage display, reset) and mouse interactions (wheel zoom, double-click reset, drag to pan)
