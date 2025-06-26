@@ -239,8 +239,48 @@ const server = http.createServer(async (req, res) => {
       return;
     }
 
+    // Delete file (must come before general customer DELETE)
+    if (req.method === 'DELETE' && pathname.match(/^\/api\/customers\/[^\/]+\/files\/\d+$/)) {
+      const pathParts = pathname.split('/');
+      const customerId = pathParts[3];
+      const fileId = pathParts[5];
+      
+      console.log('Deleting file:', fileId, 'for customer:', customerId);
+      
+      // Get file record
+      const selectQuery = 'SELECT * FROM customer_files WHERE id = $1 AND customer_id = $2';
+      const fileResult = await pool.query(selectQuery, [fileId, customerId]);
+      
+      if (fileResult.rows.length === 0) {
+        res.writeHead(404, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'File not found' }));
+        return;
+      }
+
+      const file = fileResult.rows[0];
+      
+      // Delete physical file
+      const filePath = `./public${file.file_url}`;
+      try {
+        fs.unlinkSync(filePath);
+        console.log('Physical file deleted:', filePath);
+      } catch (fsError) {
+        console.warn('Could not delete physical file:', fsError.message);
+      }
+
+      // Delete database record
+      const deleteQuery = 'DELETE FROM customer_files WHERE id = $1';
+      await pool.query(deleteQuery, [fileId]);
+      console.log('File record deleted from database');
+
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ message: 'File deleted successfully' }));
+      return;
+    }
+
     if (pathname.startsWith('/api/customers/') && req.method === 'DELETE') {
       const customerId = pathname.split('/')[3];
+      console.log('Deleting customer:', customerId);
       const result = await pool.query('DELETE FROM customers WHERE customer_id = $1 RETURNING *', [customerId]);
       
       if (result.rows.length === 0) {
@@ -360,40 +400,7 @@ const server = http.createServer(async (req, res) => {
 
 
 
-    // Delete file
-    if (req.method === 'DELETE' && pathname.match(/^\/api\/customers\/[^\/]+\/files\/\d+$/)) {
-      const pathParts = pathname.split('/');
-      const customerId = pathParts[3];
-      const fileId = pathParts[5];
-      
-      // Get file record
-      const selectQuery = 'SELECT * FROM customer_files WHERE id = $1 AND customer_id = $2';
-      const fileResult = await pool.query(selectQuery, [fileId, customerId]);
-      
-      if (fileResult.rows.length === 0) {
-        res.writeHead(404, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: 'File not found' }));
-        return;
-      }
 
-      const file = fileResult.rows[0];
-      
-      // Delete physical file
-      const filePath = `./public${file.file_url}`;
-      try {
-        fs.unlinkSync(filePath);
-      } catch (fsError) {
-        console.warn('Could not delete physical file:', fsError.message);
-      }
-
-      // Delete database record
-      const deleteQuery = 'DELETE FROM customer_files WHERE id = $1';
-      await pool.query(deleteQuery, [fileId]);
-
-      res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ message: 'File deleted successfully' }));
-      return;
-    }
 
     if (pathname === '/api/health') {
       res.writeHead(200, { 'Content-Type': 'application/json' });
