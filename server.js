@@ -278,7 +278,8 @@ const server = http.createServer(async (req, res) => {
       return;
     }
 
-    if (pathname.startsWith('/api/customers/') && req.method === 'DELETE') {
+    // Customer deletion (exact path only, not file paths)
+    if (pathname.match(/^\/api\/customers\/[^\/]+$/) && req.method === 'DELETE') {
       const customerId = pathname.split('/')[3];
       console.log('Deleting customer:', customerId);
       const result = await pool.query('DELETE FROM customers WHERE customer_id = $1 RETURNING *', [customerId]);
