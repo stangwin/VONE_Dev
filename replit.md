@@ -11,24 +11,32 @@ The current implementation uses a client-side localStorage database for data per
 ### Frontend Architecture
 - **Technology**: Vanilla HTML, CSS, and JavaScript
 - **Structure**: Single-page application (SPA) with view-based routing
+- **Authentication**: Secure login/logout with session-based authentication
 - **Components**: 
   - Modern dashboard with card-based customer listing
   - Add/Edit customer forms with dropdown validation
   - Auto-import functionality for Microsoft Lists data
   - Real-time duplicate detection and validation
+  - User authentication with login/registration pages
 - **Styling**: Custom CSS with CSS variables for theming and consistent design system
 
 ### Backend Architecture
 - **Current**: Node.js/Express server with RESTful API endpoints
+- **Authentication**: bcrypt password hashing with express-session and PostgreSQL session store
 - **Database**: PostgreSQL (Neon) with Drizzle ORM for type-safe operations
-- **API**: Full CRUD operations for customer management
-- **Infrastructure**: Production-ready with proper error handling and validation
+- **API**: Full CRUD operations for customer management with authentication protection
+- **Infrastructure**: Production-ready with proper error handling, validation, and security
 
 ### Data Storage
-- **Database**: PostgreSQL with comprehensive customer schema
+- **Database**: PostgreSQL with comprehensive customer and user schemas
 - **ORM**: Drizzle ORM providing type safety and migrations
-- **Schema**: Customers table with JSONB for flexible contact data and notes
+- **Schema**: 
+  - Users table with bcrypt password hashing and future SSO support
+  - Customers table with JSONB for flexible contact data and notes
+  - Customer files table for file management and metadata
+  - Session table for secure session management
 - **ID Management**: Auto-incrementing primary keys plus custom customer IDs
+- **Security**: Prepared for future SSO integration (Google, Microsoft) with flexible auth provider field
 
 ## Key Components
 
@@ -86,6 +94,12 @@ UI preferences: Minimal, compact interfaces - avoid large/obtrusive action butto
 ## Changelog
 
 Changelog:
+- June 26, 2025: **COMPLETED** - Implemented comprehensive multi-user authentication system with secure login/logout
+- June 26, 2025: Added bcrypt password hashing, express-session with PostgreSQL session store, and authentication middleware
+- June 26, 2025: Created user registration/login pages with modern UI and proper error handling
+- June 26, 2025: Protected all API endpoints with authentication - requires login to access CRM functionality
+- June 26, 2025: Added user management database schema prepared for future SSO integration (Google, Microsoft)
+- June 26, 2025: Implemented secure session management with proper credential handling and CORS configuration
 - June 26, 2025: **COMPLETED** - Fully debugged and resolved Files & Media system with working file deletion and customer data integrity
 - June 26, 2025: Fixed critical server route ordering issue preventing proper file deletion API calls
 - June 26, 2025: Resolved file upload completion bugs and increased file size limits to 50MB total capacity

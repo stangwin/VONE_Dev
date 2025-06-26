@@ -3,7 +3,10 @@ import { relations } from 'drizzle-orm';
 
 export const users = pgTable('users', {
     id: serial('id').primaryKey(),
-    username: text('username').notNull().unique(),
+    name: text('name').notNull(),
+    email: text('email').notNull().unique(),
+    password_hash: text('password_hash'), // nullable for future SSO
+    auth_provider: text('auth_provider').notNull().default('local'), // 'local', 'google', 'microsoft'
     created_at: timestamp('created_at').defaultNow(),
 });
 
@@ -20,6 +23,8 @@ export const customers = pgTable('customers', {
     authorized_signer: jsonb('authorized_signer'),
     billing_contact: jsonb('billing_contact'),
     notes: jsonb('notes'),
+    created_by: integer('created_by'), // user id for future use
+    updated_by: integer('updated_by'), // user id for future use
     created_at: timestamp('created_at').defaultNow(),
     updated_at: timestamp('updated_at').defaultNow(),
 });
@@ -37,8 +42,23 @@ export const customer_files = pgTable('customer_files', {
 });
 
 // Relations
-export const customersRelations = relations(customers, ({ many }) => ({
+export const usersRelations = relations(users, ({ many }) => ({
+    customers_created: many(customers, { relationName: 'created_by' }),
+    customers_updated: many(customers, { relationName: 'updated_by' }),
+}));
+
+export const customersRelations = relations(customers, ({ many, one }) => ({
     files: many(customer_files),
+    creator: one(users, {
+        fields: [customers.created_by],
+        references: [users.id],
+        relationName: 'created_by',
+    }),
+    updater: one(users, {
+        fields: [customers.updated_by],
+        references: [users.id],
+        relationName: 'updated_by',
+    }),
 }));
 
 export const customerFilesRelations = relations(customer_files, ({ one }) => ({
