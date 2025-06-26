@@ -1381,10 +1381,10 @@ class CRMApp {
                             ${this.editingSections.has('files') ? `
                                 <div class="file-upload-section">
                                     <div class="upload-dropzone" id="upload-dropzone">
-                                        <input type="file" id="file-input" multiple accept="image/*,.pdf" style="display: none;">
+                                        <input type="file" id="file-input" multiple accept="image/*,.pdf,video/*" style="display: none;">
                                         <div class="upload-text">
                                             <p>Drop files here or click to upload</p>
-                                            <p class="upload-hint">Images and PDFs only, max 5MB per file</p>
+                                            <p class="upload-hint">Images, PDFs, and videos only, max 50MB per file</p>
                                         </div>
                                     </div>
                                 </div>
@@ -1494,9 +1494,19 @@ class CRMApp {
 
         const filesHtml = files.map(file => {
             const isImage = file.file_type.startsWith('image/');
-            const fileIcon = isImage ? 
-                `<img src="${file.file_url}" alt="${file.original_name}" class="file-thumbnail">` :
-                `<div class="file-icon pdf-icon">📄</div>`;
+            const isVideo = file.file_type.startsWith('video/');
+            const isPDF = file.file_type === 'application/pdf';
+            
+            let fileIcon;
+            if (isImage) {
+                fileIcon = `<img src="${file.file_url}" alt="${file.original_name}" class="file-thumbnail">`;
+            } else if (isVideo) {
+                fileIcon = `<div class="file-icon video-icon">🎥</div>`;
+            } else if (isPDF) {
+                fileIcon = `<div class="file-icon pdf-icon">📄</div>`;
+            } else {
+                fileIcon = `<div class="file-icon generic-icon">📁</div>`;
+            }
 
             return `
                 <div class="file-item" data-file-id="${file.id}">
@@ -1567,15 +1577,16 @@ class CRMApp {
         if (!files || files.length === 0) return;
 
         const validFiles = Array.from(files).filter(file => {
-            const isValidType = file.type.startsWith('image/') || file.type === 'application/pdf';
-            const isValidSize = file.size <= 5 * 1024 * 1024; // 5MB
+            const isValidType = file.type.startsWith('image/') || file.type === 'application/pdf' || file.type.startsWith('video/');
+            const maxSize = file.type.startsWith('video/') ? 50 * 1024 * 1024 : 5 * 1024 * 1024; // 50MB for videos, 5MB for others
 
             if (!isValidType) {
-                alert(`${file.name}: Only images and PDFs are allowed.`);
+                alert(`${file.name}: Only images, PDFs, and videos are allowed.`);
                 return false;
             }
-            if (!isValidSize) {
-                alert(`${file.name}: File size must be less than 5MB.`);
+            if (file.size > maxSize) {
+                const limit = file.type.startsWith('video/') ? '50MB' : '5MB';
+                alert(`${file.name}: File size must be less than ${limit}.`);
                 return false;
             }
             return true;
@@ -1637,34 +1648,49 @@ class CRMApp {
         };
 
         const isImage = fileType.startsWith('image/');
-        const content = isImage ?
-            `<div class="image-container">
-                <img src="${fileUrl}" alt="${fileName}" class="modal-image" id="modal-image">
-            </div>` :
-            `<iframe src="${fileUrl}" class="modal-pdf"></iframe>`;
-
-        const zoomControls = isImage ? `
-            <div class="zoom-controls">
-                <button class="zoom-btn" onclick="app.zoomImage(-0.2)" title="Zoom Out">−</button>
-                <span class="zoom-level" id="zoom-level">100%</span>
-                <button class="zoom-btn" onclick="app.zoomImage(0.2)" title="Zoom In">+</button>
-                <button class="zoom-btn" onclick="app.resetZoom()" title="Reset Zoom">Reset</button>
-            </div>
-        ` : '';
+        const isVideo = fileType.startsWith('video/');
+        
+        let content;
+        if (isImage) {
+            content = `<div style="position: relative; width: 100%; height: 80vh; background: #000; display: flex; align-items: center; justify-content: center; border-radius: 8px;">
+                <img src="${fileUrl}" alt="${fileName}" 
+                     style="max-width: 100%; max-height: 100%; object-fit: contain; cursor: zoom-in;"
+                     id="modal-zoom-image">
+                <div style="position: absolute; bottom: 10px; left: 10px; background: rgba(0,0,0,0.7); color: white; padding: 8px 12px; border-radius: 6px; display: flex; gap: 8px; align-items: center;">
+                    <button onclick="app.zoomImage(-0.2)" style="background: none; border: none; color: white; cursor: pointer; font-size: 18px;">−</button>
+                    <span id="zoom-percentage">100%</span>
+                    <button onclick="app.zoomImage(0.2)" style="background: none; border: none; color: white; cursor: pointer; font-size: 18px;">+</button>
+                    <button onclick="app.resetZoom()" style="background: none; border: none; color: white; cursor: pointer; font-size: 14px;">Reset</button>
+                </div>
+            </div>`;
+        } else if (isVideo) {
+            content = `<div style="width: 100%; height: 80vh; background: #000; display: flex; align-items: center; justify-content: center; border-radius: 8px;">
+                <video controls style="max-width: 100%; max-height: 100%; border-radius: 8px;">
+                    <source src="${fileUrl}" type="${fileType}">
+                    Your browser does not support the video tag.
+                </video>
+            </div>`;
+        } else {
+            content = `<div style="padding: 40px; text-align: center; color: #666;">
+                <p>Cannot preview this file type.</p>
+                <p>Click the download button below to view the file.</p>
+            </div>`;
+        }
 
         modal.innerHTML = `
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3>${fileName}</h3>
-                    <button class="modal-close" onclick="this.closest('.file-modal').remove()">×</button>
+            <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: flex; align-items: center; justify-content: center; z-index: 10000;">
+                <div style="position: relative; width: 90%; height: 90%; max-width: 1200px; background: white; border-radius: 8px; display: flex; flex-direction: column;">
+                    <div style="padding: 20px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center;">
+                        <h3 style="margin: 0; color: #333;">${fileName}</h3>
+                        <button onclick="this.closest('.file-modal').remove()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #666;">×</button>
+                    </div>
+                    <div style="flex: 1; padding: 20px; overflow: hidden;">
+                        ${content}
+                    </div>
+                    <div style="padding: 20px; border-top: 1px solid #eee; text-align: center;">
+                        <a href="${fileUrl}" download="${fileName}" style="background: #007bff; color: white; padding: 10px 20px; border-radius: 4px; text-decoration: none;">Download</a>
+                    </div>
                 </div>
-                <div class="modal-body">
-                    ${content}
-                </div>
-                <div class="modal-footer">
-                    <a href="${fileUrl}" download="${fileName}" class="btn btn-primary">Download</a>
-                </div>
-                ${zoomControls}
             </div>
         `;
 

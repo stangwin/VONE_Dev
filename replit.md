@@ -147,6 +147,9 @@ UI preferences: Minimal, compact interfaces - avoid large/obtrusive action butto
 ## Changelog
 
 Changelog:
+- June 26, 2025: **COMPLETED** - Added comprehensive video file support (.mp4, .mov, .avi, .webm, etc.) to Files & Media system
+- June 26, 2025: Enhanced file upload with 100MB limit for videos, HTML5 video player modal preview, and video file icons
+- June 26, 2025: Confirmed authentication system working with test credentials: test@test.com/test123
 - June 26, 2025: **COMPLETED** - Enhanced image zoom/pan system with professional-grade functionality matching Google Photos/Apple Photos
 - June 26, 2025: Implemented smooth 2D panning with proper bounds checking and cursor management (grab/grabbing states)
 - June 26, 2025: Added touch support for mobile with two-finger pinch zoom and single-finger pan gestures

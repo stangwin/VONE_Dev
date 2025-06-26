@@ -615,12 +615,13 @@ const server = http.createServer(async (req, res) => {
         const form = new IncomingForm({
           uploadDir: `./public/uploads/${customerId}`,
           keepExtensions: true,
-          maxFileSize: 5 * 1024 * 1024, // 5MB per file
-          maxTotalFileSize: 50 * 1024 * 1024, // 50MB total (allows multiple files)
+          maxFileSize: 100 * 1024 * 1024, // 100MB per file for videos
+          maxTotalFileSize: 200 * 1024 * 1024, // 200MB total to accommodate videos
           filter: ({ mimetype }) => {
             return mimetype && (
               mimetype.startsWith('image/') || 
-              mimetype === 'application/pdf'
+              mimetype === 'application/pdf' ||
+              mimetype.startsWith('video/')
             );
           }
         });
