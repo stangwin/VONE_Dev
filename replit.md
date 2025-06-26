@@ -94,6 +94,11 @@ UI preferences: Minimal, compact interfaces - avoid large/obtrusive action butto
 ## Changelog
 
 Changelog:
+- June 26, 2025: **COMPLETED** - Implemented individual section editing with edit icons (✏️) replacing page-wide edit mode
+- June 26, 2025: Changed customer detail page from single "Edit Page" button to section-specific edit icons with independent save/cancel
+- June 26, 2025: Restricted picture deletion to edit mode only - delete buttons now only appear when Files section is being edited
+- June 26, 2025: Added user profile dropdown with avatar, logout, and "Manage Users" link for admins in header
+- June 26, 2025: Created comprehensive user management interface at /users.html with CRUD operations for admin users
 - June 26, 2025: **COMPLETED** - Implemented comprehensive multi-user authentication system with secure login/logout
 - June 26, 2025: Added bcrypt password hashing, express-session with PostgreSQL session store, and authentication middleware
 - June 26, 2025: Created user registration/login pages with modern UI and proper error handling

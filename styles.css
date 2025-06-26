@@ -136,6 +136,90 @@ header {
     margin: 4px 0;
 }
 
+/* Section editing styles */
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.section-edit-btn {
+    background: none;
+    border: 1px solid #e5e7eb;
+    border-radius: 4px;
+    padding: 4px 8px;
+    cursor: pointer;
+    font-size: 14px;
+    color: #6b7280;
+    transition: all 0.2s;
+}
+
+.section-edit-btn:hover {
+    background: #f9fafb;
+    border-color: #d1d5db;
+    color: #374151;
+}
+
+.section-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid #e5e7eb;
+}
+
+.btn-sm {
+    padding: 6px 12px;
+    font-size: 14px;
+}
+
+.field-value {
+    display: block;
+    padding: 8px 0;
+    color: #374151;
+    min-height: 24px;
+}
+
+.field-value:empty::before {
+    content: 'Not provided';
+    color: #9ca3af;
+    font-style: italic;
+}
+
+.status-badge {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.status-badge.lead {
+    background-color: #dbeafe;
+    color: #1e40af;
+}
+
+.status-badge.quoted {
+    background-color: #fef3c7;
+    color: #92400e;
+}
+
+.status-badge.signed {
+    background-color: #d1fae5;
+    color: #065f46;
+}
+
+.status-badge.onboarding {
+    background-color: #ede9fe;
+    color: #6b21a8;
+}
+
+.status-badge.active {
+    background-color: #dcfce7;
+    color: #166534;
+}
+
 header h1 {
     font-size: 1.5rem;
     margin-bottom: 1rem;

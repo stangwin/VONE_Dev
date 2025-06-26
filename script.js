@@ -278,7 +278,10 @@ class CRMApp {
 
             if (!response.ok) {
                 console.log('User not authenticated, redirecting to auth page...');
-                window.location.href = '/auth.html';
+                // Prevent infinite redirect loop in iframe
+                if (window.location.pathname !== '/auth.html') {
+                    window.location.href = '/auth.html';
+                }
                 return;
             }
 
@@ -286,7 +289,10 @@ class CRMApp {
             this.updateUserUI();
         } catch (error) {
             console.error('Failed to load user data:', error);
-            window.location.href = '/auth.html';
+            // Prevent infinite redirect loop in iframe
+            if (window.location.pathname !== '/auth.html') {
+                window.location.href = '/auth.html';
+            }
         }
     }
 
@@ -984,159 +990,223 @@ class CRMApp {
         contentContainer.innerHTML = `
             <div class="customer-detail-view">
                 <div class="customer-detail-content">
-                    <!-- Header with breadcrumb and edit button -->
+                    <!-- Header with breadcrumb -->
                     <div class="detail-header">
                         <button class="back-btn" onclick="app.showView('dashboard')">← Back to Dashboard</button>
-                        <div class="detail-actions">
-                            <button class="btn btn-primary" onclick="app.toggleEditMode(!app.editMode)" id="edit-btn">
-                                ${isEditing ? 'Cancel' : 'Edit'}
-                            </button>
-                            ${isEditing ? '<button class="btn btn-primary" onclick="app.saveCustomerChanges()">Save</button>' : ''}
-                        </div>
+                        <h1>${this.escapeHtml(customer.company_name)}</h1>
                     </div>
 
                     <!-- General Information -->
-                    <div class="detail-section">
-                        <h3>General Information</h3>
+                    <div class="detail-section" id="general-section">
+                        <div class="section-header">
+                            <h3>General Information</h3>
+                            <button class="section-edit-btn" onclick="app.toggleSectionEdit('general')" id="general-edit-btn">
+                                ${this.editingSections.has('general') ? '✕' : '✏️'}
+                            </button>
+                        </div>
                         <div class="detail-grid">
                             <div class="detail-field">
                                 <label>Company Name</label>
-                                <input type="text" id="edit-company-name" value="${this.escapeHtml(customer.company_name)}" ${isEditing ? '' : 'disabled'}>
+                                ${this.editingSections.has('general') ? 
+                                    `<input type="text" id="edit-company-name" value="${this.escapeHtml(customer.company_name)}">` :
+                                    `<span class="field-value">${this.escapeHtml(customer.company_name)}</span>`
+                                }
                             </div>
                             <div class="detail-field">
                                 <label>Status</label>
-                                <select id="edit-status" ${isEditing ? '' : 'disabled'} onchange="app.updateNextStepOptions()">
-                                    <option value="Lead" ${customer.status === 'Lead' ? 'selected' : ''}>Lead</option>
-                                    <option value="Quoted" ${customer.status === 'Quoted' ? 'selected' : ''}>Quoted</option>
-                                    <option value="Signed" ${customer.status === 'Signed' ? 'selected' : ''}>Signed</option>
-                                    <option value="Onboarding" ${customer.status === 'Onboarding' ? 'selected' : ''}>Onboarding</option>
-                                    <option value="Active" ${customer.status === 'Active' ? 'selected' : ''}>Active</option>
-                                </select>
+                                ${this.editingSections.has('general') ? 
+                                    `<select id="edit-status" onchange="app.updateNextStepOptions()">
+                                        <option value="Lead" ${customer.status === 'Lead' ? 'selected' : ''}>Lead</option>
+                                        <option value="Quoted" ${customer.status === 'Quoted' ? 'selected' : ''}>Quoted</option>
+                                        <option value="Signed" ${customer.status === 'Signed' ? 'selected' : ''}>Signed</option>
+                                        <option value="Onboarding" ${customer.status === 'Onboarding' ? 'selected' : ''}>Onboarding</option>
+                                        <option value="Active" ${customer.status === 'Active' ? 'selected' : ''}>Active</option>
+                                    </select>` :
+                                    `<span class="field-value status-badge ${customer.status?.toLowerCase()}">${this.escapeHtml(customer.status)}</span>`
+                                }
                             </div>
                             <div class="detail-field">
                                 <label>Affiliate Partner</label>
-                                <select id="edit-affiliate-partner" ${isEditing ? '' : 'disabled'}>
-                                    <option value="">None</option>
-                                    <option value="VOXO" ${customer.affiliate_partner === 'VOXO' ? 'selected' : ''}>VOXO</option>
-                                </select>
+                                ${this.editingSections.has('general') ? 
+                                    `<select id="edit-affiliate-partner">
+                                        <option value="">None</option>
+                                        <option value="VOXO" ${customer.affiliate_partner === 'VOXO' ? 'selected' : ''}>VOXO</option>
+                                    </select>` :
+                                    `<span class="field-value">${this.escapeHtml(customer.affiliate_partner) || 'None'}</span>`
+                                }
                             </div>
                             <div class="detail-field">
                                 <label>Next Step</label>
-                                <select id="edit-next-step" ${isEditing ? '' : 'disabled'}>
-                                    <option value="">Select Next Step</option>
-                                    ${nextStepOptionsHtml}
-                                </select>
+                                ${this.editingSections.has('general') ? 
+                                    `<select id="edit-next-step">
+                                        <option value="">Select Next Step</option>
+                                        ${nextStepOptionsHtml}
+                                    </select>` :
+                                    `<span class="field-value">${this.escapeHtml(customer.next_step) || 'None'}</span>`
+                                }
                             </div>
                         </div>
+                        ${this.editingSections.has('general') ? 
+                            `<div class="section-actions">
+                                <button class="btn btn-primary btn-sm" onclick="app.saveSectionChanges('general')">Save</button>
+                                <button class="btn btn-secondary btn-sm" onclick="app.cancelSectionEdit('general')">Cancel</button>
+                            </div>` : 
+                            ''
+                        }
                     </div>
 
                     <!-- Contact Information -->
-                    <div class="detail-section">
-                        <h3>Contact Information</h3>
-                        <div class="detail-grid">
-                            <div class="detail-field">
-                                <label>Primary Contact Name</label>
-                                <input type="text" id="edit-primary-name" value="${this.escapeHtml(primaryContact.name || '')}" ${isEditing ? '' : 'disabled'}>
-                            </div>
-                            <div class="detail-field">
-                                <label>Primary Email</label>
-                                <input type="email" id="edit-primary-email" value="${this.escapeHtml(primaryContact.email || '')}" ${isEditing ? '' : 'disabled'}>
-                            </div>
-                            <div class="detail-field">
-                                <label>Primary Phone</label>
-                                <input type="tel" id="edit-primary-phone" value="${this.escapeHtml(primaryContact.phone || '')}" ${isEditing ? '' : 'disabled'}>
-                            </div>
-                            <div class="detail-field">
-                                <label>Authorized Signer Name</label>
-                                <input type="text" id="edit-signer-name" value="${this.escapeHtml(authorizedSigner.name || '')}" ${isEditing ? '' : 'disabled'}>
-                            </div>
-                            <div class="detail-field">
-                                <label>Signer Email</label>
-                                <input type="email" id="edit-signer-email" value="${this.escapeHtml(authorizedSigner.email || '')}" ${isEditing ? '' : 'disabled'}>
-                            </div>
-                            <div class="detail-field">
-                                <label>Billing Contact Name</label>
-                                <input type="text" id="edit-billing-name" value="${this.escapeHtml(billingContact.name || '')}" ${isEditing ? '' : 'disabled'}>
-                            </div>
-                            <div class="detail-field">
-                                <label>Billing Contact Email</label>
-                                <input type="email" id="edit-billing-email" value="${this.escapeHtml(billingContact.email || '')}" ${isEditing ? '' : 'disabled'}>
-                            </div>
-                            <div class="detail-field">
-                                <label>Billing Contact Phone</label>
-                                <input type="tel" id="edit-billing-phone" value="${this.escapeHtml(billingContact.phone || '')}" ${isEditing ? '' : 'disabled'}>
-                            </div>
+                    <div class="detail-section" id="contact-section">
+                        <div class="section-header">
+                            <h3>Contact Information</h3>
+                            <button class="section-edit-btn" onclick="app.toggleSectionEdit('contact')" id="contact-edit-btn">
+                                ${this.editingSections.has('contact') ? '✕' : '✏️'}
+                            </button>
                         </div>
-                    </div>
-
-                    <!-- Addresses -->
-                    <div class="detail-section">
-                        <h3>Addresses</h3>
                         <div class="detail-grid">
-                            <div class="detail-field">
+                            <div class="detail-field full-width">
                                 <label>Physical Address</label>
-                                <textarea id="edit-physical-address" rows="3" ${isEditing ? '' : 'disabled'}>${this.escapeHtml(customer.physical_address || '')}</textarea>
+                                ${this.editingSections.has('contact') ? 
+                                    `<textarea id="edit-physical-address" rows="3">${this.escapeHtml(customer.physical_address) || ''}</textarea>` :
+                                    `<span class="field-value">${this.escapeHtml(customer.physical_address) || 'Not provided'}</span>`
+                                }
                             </div>
-                            <div class="detail-field">
+                            <div class="detail-field full-width">
                                 <label>Billing Address</label>
-                                <textarea id="edit-billing-address" rows="3" ${isEditing ? '' : 'disabled'}>${this.escapeHtml(customer.billing_address || '')}</textarea>
+                                ${this.editingSections.has('contact') ? 
+                                    `<textarea id="edit-billing-address" rows="3">${this.escapeHtml(customer.billing_address) || ''}</textarea>` :
+                                    `<span class="field-value">${this.escapeHtml(customer.billing_address) || 'Not provided'}</span>`
+                                }
                             </div>
                         </div>
+                        ${this.editingSections.has('contact') ? 
+                            `<div class="section-actions">
+                                <button class="btn btn-primary btn-sm" onclick="app.saveSectionChanges('contact')">Save</button>
+                                <button class="btn btn-secondary btn-sm" onclick="app.cancelSectionEdit('contact')">Cancel</button>
+                            </div>` : 
+                            ''
+                        }
                     </div>
 
-            <!-- Contact Information -->
-            <div class="detail-section">
-                <h3>Contact Information</h3>
-                <div class="detail-grid">
-                    <div class="detail-field">
-                        <label>Primary Contact Name</label>
-                        <input type="text" id="edit-primary-name" value="${this.escapeHtml(primaryContact.name || '')}" ${isEditing ? '' : 'disabled'}>
+                    <!-- Primary Contact -->
+                    <div class="detail-section" id="primary-contact-section">
+                        <div class="section-header">
+                            <h3>Primary Contact</h3>
+                            <button class="section-edit-btn" onclick="app.toggleSectionEdit('primary-contact')" id="primary-contact-edit-btn">
+                                ${this.editingSections.has('primary-contact') ? '✕' : '✏️'}
+                            </button>
+                        </div>
+                        <div class="detail-grid">
+                            <div class="detail-field">
+                                <label>Name</label>
+                                ${this.editingSections.has('primary-contact') ? 
+                                    `<input type="text" id="edit-primary-name" value="${this.escapeHtml(primaryContact.name) || ''}">` :
+                                    `<span class="field-value">${this.escapeHtml(primaryContact.name) || 'Not provided'}</span>`
+                                }
+                            </div>
+                            <div class="detail-field">
+                                <label>Email</label>
+                                ${this.editingSections.has('primary-contact') ? 
+                                    `<input type="email" id="edit-primary-email" value="${this.escapeHtml(primaryContact.email) || ''}">` :
+                                    `<span class="field-value">${this.escapeHtml(primaryContact.email) || 'Not provided'}</span>`
+                                }
+                            </div>
+                            <div class="detail-field">
+                                <label>Phone</label>
+                                ${this.editingSections.has('primary-contact') ? 
+                                    `<input type="tel" id="edit-primary-phone" value="${this.escapeHtml(primaryContact.phone) || ''}">` :
+                                    `<span class="field-value">${this.escapeHtml(primaryContact.phone) || 'Not provided'}</span>`
+                                }
+                            </div>
+                        </div>
+                        ${this.editingSections.has('primary-contact') ? 
+                            `<div class="section-actions">
+                                <button class="btn btn-primary btn-sm" onclick="app.saveSectionChanges('primary-contact')">Save</button>
+                                <button class="btn btn-secondary btn-sm" onclick="app.cancelSectionEdit('primary-contact')">Cancel</button>
+                            </div>` : 
+                            ''
+                        }
                     </div>
-                    <div class="detail-field">
-                        <label>Primary Email</label>
-                        <input type="email" id="edit-primary-email" value="${this.escapeHtml(primaryContact.email || '')}" ${isEditing ? '' : 'disabled'}>
-                    </div>
-                    <div class="detail-field">
-                        <label>Primary Phone</label>
-                        <input type="tel" id="edit-primary-phone" value="${this.escapeHtml(primaryContact.phone || '')}" ${isEditing ? '' : 'disabled'}>
-                    </div>
-                    <div class="detail-field">
-                        <label>Authorized Signer Name</label>
-                        <input type="text" id="edit-signer-name" value="${this.escapeHtml(authorizedSigner.name || '')}" ${isEditing ? '' : 'disabled'}>
-                    </div>
-                    <div class="detail-field">
-                        <label>Signer Email</label>
-                        <input type="email" id="edit-signer-email" value="${this.escapeHtml(authorizedSigner.email || '')}" ${isEditing ? '' : 'disabled'}>
-                    </div>
-                    <div class="detail-field">
-                        <label>Billing Contact Name</label>
-                        <input type="text" id="edit-billing-name" value="${this.escapeHtml(billingContact.name || '')}" ${isEditing ? '' : 'disabled'}>
-                    </div>
-                    <div class="detail-field">
-                        <label>Billing Contact Email</label>
-                        <input type="email" id="edit-billing-email" value="${this.escapeHtml(billingContact.email || '')}" ${isEditing ? '' : 'disabled'}>
-                    </div>
-                    <div class="detail-field">
-                        <label>Billing Contact Phone</label>
-                        <input type="tel" id="edit-billing-phone" value="${this.escapeHtml(billingContact.phone || '')}" ${isEditing ? '' : 'disabled'}>
-                    </div>
-                </div>
-            </div>
 
-            <!-- Addresses -->
-            <div class="detail-section">
-                <h3>Addresses</h3>
-                <div class="detail-grid">
-                    <div class="detail-field">
-                        <label>Physical Address</label>
-                        <textarea id="edit-physical-address" rows="3" ${isEditing ? '' : 'disabled'}>${this.escapeHtml(customer.physical_address || '')}</textarea>
+                    <!-- Authorized Signer -->
+                    <div class="detail-section" id="authorized-signer-section">
+                        <div class="section-header">
+                            <h3>Authorized Signer</h3>
+                            <button class="section-edit-btn" onclick="app.toggleSectionEdit('authorized-signer')" id="authorized-signer-edit-btn">
+                                ${this.editingSections.has('authorized-signer') ? '✕' : '✏️'}
+                            </button>
+                        </div>
+                        <div class="detail-grid">
+                            <div class="detail-field">
+                                <label>Name</label>
+                                ${this.editingSections.has('authorized-signer') ? 
+                                    `<input type="text" id="edit-signer-name" value="${this.escapeHtml(authorizedSigner.name) || ''}">` :
+                                    `<span class="field-value">${this.escapeHtml(authorizedSigner.name) || 'Not provided'}</span>`
+                                }
+                            </div>
+                            <div class="detail-field">
+                                <label>Email</label>
+                                ${this.editingSections.has('authorized-signer') ? 
+                                    `<input type="email" id="edit-signer-email" value="${this.escapeHtml(authorizedSigner.email) || ''}">` :
+                                    `<span class="field-value">${this.escapeHtml(authorizedSigner.email) || 'Not provided'}</span>`
+                                }
+                            </div>
+                            <div class="detail-field">
+                                <label>Phone</label>
+                                ${this.editingSections.has('authorized-signer') ? 
+                                    `<input type="tel" id="edit-signer-phone" value="${this.escapeHtml(authorizedSigner.phone) || ''}">` :
+                                    `<span class="field-value">${this.escapeHtml(authorizedSigner.phone) || 'Not provided'}</span>`
+                                }
+                            </div>
+                        </div>
+                        ${this.editingSections.has('authorized-signer') ? 
+                            `<div class="section-actions">
+                                <button class="btn btn-primary btn-sm" onclick="app.saveSectionChanges('authorized-signer')">Save</button>
+                                <button class="btn btn-secondary btn-sm" onclick="app.cancelSectionEdit('authorized-signer')">Cancel</button>
+                            </div>` : 
+                            ''
+                        }
                     </div>
-                    <div class="detail-field">
-                        <label>Billing Address</label>
-                        <textarea id="edit-billing-address" rows="3" ${isEditing ? '' : 'disabled'}>${this.escapeHtml(customer.billing_address || '')}</textarea>
+
+                    <!-- Billing Contact -->
+                    <div class="detail-section" id="billing-contact-section">
+                        <div class="section-header">
+                            <h3>Billing Contact</h3>
+                            <button class="section-edit-btn" onclick="app.toggleSectionEdit('billing-contact')" id="billing-contact-edit-btn">
+                                ${this.editingSections.has('billing-contact') ? '✕' : '✏️'}
+                            </button>
+                        </div>
+                        <div class="detail-grid">
+                            <div class="detail-field">
+                                <label>Name</label>
+                                ${this.editingSections.has('billing-contact') ? 
+                                    `<input type="text" id="edit-billing-name" value="${this.escapeHtml(billingContact.name) || ''}">` :
+                                    `<span class="field-value">${this.escapeHtml(billingContact.name) || 'Not provided'}</span>`
+                                }
+                            </div>
+                            <div class="detail-field">
+                                <label>Email</label>
+                                ${this.editingSections.has('billing-contact') ? 
+                                    `<input type="email" id="edit-billing-email" value="${this.escapeHtml(billingContact.email) || ''}">` :
+                                    `<span class="field-value">${this.escapeHtml(billingContact.email) || 'Not provided'}</span>`
+                                }
+                            </div>
+                            <div class="detail-field">
+                                <label>Phone</label>
+                                ${this.editingSections.has('billing-contact') ? 
+                                    `<input type="tel" id="edit-billing-phone" value="${this.escapeHtml(billingContact.phone) || ''}">` :
+                                    `<span class="field-value">${this.escapeHtml(billingContact.phone) || 'Not provided'}</span>`
+                                }
+                            </div>
+                        </div>
+                        ${this.editingSections.has('billing-contact') ? 
+                            `<div class="section-actions">
+                                <button class="btn btn-primary btn-sm" onclick="app.saveSectionChanges('billing-contact')">Save</button>
+                                <button class="btn btn-secondary btn-sm" onclick="app.cancelSectionEdit('billing-contact')">Cancel</button>
+                            </div>` : 
+                            ''
+                        }
                     </div>
-                </div>
-            </div>
 
                     <!-- Notes -->
                     <div class="detail-section">
@@ -1178,8 +1248,13 @@ class CRMApp {
                     </div>
 
                     <!-- Files & Media -->
-                    <div class="detail-section">
-                        <h3>Files & Media</h3>
+                    <div class="detail-section" id="files-section">
+                        <div class="section-header">
+                            <h3>Files & Media</h3>
+                            <button class="section-edit-btn" onclick="app.toggleSectionEdit('files')" id="files-edit-btn">
+                                ${this.editingSections.has('files') ? '✕' : '✏️'}
+                            </button>
+                        </div>
                         <div class="files-section">
                             ${isEditing ? `
                                 <div class="file-upload-section">
@@ -1211,8 +1286,8 @@ class CRMApp {
         // Load customer files
         this.loadCustomerFiles();
         
-        // Set up file upload if in edit mode
-        if (isEditing) {
+        // Set up file upload if files section is in edit mode
+        if (this.editingSections.has('files')) {
             this.setupFileUpload();
         }
         
