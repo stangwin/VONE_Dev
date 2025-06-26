@@ -249,7 +249,8 @@ const server = http.createServer(async (req, res) => {
       const form = new IncomingForm({
         uploadDir: `./public/uploads/${customerId}`,
         keepExtensions: true,
-        maxFileSize: 5 * 1024 * 1024, // 5MB
+        maxFileSize: 5 * 1024 * 1024, // 5MB per file
+        maxTotalFileSize: 50 * 1024 * 1024, // 50MB total (allows multiple files)
         filter: ({ mimetype }) => {
           return mimetype && (
             mimetype.startsWith('image/') || 
