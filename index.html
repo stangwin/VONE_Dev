@@ -9,18 +9,38 @@
     <body>
         <div class="container">
             <header>
-                <h1>Vantix CRM</h1>
-                <nav>
-                    <button id="dashboard-btn" class="nav-btn active">
-                        Dashboard
-                    </button>
-                    <button id="add-customer-btn" class="nav-btn">
-                        Add Customer
-                    </button>
-                    <button id="import-btn" class="nav-btn">
-                        Import CSV
-                    </button>
-                </nav>
+                <div class="header-content">
+                    <div class="left-header">
+                        <h1>Vantix CRM</h1>
+                        <nav>
+                            <button id="dashboard-btn" class="nav-btn active">
+                                Dashboard
+                            </button>
+                            <button id="add-customer-btn" class="nav-btn">
+                                Add Customer
+                            </button>
+                            <button id="import-btn" class="nav-btn">
+                                Import CSV
+                            </button>
+                        </nav>
+                    </div>
+                    <div class="user-menu">
+                        <div class="user-dropdown">
+                            <button class="user-avatar" id="user-avatar">
+                                <span id="user-name">Loading...</span>
+                                <svg class="dropdown-icon" width="12" height="12" viewBox="0 0 12 12" fill="none">
+                                    <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </button>
+                            <div class="dropdown-menu" id="dropdown-menu">
+                                <a href="#" id="my-profile" class="dropdown-item">My Profile</a>
+                                <a href="/users.html" id="manage-users" class="dropdown-item" style="display: none;">Manage Users</a>
+                                <div class="dropdown-divider"></div>
+                                <a href="#" id="logout-btn" class="dropdown-item">Logout</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </header>
 
             <main>

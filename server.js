@@ -175,17 +175,145 @@ const server = http.createServer(async (req, res) => {
         return;
       }
 
-      // Admin Routes - List all users (for future admin interface)
-      if (pathname === '/api/admin/users' && req.method === 'GET') {
+      // User Management Routes
+      if (pathname === '/api/users' && req.method === 'GET') {
         if (!isAuthenticated(req)) {
           res.writeHead(401, { 'Content-Type': 'application/json' });
           res.end(JSON.stringify({ error: 'Authentication required' }));
           return;
         }
 
+        const currentUser = await authService.getUserById(req.session.userId);
+        if (!currentUser || currentUser.role !== 'admin') {
+          res.writeHead(403, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Admin access required' }));
+          return;
+        }
+
         const users = await authService.getAllUsers();
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify(users));
+        return;
+      }
+
+      if (pathname === '/api/users' && req.method === 'POST') {
+        if (!isAuthenticated(req)) {
+          res.writeHead(401, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Authentication required' }));
+          return;
+        }
+
+        const currentUser = await authService.getUserById(req.session.userId);
+        if (!currentUser || currentUser.role !== 'admin') {
+          res.writeHead(403, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Admin access required' }));
+          return;
+        }
+
+        const { name, email, password, role = 'user' } = await parseJsonBody(req);
+        
+        if (!name || !email || !password) {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Name, email, and password are required' }));
+          return;
+        }
+
+        try {
+          const newUser = await authService.createUser({ name, email, password, role });
+          res.writeHead(201, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify(newUser));
+        } catch (error) {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: error.message }));
+        }
+        return;
+      }
+
+      if (pathname.match(/^\/api\/users\/\d+$/) && req.method === 'PUT') {
+        if (!isAuthenticated(req)) {
+          res.writeHead(401, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Authentication required' }));
+          return;
+        }
+
+        const userId = parseInt(pathname.split('/')[3]);
+        const currentUser = await authService.getUserById(req.session.userId);
+        
+        // Users can only edit their own profile unless they're admin
+        if (!currentUser || (currentUser.role !== 'admin' && currentUser.id !== userId)) {
+          res.writeHead(403, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Access denied' }));
+          return;
+        }
+
+        const updates = await parseJsonBody(req);
+        
+        // Regular users can't change their role
+        if (currentUser.role !== 'admin' && updates.role) {
+          delete updates.role;
+        }
+
+        try {
+          const updatedUser = await authService.updateUser(userId, updates);
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify(updatedUser));
+        } catch (error) {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: error.message }));
+        }
+        return;
+      }
+
+      if (pathname.match(/^\/api\/users\/\d+$/) && req.method === 'DELETE') {
+        if (!isAuthenticated(req)) {
+          res.writeHead(401, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Authentication required' }));
+          return;
+        }
+
+        const userId = parseInt(pathname.split('/')[3]);
+        const currentUser = await authService.getUserById(req.session.userId);
+        
+        if (!currentUser || currentUser.role !== 'admin') {
+          res.writeHead(403, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Admin access required' }));
+          return;
+        }
+
+        // Prevent self-deletion
+        if (currentUser.id === userId) {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Cannot delete your own account' }));
+          return;
+        }
+
+        try {
+          await authService.deleteUser(userId);
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ message: 'User deleted successfully' }));
+        } catch (error) {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: error.message }));
+        }
+        return;
+      }
+
+      if (pathname === '/api/user' && req.method === 'GET') {
+        if (!isAuthenticated(req)) {
+          res.writeHead(401, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Authentication required' }));
+          return;
+        }
+
+        const user = await authService.getUserById(req.session.userId);
+        if (!user) {
+          res.writeHead(404, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'User not found' }));
+          return;
+        }
+
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify(user));
         return;
       }
 

@@ -7,6 +7,7 @@ export const users = pgTable('users', {
     email: text('email').notNull().unique(),
     password_hash: text('password_hash'), // nullable for future SSO
     auth_provider: text('auth_provider').notNull().default('local'), // 'local', 'google', 'microsoft'
+    role: text('role').notNull().default('user'), // 'admin', 'user'
     created_at: timestamp('created_at').defaultNow(),
 });
 

@@ -14,16 +14,16 @@ class AuthService {
     return await bcrypt.compare(password, hash);
   }
 
-  async createUser({ name, email, password, auth_provider = 'local' }) {
+  async createUser({ name, email, password, auth_provider = 'local', role = 'user' }) {
     const password_hash = password ? await this.hashPassword(password) : null;
     
     const query = `
-      INSERT INTO users (name, email, password_hash, auth_provider, created_at)
-      VALUES ($1, $2, $3, $4, NOW())
-      RETURNING id, name, email, auth_provider, created_at
+      INSERT INTO users (name, email, password_hash, auth_provider, role, created_at)
+      VALUES ($1, $2, $3, $4, $5, NOW())
+      RETURNING id, name, email, auth_provider, role, created_at
     `;
     
-    const result = await this.pool.query(query, [name, email, password_hash, auth_provider]);
+    const result = await this.pool.query(query, [name, email, password_hash, auth_provider, role]);
     return result.rows[0];
   }
 
@@ -34,7 +34,7 @@ class AuthService {
   }
 
   async getUserById(id) {
-    const query = 'SELECT id, name, email, auth_provider, created_at FROM users WHERE id = $1';
+    const query = 'SELECT id, name, email, auth_provider, role, created_at FROM users WHERE id = $1';
     const result = await this.pool.query(query, [id]);
     return result.rows[0] || null;
   }
@@ -57,9 +57,57 @@ class AuthService {
   }
 
   async getAllUsers() {
-    const query = 'SELECT id, name, email, auth_provider, created_at FROM users ORDER BY created_at DESC';
+    const query = 'SELECT id, name, email, auth_provider, role, created_at FROM users ORDER BY created_at DESC';
     const result = await this.pool.query(query);
     return result.rows;
+  }
+
+  async updateUser(id, updates) {
+    const { name, email, role, password } = updates;
+    const fields = [];
+    const values = [];
+    let paramCount = 1;
+
+    if (name !== undefined) {
+      fields.push(`name = $${paramCount++}`);
+      values.push(name);
+    }
+    if (email !== undefined) {
+      fields.push(`email = $${paramCount++}`);
+      values.push(email);
+    }
+    if (role !== undefined) {
+      fields.push(`role = $${paramCount++}`);
+      values.push(role);
+    }
+    if (password !== undefined) {
+      const password_hash = await this.hashPassword(password);
+      fields.push(`password_hash = $${paramCount++}`);
+      values.push(password_hash);
+    }
+
+    if (fields.length === 0) {
+      throw new Error('No fields to update');
+    }
+
+    fields.push(`updated_at = NOW()`);
+    values.push(id);
+
+    const query = `
+      UPDATE users 
+      SET ${fields.join(', ')}
+      WHERE id = $${paramCount}
+      RETURNING id, name, email, auth_provider, role, created_at
+    `;
+
+    const result = await this.pool.query(query, values);
+    return result.rows[0];
+  }
+
+  async deleteUser(id) {
+    const query = 'DELETE FROM users WHERE id = $1 RETURNING id';
+    const result = await this.pool.query(query, [id]);
+    return result.rows[0];
   }
 }
 

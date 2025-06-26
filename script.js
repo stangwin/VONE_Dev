@@ -236,9 +236,11 @@ class CRMApp {
         this.filteredCustomers = [];
         this.currentCustomer = null;
         this.currentCustomerId = null;
+        this.currentUser = null;
         this.sortConfig = { key: null, direction: 'asc' };
         this.filters = { status: '', affiliate: '', search: '' };
         this.isEditingCustomer = false;
+        this.editingSections = new Set(); // Track which sections are in edit mode
         this.init();
     }
 
@@ -248,13 +250,16 @@ class CRMApp {
         try {
             console.log('Step 1: CRM App starting initialization...');
             
-            console.log('Step 2: Loading customers...');
+            console.log('Step 2: Loading user data...');
+            await this.loadUserData();
+            
+            console.log('Step 3: Loading customers...');
             await this.loadCustomers();
             
-            console.log('Step 3: Binding events...');
+            console.log('Step 4: Binding events...');
             this.bindEvents();
             
-            console.log('Step 4: Showing dashboard view...');
+            console.log('Step 5: Showing dashboard view...');
             this.showView("dashboard");
             
             console.log("=== CRM INIT SUCCESSFUL ===");
@@ -262,6 +267,43 @@ class CRMApp {
             console.error("CRITICAL: Failed to initialize app:", error);
             console.error("Error stack:", error.stack);
             this.showError("dashboard-error", "Failed to load application data.");
+        }
+    }
+
+    async loadUserData() {
+        try {
+            const response = await fetch('/api/user', {
+                credentials: 'include'
+            });
+
+            if (!response.ok) {
+                console.log('User not authenticated, redirecting to auth page...');
+                window.location.href = '/auth.html';
+                return;
+            }
+
+            this.currentUser = await response.json();
+            this.updateUserUI();
+        } catch (error) {
+            console.error('Failed to load user data:', error);
+            window.location.href = '/auth.html';
+        }
+    }
+
+    updateUserUI() {
+        const userNameElement = document.getElementById('user-name');
+        const manageUsersLink = document.getElementById('manage-users');
+        
+        if (userNameElement && this.currentUser) {
+            userNameElement.textContent = this.currentUser.name;
+        }
+        
+        if (manageUsersLink && this.currentUser) {
+            if (this.currentUser.role === 'admin') {
+                manageUsersLink.style.display = 'block';
+            } else {
+                manageUsersLink.style.display = 'none';
+            }
         }
     }
 
@@ -781,6 +823,9 @@ class CRMApp {
             addFirstCustomer.addEventListener("click", () => this.showAddCustomerForm());
         }
 
+        // User dropdown events
+        this.setupUserDropdown();
+
         // Back to dashboard
         const backBtn = document.getElementById("back-to-dashboard");
         if (backBtn) {
@@ -826,6 +871,55 @@ class CRMApp {
                 this.sortTable(sortKey);
             });
         });
+    }
+
+    setupUserDropdown() {
+        const userAvatar = document.getElementById('user-avatar');
+        const userDropdown = document.querySelector('.user-dropdown');
+        const logoutBtn = document.getElementById('logout-btn');
+
+        if (userAvatar) {
+            userAvatar.addEventListener('click', (e) => {
+                e.stopPropagation();
+                userDropdown.classList.toggle('open');
+            });
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            if (userDropdown && !userDropdown.contains(e.target)) {
+                userDropdown.classList.remove('open');
+            }
+        });
+
+        // Handle logout
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', async (e) => {
+                e.preventDefault();
+                await this.logout();
+            });
+        }
+    }
+
+    async logout() {
+        try {
+            const response = await fetch('/api/auth/logout', {
+                method: 'POST',
+                credentials: 'include'
+            });
+
+            // Clear any local state regardless of server response
+            this.currentUser = null;
+            this.customers = [];
+            this.filteredCustomers = [];
+            
+            // Always redirect to login page
+            window.location.href = '/auth.html';
+        } catch (error) {
+            console.error('Logout error:', error);
+            // Still redirect on error
+            window.location.href = '/auth.html';
+        }
     }
 
     showAddCustomerForm() {
