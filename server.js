@@ -717,6 +717,79 @@ const server = http.createServer(async (req, res) => {
 
 
 
+    // Customer Notes API Routes
+    if (pathname.startsWith('/api/customers/') && pathname.endsWith('/notes') && req.method === 'POST') {
+      console.log('Note creation request received for:', pathname);
+      
+      if (!isAuthenticated(req)) {
+        console.log('Note creation failed: Not authenticated');
+        res.writeHead(401, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Authentication required' }));
+        return;
+      }
+
+      const customerId = pathname.split('/')[3];
+      console.log('Creating note for customer:', customerId);
+      
+      let body = '';
+      req.on('data', chunk => {
+        body += chunk.toString();
+      });
+
+      req.on('end', async () => {
+        try {
+          const noteData = JSON.parse(body);
+          console.log('Note data received:', noteData);
+          
+          // Get the authenticated user
+          const user = await authService.getUserById(req.session.userId);
+          if (!user) {
+            console.log('Note creation failed: User not found');
+            res.writeHead(401, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'User not found' }));
+            return;
+          }
+
+          console.log('Creating note with user:', user.name);
+          
+          const result = await pool.query(
+            `INSERT INTO customer_notes (customer_id, author_id, author_name, content, type, timestamp, created_at, updated_at)
+             VALUES ($1, $2, $3, $4, 'manual', NOW(), NOW(), NOW())
+             RETURNING *`,
+            [customerId, user.id, user.name, noteData.content]
+          );
+
+          console.log('Note created successfully:', result.rows[0]);
+          res.writeHead(201, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify(result.rows[0]));
+        } catch (error) {
+          console.error('Error creating note:', error);
+          res.writeHead(500, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Failed to create note: ' + error.message }));
+        }
+      });
+      return;
+    }
+
+    // Get notes for customer
+    if (pathname.startsWith('/api/customers/') && pathname.endsWith('/notes') && req.method === 'GET') {
+      if (!isAuthenticated(req)) {
+        res.writeHead(401, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Authentication required' }));
+        return;
+      }
+
+      const customerId = pathname.split('/')[3];
+      const result = await pool.query(
+        'SELECT * FROM customer_notes WHERE customer_id = $1 ORDER BY timestamp DESC',
+        [customerId]
+      );
+
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify(result.rows));
+      return;
+    }
+
     if (pathname === '/api/health') {
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ status: 'OK', timestamp: new Date().toISOString() }));

@@ -226,6 +226,32 @@ class DatabaseAPI {
             throw error;
         }
     }
+
+    async createNote(customerId, noteData) {
+        console.log('DatabaseAPI: Creating note for customer', customerId);
+        console.log('DatabaseAPI: Note data', noteData);
+        
+        const response = await fetch(`/api/customers/${customerId}/notes`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+            body: JSON.stringify(noteData)
+        });
+
+        console.log('DatabaseAPI: Note creation response status:', response.status);
+        
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('DatabaseAPI: Note creation failed:', errorText);
+            throw new Error(errorText || 'Failed to create note');
+        }
+
+        const result = await response.json();
+        console.log('DatabaseAPI: Note created successfully:', result);
+        return result;
+    }
 }
 
 // CRM Application
@@ -279,8 +305,14 @@ class CRMApp {
 
             if (!response.ok) {
                 console.log('User not authenticated, redirecting to auth page...');
-                // Prevent infinite redirect loop in iframe
-                if (window.location.pathname !== '/auth.html') {
+                // In iframe, show login instructions instead of redirecting
+                if (window.top !== window.self) {
+                    const errorDiv = document.getElementById('dashboard-error');
+                    if (errorDiv) {
+                        errorDiv.innerHTML = 'Authentication required. <a href="/auth.html" target="_blank">Click here to login</a> then refresh this page.';
+                        errorDiv.style.display = 'block';
+                    }
+                } else {
                     window.location.href = '/auth.html';
                 }
                 return;
@@ -290,8 +322,14 @@ class CRMApp {
             this.updateUserUI();
         } catch (error) {
             console.error('Failed to load user data:', error);
-            // Prevent infinite redirect loop in iframe
-            if (window.location.pathname !== '/auth.html') {
+            // In iframe, show login instructions instead of redirecting
+            if (window.top !== window.self) {
+                const errorDiv = document.getElementById('dashboard-error');
+                if (errorDiv) {
+                    errorDiv.innerHTML = 'Authentication required. <a href="/auth.html" target="_blank">Click here to login</a> then refresh this page.';
+                    errorDiv.style.display = 'block';
+                }
+            } else {
                 window.location.href = '/auth.html';
             }
         }
@@ -2023,30 +2061,62 @@ class CRMApp {
         }
     }
 
-    async addNote() {
-        const noteInput = document.getElementById('new-note-content');
-        if (!noteInput || !this.currentCustomer) return;
+    async loadCustomerNotes() {
+        if (!this.currentCustomer) return;
+        
+        try {
+            const response = await fetch(`/api/customers/${this.currentCustomer.customer_id}/notes`, {
+                credentials: 'include'
+            });
+            
+            if (!response.ok) {
+                throw new Error('Failed to load notes');
+            }
+            
+            const notes = await response.json();
+            this.renderNotesSection(notes);
+        } catch (error) {
+            console.error('Failed to load customer notes:', error);
+        }
+    }
 
-        const noteContent = noteInput.value.trim();
-        if (!noteContent) {
+    async addNote() {
+        const newNoteTextarea = document.getElementById('new-note-content');
+        if (!newNoteTextarea) {
+            console.error('Note textarea not found');
+            return;
+        }
+        
+        const content = newNoteTextarea.value.trim();
+        
+        if (!content) {
             alert('Please enter a note before adding.');
             return;
         }
 
-        try {
-            // Create note via new API
-            await this.api.createCustomerNote(this.currentCustomer.customer_id, noteContent);
-            
-            // Clear the input
-            noteInput.value = '';
-            
-            // Reload notes to show the new note
-            await this.loadCustomerNotes();
+        if (!this.currentCustomer || !this.currentCustomer.customer_id) {
+            alert('No customer selected.');
+            return;
+        }
 
-            console.log('Note added successfully');
+        try {
+            console.log('Adding note for customer:', this.currentCustomer.customer_id);
+            console.log('Note content:', content);
+            
+            const noteData = {
+                content: content,
+                author_name: this.currentUser ? this.currentUser.name : 'Unknown User',
+                timestamp: new Date().toISOString()
+            };
+
+            const result = await this.api.createNote(this.currentCustomer.customer_id, noteData);
+            console.log('Note added successfully:', result);
+            
+            await this.loadCustomerNotes();
+            this.clearNewNote();
         } catch (error) {
             console.error('Failed to add note:', error);
-            alert('Failed to add note. Please try again.');
+            alert('Failed to add note: ' + error.message);
         }
     }
 
