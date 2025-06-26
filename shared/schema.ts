@@ -44,6 +44,18 @@ export const customer_files = pgTable('customer_files', {
     created_at: timestamp('created_at').defaultNow(),
 });
 
+export const customer_notes = pgTable('customer_notes', {
+    id: serial('id').primaryKey(),
+    customer_id: text('customer_id').notNull(),
+    author_id: integer('author_id').references(() => users.id),
+    author_name: text('author_name'),
+    content: text('content').notNull(),
+    timestamp: timestamp('timestamp').defaultNow().notNull(),
+    type: text('type').notNull().default('manual'), // 'manual' or 'system'
+    created_at: timestamp('created_at').defaultNow().notNull(),
+    updated_at: timestamp('updated_at').defaultNow().notNull()
+});
+
 // Relations
 export const usersRelations = relations(users, ({ many }) => ({
     customers_created: many(customers, { relationName: 'created_by' }),
@@ -52,6 +64,7 @@ export const usersRelations = relations(users, ({ many }) => ({
 
 export const customersRelations = relations(customers, ({ many, one }) => ({
     files: many(customer_files),
+    notes: many(customer_notes),
     creator: one(users, {
         fields: [customers.created_by],
         references: [users.id],
@@ -71,6 +84,17 @@ export const customerFilesRelations = relations(customer_files, ({ one }) => ({
     }),
 }));
 
+export const customerNotesRelations = relations(customer_notes, ({ one }) => ({
+    customer: one(customers, {
+        fields: [customer_notes.customer_id],
+        references: [customers.customer_id],
+    }),
+    author: one(users, {
+        fields: [customer_notes.author_id],
+        references: [users.id],
+    })
+}));
+
 // Types
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
@@ -80,3 +104,6 @@ export type InsertCustomer = typeof customers.$inferInsert;
 
 export type CustomerFile = typeof customer_files.$inferSelect;
 export type InsertCustomerFile = typeof customer_files.$inferInsert;
+
+export type CustomerNote = typeof customer_notes.$inferSelect;
+export type InsertCustomerNote = typeof customer_notes.$inferInsert;

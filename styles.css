@@ -50,6 +50,92 @@ header {
     margin-bottom: 2rem;
 }
 
+/* Notes Styling */
+.note-item {
+    padding: 12px;
+    border: 1px solid hsl(var(--border));
+    border-radius: 8px;
+    margin-bottom: 8px;
+    background: hsl(var(--surface));
+}
+
+.note-item.system-note {
+    background: hsl(210 40% 98%);
+    border-left: 3px solid hsl(var(--primary));
+    font-style: italic;
+}
+
+.note-item.manual-note {
+    background: hsl(var(--surface));
+}
+
+.note-meta {
+    font-size: 0.875rem;
+    color: hsl(var(--text-secondary));
+    margin-bottom: 4px;
+}
+
+.system-indicator {
+    font-style: normal;
+    font-weight: 500;
+}
+
+.section-edit-btn {
+    background: none;
+    border: none;
+    padding: 4px 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
+    color: hsl(var(--text-secondary));
+    transition: background-color 0.15s ease;
+}
+
+.section-edit-btn:hover {
+    background: hsl(var(--secondary));
+    color: hsl(var(--primary));
+}
+
+.section-actions {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid hsl(var(--border));
+    display: flex;
+    gap: 8px;
+}
+
+.upload-dropzone {
+    border: 2px dashed hsl(var(--border));
+    border-radius: 8px;
+    padding: 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.15s ease;
+    margin-bottom: 16px;
+}
+
+.upload-dropzone:hover,
+.upload-dropzone.dragover {
+    border-color: hsl(var(--primary));
+    background: hsl(var(--background));
+}
+
+.upload-text p {
+    margin: 4px 0;
+}
+
+.upload-hint {
+    font-size: 0.875rem;
+    color: hsl(var(--text-secondary));
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
 .header-content {
     display: flex;
     justify-content: space-between;

@@ -399,6 +399,10 @@ const server = http.createServer(async (req, res) => {
            JSON.stringify(primaryContact), JSON.stringify(authorizedSigner), JSON.stringify(billingContact), JSON.stringify(notes)]
         );
         
+        // Create system note for customer creation
+        const user = await authService.getUserById(req.session.userId);
+        await createSystemNote(customerId, `Customer record created by ${user.name}`, req.session.userId);
+        
         res.writeHead(201, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify(result.rows[0]));
         return;

@@ -1090,7 +1090,14 @@ class CRMApp {
         const primaryContact = customer.primary_contact || {};
         const authorizedSigner = customer.authorized_signer || {};
         const billingContact = customer.billing_contact || {};
-        const notes = customer.notes || [];
+        // Load customer notes from the new API
+        let notes = [];
+        try {
+            notes = await this.api.getCustomerNotes(customer.customer_id);
+        } catch (error) {
+            console.error('Failed to load notes:', error);
+            notes = [];
+        }
         const isEditing = this.editMode || false;
 
         console.log("About to get next step options for status:", customer.status);
@@ -1323,21 +1330,33 @@ class CRMApp {
                     </div>
 
                     <!-- Notes -->
-                    <div class="detail-section">
-                        <h3>Notes</h3>
+                    <div class="detail-section" id="notes-section" data-section="notes">
+                        <div class="section-header">
+                            <h3>Notes</h3>
+                            <button class="section-edit-btn" onclick="app.toggleSectionEdit('notes')" id="notes-edit-btn">
+                                ${this.editingSections.has('notes') ? '✕' : '✏️'}
+                            </button>
+                        </div>
                         <div class="notes-section">
                             <div class="notes-list">
-                                ${notes.length > 0 ? notes
-                                    .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
-                                    .map(note => `
-                                        <div class="note-item">
-                                            <div class="note-meta">${this.formatNoteTimestamp(note.timestamp)}</div>
+                                ${notes.length > 0 ? notes.map(note => `
+                                        <div class="note-item ${note.type === 'system' ? 'system-note' : 'manual-note'}">
+                                            <div class="note-meta">
+                                                ${this.formatNoteTimestamp(note.timestamp)}
+                                                ${note.author_name ? ` by ${note.author_name}` : ''}
+                                                ${note.type === 'system' ? ' <span class="system-indicator">🤖 System</span>' : ''}
+                                            </div>
                                             <div class="note-content">${this.escapeHtml(note.content)}</div>
+                                            ${note.type === 'manual' && this.currentUser && (this.currentUser.role === 'admin' || note.author_id === this.currentUser.id) && this.editingSections.has('notes') ? 
+                                                `<div class="note-actions">
+                                                    <button class="btn-sm btn-danger" onclick="app.deleteNote(${note.id})">Delete</button>
+                                                </div>` : ''
+                                            }
                                         </div>
                                     `).join('') : '<p style="color: #6c757d; text-align: center; padding: 24px;">No notes available.</p>'}
                             </div>
                             
-                            ${isEditing ? `
+                            ${this.editingSections.has('notes') ? `
                                 <div class="add-note-section">
                                     <h4>Add New Note</h4>
                                     <div class="note-input-group">
@@ -1350,6 +1369,13 @@ class CRMApp {
                                 </div>
                             ` : ''}
                         </div>
+                        ${this.editingSections.has('notes') ? 
+                            `<div class="section-actions">
+                                <button class="btn btn-primary btn-sm" onclick="app.saveSectionChanges('notes')">Done</button>
+                                <button class="btn btn-secondary btn-sm" onclick="app.cancelSectionEdit('notes')">Cancel</button>
+                            </div>` : 
+                            ''
+                        }
                     </div>
 
                     <!-- Actions -->
@@ -1400,10 +1426,10 @@ class CRMApp {
         // Load customer files
         this.loadCustomerFiles();
         
-        // Set up file upload if files section is in edit mode
-        if (this.editingSections.has('files')) {
+        // Setup file upload functionality after render
+        setTimeout(() => {
             this.setupFileUpload();
-        }
+        }, 100);
         
         // Update detail action buttons based on edit mode
         this.updateDetailActionButtons();
@@ -1464,35 +1490,44 @@ class CRMApp {
     }
 
     setupFileUpload() {
-        const uploadArea = document.getElementById('upload-area');
+        const dropzone = document.getElementById('upload-dropzone');
         const fileInput = document.getElementById('file-input');
 
-        if (!uploadArea || !fileInput) return;
+        if (!dropzone || !fileInput) {
+            console.warn('File upload elements not found');
+            return;
+        }
+
+        // Remove existing listeners by cloning elements
+        const newDropzone = dropzone.cloneNode(true);
+        const newFileInput = fileInput.cloneNode(true);
+        dropzone.parentNode.replaceChild(newDropzone, dropzone);
+        fileInput.parentNode.replaceChild(newFileInput, fileInput);
 
         // Click to upload
-        uploadArea.addEventListener('click', () => {
-            fileInput.click();
+        newDropzone.addEventListener('click', () => {
+            newFileInput.click();
         });
 
         // File input change
-        fileInput.addEventListener('change', (e) => {
+        newFileInput.addEventListener('change', (e) => {
             this.handleFileUpload(e.target.files);
         });
 
         // Drag and drop
-        uploadArea.addEventListener('dragover', (e) => {
+        newDropzone.addEventListener('dragover', (e) => {
             e.preventDefault();
-            uploadArea.classList.add('dragover');
+            newDropzone.classList.add('dragover');
         });
 
-        uploadArea.addEventListener('dragleave', (e) => {
+        newDropzone.addEventListener('dragleave', (e) => {
             e.preventDefault();
-            uploadArea.classList.remove('dragover');
+            newDropzone.classList.remove('dragover');
         });
 
-        uploadArea.addEventListener('drop', (e) => {
+        newDropzone.addEventListener('drop', (e) => {
             e.preventDefault();
-            uploadArea.classList.remove('dragover');
+            newDropzone.classList.remove('dragover');
             this.handleFileUpload(e.dataTransfer.files);
         });
     }
@@ -1518,10 +1553,11 @@ class CRMApp {
         if (validFiles.length === 0) return;
 
         try {
-            const uploadArea = document.getElementById('upload-area');
-            if (uploadArea) {
-                uploadArea.classList.add('uploading');
-                uploadArea.querySelector('.upload-content p').textContent = 'Uploading...';
+            const dropzone = document.getElementById('upload-dropzone');
+            if (dropzone) {
+                dropzone.classList.add('uploading');
+                const uploadText = dropzone.querySelector('.upload-text p');
+                if (uploadText) uploadText.textContent = 'Uploading...';
             }
 
             console.log('Starting upload for customer:', this.currentCustomer.customer_id);
@@ -1541,10 +1577,11 @@ class CRMApp {
             console.error('Upload failed:', error);
             alert('Upload failed: ' + error.message);
         } finally {
-            const uploadArea = document.getElementById('upload-area');
-            if (uploadArea) {
-                uploadArea.classList.remove('uploading');
-                uploadArea.querySelector('.upload-content p').textContent = 'Drop files here or click to upload';
+            const dropzone = document.getElementById('upload-dropzone');
+            if (dropzone) {
+                dropzone.classList.remove('uploading');
+                const uploadText = dropzone.querySelector('.upload-text p');
+                if (uploadText) uploadText.textContent = 'Drop files here or click to upload';
             }
         }
     }
@@ -1940,22 +1977,14 @@ class CRMApp {
         }
 
         try {
-            const newNote = {
-                content: noteContent,
-                timestamp: new Date().toISOString()
-            };
-
-            const updatedNotes = [...(this.currentCustomer.notes || []), newNote];
+            // Create note via new API
+            await this.api.createCustomerNote(this.currentCustomer.customer_id, noteContent);
             
-            await this.api.updateCustomer(this.currentCustomer.customer_id, {
-                notes: updatedNotes
-            });
-
-            // Update local data
-            this.currentCustomer.notes = updatedNotes;
+            // Clear the input
+            noteInput.value = '';
             
-            // Re-render the detail view
-            this.renderCustomerDetail();
+            // Re-render the detail view to show the new note
+            await this.renderCustomerDetail();
 
             console.log('Note added successfully');
         } catch (error) {
