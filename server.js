@@ -138,8 +138,13 @@ const server = http.createServer(async (req, res) => {
           return;
         }
 
+        const userWithStatus = {
+          ...user,
+          twoFactorEnabled: !!user.two_factor_enabled
+        };
+
         res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ user }));
+        res.end(JSON.stringify({ user: userWithStatus }));
         return;
       }
 
@@ -191,8 +196,12 @@ const server = http.createServer(async (req, res) => {
         }
 
         const users = await authService.getAllUsers();
+        const usersWithStatus = users.map(user => ({
+          ...user,
+          two_factor_enabled: !!user.two_factor_enabled
+        }));
         res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify(users));
+        res.end(JSON.stringify(usersWithStatus));
         return;
       }
 

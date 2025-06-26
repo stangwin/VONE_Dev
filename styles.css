@@ -416,14 +416,41 @@ header {
 }
 
 /* Password strength indicator */
-.password-strength {
-    margin-top: 5px;
-    font-size: 12px;
+.password-strength-meter {
+    width: 100%;
+    height: 4px;
+    background: #e5e7eb;
+    border-radius: 2px;
+    margin-bottom: 8px;
+    overflow: hidden;
 }
 
-.password-strength.weak { color: #ef4444; }
-.password-strength.medium { color: #f59e0b; }
-.password-strength.strong { color: #10b981; }
+.strength-bar {
+    height: 100%;
+    width: 0%;
+    transition: width 0.3s ease, background-color 0.3s ease;
+    border-radius: 2px;
+}
+
+.strength-bar.weak { background-color: #ef4444; }
+.strength-bar.medium { background-color: #f59e0b; }
+.strength-bar.strong { background-color: #10b981; }
+
+.password-requirements {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.requirement {
+    font-size: 12px;
+    color: #6b7280;
+    transition: color 0.2s ease;
+}
+
+.requirement.met {
+    color: #10b981;
+}
 
 /* 2FA Setup styles */
 .two-factor-setup {
@@ -507,6 +534,121 @@ header {
 
 .status-indicator.disabled {
     color: #ef4444;
+}
+
+/* User Profile Modal Styles */
+.large-modal {
+    max-width: 600px;
+    width: 95%;
+}
+
+.profile-sections {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+.profile-section {
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 20px;
+    background: #f9fafb;
+}
+
+.profile-section h4 {
+    margin: 0 0 16px 0;
+    color: #1f2937;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.security-status {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.status-display {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.security-label {
+    font-weight: 500;
+    color: #374151;
+}
+
+.security-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.security-description {
+    font-size: 14px;
+    color: #6b7280;
+    line-height: 1.5;
+}
+
+.setup-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.step {
+    border-left: 3px solid #3b82f6;
+    padding-left: 16px;
+}
+
+.step h5 {
+    margin: 0 0 8px 0;
+    color: #1f2937;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.step p {
+    margin: 0 0 8px 0;
+    font-size: 14px;
+    color: #6b7280;
+    line-height: 1.5;
+}
+
+.warning-message {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 6px;
+    padding: 12px;
+    margin-bottom: 16px;
+}
+
+.warning-message p {
+    margin: 0;
+    color: #991b1b;
+    font-size: 14px;
+}
+
+@media (max-width: 768px) {
+    .large-modal {
+        max-width: calc(100vw - 20px);
+        margin: 10px;
+    }
+    
+    .security-status {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+    
+    .security-actions {
+        width: 100%;
+    }
+    
+    .security-actions button {
+        flex: 1;
+    }
 }
 
 header h1 {

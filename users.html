@@ -86,6 +86,90 @@
             color: white;
         }
 
+        .btn-secondary {
+            background-color: #6b7280;
+            color: white;
+        }
+
+        .status-indicator {
+            font-size: 12px;
+            font-weight: 500;
+            padding: 2px 6px;
+            border-radius: 12px;
+        }
+
+        .status-indicator.enabled {
+            background-color: #dcfce7;
+            color: #166534;
+        }
+
+        .status-indicator.disabled {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+
+        .security-status {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: #f9fafb;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+
+        .security-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .two-factor-setup {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .qr-code-container {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .qr-code-container img {
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 10px;
+            background: white;
+            max-width: 200px;
+        }
+
+        .manual-entry {
+            background: #f1f5f9;
+            border-radius: 4px;
+            padding: 10px;
+            font-family: monospace;
+            word-break: break-all;
+            margin: 10px 0;
+            font-size: 12px;
+        }
+
+        .two-factor-input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            font-size: 16px;
+            text-align: center;
+            letter-spacing: 0.1em;
+            font-family: monospace;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
         .btn-primary {
             background-color: #2563eb;
             color: white;
@@ -216,7 +300,7 @@
                         <th>Name</th>
                         <th>Email</th>
                         <th>Role</th>
-                        <th>Created</th>
+                        <th>2FA Status</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -224,6 +308,72 @@
                     <!-- Users will be loaded here -->
                 </tbody>
             </table>
+        </div>
+    </div>
+
+    <!-- 2FA Management Modal -->
+    <div id="twofa-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="twofa-modal-title">Two-Factor Authentication</h3>
+                <button class="modal-close" onclick="close2FAModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="twofa-user-info" style="margin-bottom: 20px;">
+                    <p><strong>User:</strong> <span id="twofa-user-name"></span></p>
+                    <p><strong>Email:</strong> <span id="twofa-user-email"></span></p>
+                </div>
+
+                <div id="twofa-status-section">
+                    <div class="security-status">
+                        <div>
+                            <strong>Current Status:</strong>
+                            <span class="status-indicator" id="current-2fa-status">
+                                <span class="status-text">Disabled</span>
+                            </span>
+                        </div>
+                        <div class="security-actions">
+                            <button class="btn btn-primary" id="enable-2fa-btn" style="display: none;">Enable 2FA</button>
+                            <button class="btn btn-danger" id="force-disable-2fa-btn" style="display: none;">Force Disable 2FA</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2FA Setup Section -->
+                <div id="twofa-setup-section" style="display: none;">
+                    <div class="two-factor-setup">
+                        <h4>Setup Two-Factor Authentication</h4>
+                        <p>1. Install an authenticator app like Google Authenticator, Authy, or Microsoft Authenticator</p>
+                        <p>2. Scan this QR code with your authenticator app:</p>
+                        <div class="qr-code-container">
+                            <img id="setup-qr-code" src="" alt="QR Code">
+                        </div>
+                        <p>3. Or enter this key manually in your authenticator app:</p>
+                        <div class="manual-entry" id="setup-manual-key"></div>
+                        <p>4. Enter the 6-digit code from your authenticator app to complete setup:</p>
+                        <div class="form-group">
+                            <input type="text" id="setup-verify-token" class="two-factor-input" 
+                                   placeholder="000000" maxlength="6" pattern="[0-9]{6}" required>
+                        </div>
+                        <div class="form-actions">
+                            <button class="btn btn-primary" id="complete-2fa-setup-btn">Complete Setup</button>
+                            <button class="btn btn-secondary" id="cancel-setup-btn">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2FA Disable Section -->
+                <div id="twofa-disable-section" style="display: none;">
+                    <div class="two-factor-setup">
+                        <h4>Disable Two-Factor Authentication</h4>
+                        <p>This will permanently disable 2FA for this user. They will need to set it up again if they want to re-enable it.</p>
+                        <div class="form-actions">
+                            <button class="btn btn-danger" id="confirm-disable-2fa-btn">Confirm Disable</button>
+                            <button class="btn btn-secondary" id="cancel-disable-btn">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -488,6 +638,142 @@
             div.textContent = text;
             return div.innerHTML;
         }
+
+        // 2FA Management
+        let current2FAUser = null;
+
+        function manage2FA(userId) {
+            const user = users.find(u => u.id === userId);
+            if (!user) return;
+
+            current2FAUser = user;
+            document.getElementById('twofa-user-name').textContent = user.name;
+            document.getElementById('twofa-user-email').textContent = user.email;
+            
+            // Update status display
+            const statusEl = document.getElementById('current-2fa-status');
+            const statusText = statusEl.querySelector('.status-text');
+            const enableBtn = document.getElementById('enable-2fa-btn');
+            const disableBtn = document.getElementById('force-disable-2fa-btn');
+
+            if (user.two_factor_enabled) {
+                statusEl.className = 'status-indicator enabled';
+                statusText.textContent = 'Enabled';
+                enableBtn.style.display = 'none';
+                disableBtn.style.display = 'inline-block';
+            } else {
+                statusEl.className = 'status-indicator disabled';
+                statusText.textContent = 'Disabled';
+                enableBtn.style.display = 'inline-block';
+                disableBtn.style.display = 'none';
+            }
+
+            // Show only status section initially
+            show2FASection('status');
+            document.getElementById('twofa-modal').style.display = 'flex';
+        }
+
+        function close2FAModal() {
+            document.getElementById('twofa-modal').style.display = 'none';
+            show2FASection('status');
+            current2FAUser = null;
+        }
+
+        function show2FASection(section) {
+            document.getElementById('twofa-status-section').style.display = section === 'status' ? 'block' : 'none';
+            document.getElementById('twofa-setup-section').style.display = section === 'setup' ? 'block' : 'none';
+            document.getElementById('twofa-disable-section').style.display = section === 'disable' ? 'block' : 'none';
+        }
+
+        // 2FA Event Listeners
+        document.getElementById('enable-2fa-btn').addEventListener('click', async function() {
+            if (!current2FAUser) return;
+
+            try {
+                const response = await fetch('/api/2fa/setup', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId: current2FAUser.id }),
+                    credentials: 'include'
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to setup 2FA');
+                }
+
+                const setup = await response.json();
+                document.getElementById('setup-qr-code').src = setup.qrCode;
+                document.getElementById('setup-manual-key').textContent = setup.manualEntryKey;
+                
+                show2FASection('setup');
+            } catch (error) {
+                showError('Failed to setup 2FA: ' + error.message);
+            }
+        });
+
+        document.getElementById('complete-2fa-setup-btn').addEventListener('click', async function() {
+            const token = document.getElementById('setup-verify-token').value;
+            if (!token || token.length !== 6) {
+                showError('Please enter a valid 6-digit code');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/2fa/enable', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        userId: current2FAUser.id,
+                        token: token 
+                    }),
+                    credentials: 'include'
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || 'Failed to enable 2FA');
+                }
+
+                showSuccess('2FA enabled successfully');
+                close2FAModal();
+                loadUsers(); // Refresh the user list
+            } catch (error) {
+                showError('Failed to enable 2FA: ' + error.message);
+            }
+        });
+
+        document.getElementById('force-disable-2fa-btn').addEventListener('click', function() {
+            show2FASection('disable');
+        });
+
+        document.getElementById('confirm-disable-2fa-btn').addEventListener('click', async function() {
+            try {
+                const response = await fetch('/api/2fa/force-disable', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId: current2FAUser.id }),
+                    credentials: 'include'
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to disable 2FA');
+                }
+
+                showSuccess('2FA disabled successfully');
+                close2FAModal();
+                loadUsers(); // Refresh the user list
+            } catch (error) {
+                showError('Failed to disable 2FA: ' + error.message);
+            }
+        });
+
+        document.getElementById('cancel-setup-btn').addEventListener('click', function() {
+            show2FASection('status');
+        });
+
+        document.getElementById('cancel-disable-btn').addEventListener('click', function() {
+            show2FASection('status');
+        });
     </script>
 </body>
 </html>

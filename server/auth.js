@@ -148,6 +148,32 @@ class AuthService {
     return true;
   }
 
+  async forceDisable2FA(userId) {
+    const user = await this.getUserById(userId);
+    if (!user.two_factor_enabled) {
+      throw new Error('2FA is not enabled for this user');
+    }
+
+    await this.pool.query(
+      'UPDATE users SET two_factor_enabled = NULL, two_factor_secret = NULL WHERE id = $1',
+      [userId]
+    );
+
+    return true;
+  }
+
+  async changePassword(userId, newPassword) {
+    this.validatePasswordStrength(newPassword);
+    const hashedPassword = await this.hashPassword(newPassword);
+    
+    await this.pool.query(
+      'UPDATE users SET password_hash = $1 WHERE id = $2',
+      [hashedPassword, userId]
+    );
+
+    return true;
+  }
+
   async authenticateUser(email, password) {
     const user = await this.getUserByEmail(email);
     
