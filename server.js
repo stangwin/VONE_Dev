@@ -266,17 +266,40 @@ const server = http.createServer(async (req, res) => {
 
       form.parse(req, async (err, fields, files) => {
         if (err) {
+          console.error('Form parse error:', err);
           res.writeHead(400, { 'Content-Type': 'application/json' });
           res.end(JSON.stringify({ error: 'Upload failed: ' + err.message }));
           return;
         }
 
+        console.log('Files received:', files);
+        
         try {
-          const fileArray = Array.isArray(files.files) ? files.files : [files.files];
+          // Handle both single file and multiple files
+          let fileArray = [];
+          if (files.files) {
+            fileArray = Array.isArray(files.files) ? files.files : [files.files];
+          } else {
+            // Check for individual file fields
+            Object.keys(files).forEach(key => {
+              if (Array.isArray(files[key])) {
+                fileArray.push(...files[key]);
+              } else {
+                fileArray.push(files[key]);
+              }
+            });
+          }
+
+          console.log('Processing files:', fileArray.length);
           const fileRecords = [];
 
           for (const file of fileArray) {
-            if (!file) continue;
+            if (!file || !file.originalFilename) {
+              console.log('Skipping invalid file:', file);
+              continue;
+            }
+
+            console.log('Processing file:', file.originalFilename);
 
             // Generate unique filename
             const timestamp = Date.now();
@@ -286,9 +309,11 @@ const server = http.createServer(async (req, res) => {
             const newPath = path.join(uploadDir, fileName);
 
             // Move file to final location
+            console.log('Moving file from', file.filepath, 'to', newPath);
             fs.renameSync(file.filepath, newPath);
 
             // Save to database
+            console.log('Saving file metadata to database');
             const query = `
               INSERT INTO customer_files (customer_id, file_name, original_name, file_url, file_type, file_size)
               VALUES ($1, $2, $3, $4, $5, $6)
@@ -304,9 +329,11 @@ const server = http.createServer(async (req, res) => {
             ];
 
             const result = await pool.query(query, values);
+            console.log('File saved to database:', result.rows[0]);
             fileRecords.push(result.rows[0]);
           }
 
+          console.log('Upload complete. Files processed:', fileRecords.length);
           res.writeHead(200, { 'Content-Type': 'application/json' });
           res.end(JSON.stringify({ message: 'Files uploaded successfully', files: fileRecords }));
         } catch (error) {

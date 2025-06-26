@@ -89,21 +89,35 @@ class DatabaseAPI {
         try {
             const formData = new FormData();
             
+            console.log('Creating FormData with', files.length, 'files');
             for (let i = 0; i < files.length; i++) {
+                console.log('Adding file:', files[i].name, 'size:', files[i].size);
                 formData.append('files', files[i]);
             }
 
+            console.log('Sending upload request to:', `${this.baseURL}/customers/${customerId}/files`);
             const response = await fetch(`${this.baseURL}/customers/${customerId}/files`, {
                 method: 'POST',
                 body: formData
             });
 
+            console.log('Upload response status:', response.status);
+            
             if (!response.ok) {
-                const error = await response.json();
+                const errorText = await response.text();
+                console.error('Upload error response:', errorText);
+                let error;
+                try {
+                    error = JSON.parse(errorText);
+                } catch {
+                    error = { error: errorText };
+                }
                 throw new Error(error.error || 'Failed to upload files');
             }
 
-            return await response.json();
+            const result = await response.json();
+            console.log('Upload successful:', result);
+            return result;
         } catch (error) {
             console.error('Error uploading files:', error);
             throw error;
@@ -1149,7 +1163,11 @@ class CRMApp {
                 uploadArea.querySelector('.upload-content p').textContent = 'Uploading...';
             }
 
-            await this.api.uploadFiles(this.currentCustomer.customer_id, validFiles);
+            console.log('Starting upload for customer:', this.currentCustomer.customer_id);
+            console.log('Valid files to upload:', validFiles.length);
+            
+            const result = await this.api.uploadFiles(this.currentCustomer.customer_id, validFiles);
+            console.log('Upload result:', result);
             
             // Reload files
             await this.loadCustomerFiles();
