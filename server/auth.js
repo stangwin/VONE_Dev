@@ -1,4 +1,6 @@
 const bcrypt = require('bcrypt');
+const speakeasy = require('speakeasy');
+const QRCode = require('qrcode');
 
 class AuthService {
   constructor(pool) {
@@ -15,6 +17,9 @@ class AuthService {
   }
 
   async createUser({ name, email, password, auth_provider = 'local', role = 'user' }) {
+    // Validate password strength
+    if (password) this.validatePasswordStrength(password);
+    
     const password_hash = password ? await this.hashPassword(password) : null;
     
     const query = `
@@ -27,6 +32,30 @@ class AuthService {
     return result.rows[0];
   }
 
+  validatePasswordStrength(password) {
+    const minLength = 8;
+    const hasUpperCase = /[A-Z]/.test(password);
+    const hasLowerCase = /[a-z]/.test(password);
+    const hasNumbers = /\d/.test(password);
+    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+
+    if (password.length < minLength) {
+      throw new Error('Password must be at least 8 characters long');
+    }
+    if (!hasUpperCase) {
+      throw new Error('Password must contain at least one uppercase letter');
+    }
+    if (!hasLowerCase) {
+      throw new Error('Password must contain at least one lowercase letter');
+    }
+    if (!hasNumbers) {
+      throw new Error('Password must contain at least one number');
+    }
+    if (!hasSpecialChar) {
+      throw new Error('Password must contain at least one special character');
+    }
+  }
+
   async getUserByEmail(email) {
     const query = 'SELECT * FROM users WHERE email = $1';
     const result = await this.pool.query(query, [email]);
@@ -34,9 +63,89 @@ class AuthService {
   }
 
   async getUserById(id) {
-    const query = 'SELECT id, name, email, auth_provider, role, created_at FROM users WHERE id = $1';
+    const query = 'SELECT id, name, email, auth_provider, role, two_factor_secret, two_factor_enabled, created_at FROM users WHERE id = $1';
     const result = await this.pool.query(query, [id]);
     return result.rows[0] || null;
+  }
+
+  async setup2FA(userId) {
+    const secret = speakeasy.generateSecret({
+      name: `Vantix CRM (${userId})`,
+      issuer: 'Vantix CRM'
+    });
+
+    // Store the secret in database
+    await this.pool.query(
+      'UPDATE users SET two_factor_secret = $1 WHERE id = $2',
+      [secret.base32, userId]
+    );
+
+    // Generate QR code for setup
+    const qrCodeUrl = await QRCode.toDataURL(secret.otpauth_url);
+
+    return {
+      secret: secret.base32,
+      qrCode: qrCodeUrl,
+      manualEntryKey: secret.base32
+    };
+  }
+
+  async enable2FA(userId, token) {
+    const user = await this.getUserById(userId);
+    if (!user.two_factor_secret) {
+      throw new Error('2FA setup not initiated');
+    }
+
+    const verified = speakeasy.totp.verify({
+      secret: user.two_factor_secret,
+      encoding: 'base32',
+      token: token,
+      window: 2
+    });
+
+    if (!verified) {
+      throw new Error('Invalid verification code');
+    }
+
+    await this.pool.query(
+      'UPDATE users SET two_factor_enabled = NOW() WHERE id = $1',
+      [userId]
+    );
+
+    return true;
+  }
+
+  async verify2FA(userId, token) {
+    const user = await this.getUserById(userId);
+    if (!user.two_factor_enabled || !user.two_factor_secret) {
+      return true; // 2FA not enabled for this user
+    }
+
+    return speakeasy.totp.verify({
+      secret: user.two_factor_secret,
+      encoding: 'base32',
+      token: token,
+      window: 2
+    });
+  }
+
+  async disable2FA(userId, token) {
+    const user = await this.getUserById(userId);
+    if (!user.two_factor_enabled) {
+      throw new Error('2FA is not enabled');
+    }
+
+    const verified = await this.verify2FA(userId, token);
+    if (!verified) {
+      throw new Error('Invalid verification code');
+    }
+
+    await this.pool.query(
+      'UPDATE users SET two_factor_enabled = NULL, two_factor_secret = NULL WHERE id = $1',
+      [userId]
+    );
+
+    return true;
   }
 
   async authenticateUser(email, password) {

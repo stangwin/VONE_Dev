@@ -296,6 +296,205 @@ header {
     position: relative;
 }
 
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+    .auth-grid {
+        grid-template-columns: 1fr;
+        max-width: 400px;
+    }
+    
+    .auth-hero {
+        display: none;
+    }
+    
+    .customer-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .customer-table {
+        font-size: 14px;
+    }
+    
+    .customer-table th,
+    .customer-table td {
+        padding: 8px 4px;
+    }
+    
+    .modal-content {
+        margin: 10px;
+        max-width: calc(100vw - 20px);
+    }
+    
+    .zoom-controls {
+        bottom: 10px;
+        left: 10px;
+        padding: 6px 8px;
+    }
+    
+    .zoom-btn {
+        min-width: 32px;
+        height: 32px;
+        font-size: 12px;
+    }
+
+    .header {
+        padding: 10px 15px;
+    }
+
+    .header h1 {
+        font-size: 20px;
+    }
+
+    .user-dropdown .user-name {
+        display: none;
+    }
+
+    .main-content {
+        padding: 15px;
+    }
+
+    .dashboard-header {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .dashboard-header h2 {
+        font-size: 20px;
+    }
+
+    .section-header {
+        font-size: 16px;
+        padding: 10px 15px;
+    }
+
+    .detail-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .detail-actions {
+        width: 100%;
+        justify-content: space-between;
+    }
+}
+
+@media (max-width: 480px) {
+    .customer-table {
+        font-size: 12px;
+    }
+    
+    .customer-table th,
+    .customer-table td {
+        padding: 6px 2px;
+    }
+    
+    .btn {
+        padding: 8px 12px;
+        font-size: 12px;
+    }
+    
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        font-size: 16px; /* Prevents zoom on iOS */
+    }
+}
+
+/* Password strength indicator */
+.password-strength {
+    margin-top: 5px;
+    font-size: 12px;
+}
+
+.password-strength.weak { color: #ef4444; }
+.password-strength.medium { color: #f59e0b; }
+.password-strength.strong { color: #10b981; }
+
+/* 2FA Setup styles */
+.two-factor-setup {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 20px;
+    margin: 20px 0;
+}
+
+.qr-code-container {
+    text-align: center;
+    margin: 20px 0;
+}
+
+.qr-code-container img {
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 10px;
+    background: white;
+    max-width: 100%;
+    height: auto;
+}
+
+.manual-entry {
+    background: #f1f5f9;
+    border-radius: 4px;
+    padding: 10px;
+    font-family: monospace;
+    word-break: break-all;
+    margin: 10px 0;
+    font-size: 12px;
+}
+
+.two-factor-input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    font-size: 16px;
+    text-align: center;
+    letter-spacing: 0.1em;
+    font-family: monospace;
+}
+
+.security-section {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    margin: 20px 0;
+}
+
+.security-section h3 {
+    padding: 15px 20px;
+    margin: 0;
+    border-bottom: 1px solid #e5e7eb;
+    background: #f9fafb;
+    border-radius: 8px 8px 0 0;
+}
+
+.security-content {
+    padding: 20px;
+}
+
+.security-status {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.status-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.status-indicator.enabled {
+    color: #10b981;
+}
+
+.status-indicator.disabled {
+    color: #ef4444;
+}
+
 header h1 {
     font-size: 1.5rem;
     margin-bottom: 1rem;

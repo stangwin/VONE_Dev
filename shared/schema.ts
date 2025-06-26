@@ -8,6 +8,8 @@ export const users = pgTable('users', {
     password_hash: text('password_hash'), // nullable for future SSO
     auth_provider: text('auth_provider').notNull().default('local'), // 'local', 'google', 'microsoft'
     role: text('role').notNull().default('user'), // 'admin', 'user'
+    two_factor_secret: text('two_factor_secret'),
+    two_factor_enabled: timestamp('two_factor_enabled'), // null = disabled, timestamp = enabled
     created_at: timestamp('created_at').defaultNow(),
 });
 
