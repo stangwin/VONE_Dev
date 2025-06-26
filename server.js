@@ -400,8 +400,12 @@ const server = http.createServer(async (req, res) => {
         );
         
         // Create system note for customer creation
-        const user = await authService.getUserById(req.session.userId);
-        await createSystemNote(customerId, `Customer record created by ${user.name}`, req.session.userId);
+        try {
+          const user = await authService.getUserById(req.session.userId);
+          await createSystemNote(customerId, `Customer record created by ${user.name}`, req.session.userId);
+        } catch (noteError) {
+          console.error('Failed to create system note:', noteError);
+        }
         
         res.writeHead(201, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify(result.rows[0]));

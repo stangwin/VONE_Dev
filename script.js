@@ -238,6 +238,7 @@ class CRMApp {
         this.currentCustomerId = null;
         this.currentUser = null;
         this.sortConfig = { key: null, direction: 'asc' };
+        this.editingSections = new Set();
         this.filters = { status: '', affiliate: '', search: '' };
         this.isEditingCustomer = false;
         this.editingSections = new Set(); // Track which sections are in edit mode
@@ -1092,12 +1093,7 @@ class CRMApp {
         const billingContact = customer.billing_contact || {};
         // Load customer notes from the new API
         let notes = [];
-        try {
-            notes = await this.api.getCustomerNotes(customer.customer_id);
-        } catch (error) {
-            console.error('Failed to load notes:', error);
-            notes = [];
-        }
+        // Notes will be loaded asynchronously after render
         const isEditing = this.editMode || false;
 
         console.log("About to get next step options for status:", customer.status);
@@ -1339,21 +1335,7 @@ class CRMApp {
                         </div>
                         <div class="notes-section">
                             <div class="notes-list">
-                                ${notes.length > 0 ? notes.map(note => `
-                                        <div class="note-item ${note.type === 'system' ? 'system-note' : 'manual-note'}">
-                                            <div class="note-meta">
-                                                ${this.formatNoteTimestamp(note.timestamp)}
-                                                ${note.author_name ? ` by ${note.author_name}` : ''}
-                                                ${note.type === 'system' ? ' <span class="system-indicator">🤖 System</span>' : ''}
-                                            </div>
-                                            <div class="note-content">${this.escapeHtml(note.content)}</div>
-                                            ${note.type === 'manual' && this.currentUser && (this.currentUser.role === 'admin' || note.author_id === this.currentUser.id) && this.editingSections.has('notes') ? 
-                                                `<div class="note-actions">
-                                                    <button class="btn-sm btn-danger" onclick="app.deleteNote(${note.id})">Delete</button>
-                                                </div>` : ''
-                                            }
-                                        </div>
-                                    `).join('') : '<p style="color: #6c757d; text-align: center; padding: 24px;">No notes available.</p>'}
+                                <!-- Notes will be loaded here dynamically -->
                             </div>
                             
                             ${this.editingSections.has('notes') ? `
@@ -1396,18 +1378,13 @@ class CRMApp {
                             </button>
                         </div>
                         <div class="files-section">
-                            ${isEditing ? `
+                            ${this.editingSections.has('files') ? `
                                 <div class="file-upload-section">
-                                    <div class="upload-area" id="upload-area">
+                                    <div class="upload-dropzone" id="upload-dropzone">
                                         <input type="file" id="file-input" multiple accept="image/*,.pdf" style="display: none;">
-                                        <div class="upload-content">
-                                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
-                                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                                                <polyline points="7,10 12,15 17,10"></polyline>
-                                                <line x1="12" y1="15" x2="12" y2="3"></line>
-                                            </svg>
+                                        <div class="upload-text">
                                             <p>Drop files here or click to upload</p>
-                                            <p class="upload-hint">Images (PNG, JPG, GIF) and PDFs up to 5MB each</p>
+                                            <p class="upload-hint">Images and PDFs only, max 5MB per file</p>
                                         </div>
                                     </div>
                                 </div>
@@ -1416,6 +1393,13 @@ class CRMApp {
                                 <!-- Files will be loaded here -->
                             </div>
                         </div>
+                        ${this.editingSections.has('files') ? 
+                            `<div class="section-actions">
+                                <button class="btn btn-primary btn-sm" onclick="app.saveSectionChanges('files')">Done</button>
+                                <button class="btn btn-secondary btn-sm" onclick="app.cancelSectionEdit('files')">Cancel</button>
+                            </div>` : 
+                            ''
+                        }
                     </div>
                 </div>
             </div>
@@ -1423,8 +1407,9 @@ class CRMApp {
 
         console.log("Customer detail HTML generated, setting innerHTML");
         
-        // Load customer files
+        // Load customer files and notes asynchronously
         this.loadCustomerFiles();
+        this.loadCustomerNotes();
         
         // Setup file upload functionality after render
         setTimeout(() => {
@@ -1450,6 +1435,52 @@ class CRMApp {
             console.error('Failed to load customer files:', error);
             console.error('Error details:', error.message, error.stack);
         }
+    }
+
+    async loadCustomerNotes() {
+        if (!this.currentCustomer) {
+            console.log('No current customer, skipping notes load');
+            return;
+        }
+
+        console.log('Loading notes for customer:', this.currentCustomer.customer_id);
+        try {
+            const notes = await this.api.getCustomerNotes(this.currentCustomer.customer_id);
+            console.log('Notes loaded successfully:', notes);
+            this.renderNotesSection(notes);
+        } catch (error) {
+            console.error('Failed to load customer notes:', error);
+            // Show empty notes section if loading fails
+            this.renderNotesSection([]);
+        }
+    }
+
+    renderNotesSection(notes) {
+        const notesSection = document.querySelector('#notes-section .notes-list');
+        if (!notesSection) return;
+
+        if (notes.length === 0) {
+            notesSection.innerHTML = '<p style="color: #6c757d; text-align: center; padding: 24px;">No notes available.</p>';
+            return;
+        }
+
+        const notesHtml = notes.map(note => `
+            <div class="note-item ${note.type === 'system' ? 'system-note' : 'manual-note'}">
+                <div class="note-meta">
+                    ${this.formatNoteTimestamp(note.timestamp)}
+                    ${note.author_name ? ` by ${note.author_name}` : ''}
+                    ${note.type === 'system' ? ' <span class="system-indicator">🤖 System</span>' : ''}
+                </div>
+                <div class="note-content">${this.escapeHtml(note.content)}</div>
+                ${note.type === 'manual' && this.currentUser && (this.currentUser.role === 'admin' || note.author_id === this.currentUser.id) && this.editingSections.has('notes') ? 
+                    `<div class="note-actions">
+                        <button class="btn-sm btn-danger" onclick="app.deleteNote(${note.id})">Delete</button>
+                    </div>` : ''
+                }
+            </div>
+        `).join('');
+
+        notesSection.innerHTML = notesHtml;
     }
 
     renderFilesGrid(files) {
@@ -1478,7 +1509,7 @@ class CRMApp {
                             ${this.formatFileSize(file.file_size)} • ${this.formatFileDate(file.upload_date)}
                         </div>
                     </div>
-                    ${this.editingSections.has('files') ? 
+                    ${this.editingSections && this.editingSections.has('files') ? 
                         `<button class="file-delete-btn" onclick="app.deleteCustomerFile(${file.id})" title="Delete file">×</button>` : 
                         ''
                     }
@@ -1983,8 +2014,8 @@ class CRMApp {
             // Clear the input
             noteInput.value = '';
             
-            // Re-render the detail view to show the new note
-            await this.renderCustomerDetail();
+            // Reload notes to show the new note
+            await this.loadCustomerNotes();
 
             console.log('Note added successfully');
         } catch (error) {
@@ -2065,6 +2096,59 @@ class CRMApp {
             element.style.display = "none";
             element.innerHTML = "";
         });
+    }
+
+    toggleSectionEdit(sectionName) {
+        if (this.editingSections.has(sectionName)) {
+            this.editingSections.delete(sectionName);
+        } else {
+            this.editingSections.add(sectionName);
+        }
+        
+        // Re-render the customer detail to update the UI
+        this.renderCustomerDetail();
+        
+        // Reload notes to show/hide edit controls
+        if (sectionName === 'notes') {
+            this.loadCustomerNotes();
+        }
+    }
+
+    saveSectionChanges(sectionName) {
+        // Exit edit mode for the section
+        this.editingSections.delete(sectionName);
+        this.renderCustomerDetail();
+        
+        // Reload content to hide edit controls
+        if (sectionName === 'notes') {
+            this.loadCustomerNotes();
+        }
+        console.log(`Saving changes for ${sectionName} section`);
+    }
+
+    cancelSectionEdit(sectionName) {
+        // Exit edit mode without saving
+        this.editingSections.delete(sectionName);
+        this.renderCustomerDetail();
+        
+        // Reload content to hide edit controls
+        if (sectionName === 'notes') {
+            this.loadCustomerNotes();
+        }
+        console.log(`Cancelling edit for ${sectionName} section`);
+    }
+
+    async deleteNote(noteId) {
+        if (!confirm('Are you sure you want to delete this note?')) return;
+        
+        try {
+            await this.api.deleteCustomerNote(this.currentCustomer.customer_id, noteId);
+            await this.loadCustomerNotes();
+            console.log('Note deleted successfully');
+        } catch (error) {
+            console.error('Failed to delete note:', error);
+            alert('Failed to delete note. Please try again.');
+        }
     }
 
     escapeHtml(text) {
