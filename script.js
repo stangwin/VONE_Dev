@@ -1112,7 +1112,7 @@ class CRMApp {
                             ${this.formatFileSize(file.file_size)} • ${this.formatFileDate(file.upload_date)}
                         </div>
                     </div>
-                    ${this.editMode ? `<button class="file-delete-btn" onclick="app.deleteCustomerFile(${file.id})" title="Delete file">×</button>` : ''}
+                    <button class="file-delete-btn" onclick="app.deleteCustomerFile(${file.id})" title="Delete file">×</button>
                 </div>
             `;
         }).join('');
