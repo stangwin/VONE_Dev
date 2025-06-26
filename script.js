@@ -252,6 +252,27 @@ class DatabaseAPI {
         console.log('DatabaseAPI: Note created successfully:', result);
         return result;
     }
+
+    async getCustomerNotes(customerId) {
+        console.log('DatabaseAPI: Fetching notes for customer', customerId);
+        
+        const response = await fetch(`/api/customers/${customerId}/notes`, {
+            method: 'GET',
+            credentials: 'include'
+        });
+
+        console.log('DatabaseAPI: Notes fetch response status:', response.status);
+        
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('DatabaseAPI: Notes fetch failed:', errorText);
+            throw new Error(errorText || 'Failed to fetch notes');
+        }
+
+        const result = await response.json();
+        console.log('DatabaseAPI: Notes fetched successfully:', result.length, 'notes');
+        return result;
+    }
 }
 
 // CRM Application
@@ -309,7 +330,7 @@ class CRMApp {
                 if (window.top !== window.self) {
                     const errorDiv = document.getElementById('dashboard-error');
                     if (errorDiv) {
-                        errorDiv.innerHTML = 'Authentication required. <a href="/auth.html" target="_blank">Click here to login</a> then refresh this page.';
+                        errorDiv.innerHTML = '<strong>Login Required:</strong> <a href="/auth.html" target="_blank" style="color: #007bff; text-decoration: underline;">Click here to login</a> (test@test.com / test123) then refresh this page to access the CRM.';
                         errorDiv.style.display = 'block';
                     }
                 } else {
@@ -326,7 +347,7 @@ class CRMApp {
             if (window.top !== window.self) {
                 const errorDiv = document.getElementById('dashboard-error');
                 if (errorDiv) {
-                    errorDiv.innerHTML = 'Authentication required. <a href="/auth.html" target="_blank">Click here to login</a> then refresh this page.';
+                    errorDiv.innerHTML = '<strong>Login Required:</strong> <a href="/auth.html" target="_blank" style="color: #007bff; text-decoration: underline;">Click here to login</a> (test@test.com / test123) then refresh this page to access the CRM.';
                     errorDiv.style.display = 'block';
                 }
             } else {
@@ -1483,42 +1504,59 @@ class CRMApp {
 
         console.log('Loading notes for customer:', this.currentCustomer.customer_id);
         try {
-            const notes = await this.api.getCustomerNotes(this.currentCustomer.customer_id);
-            console.log('Notes loaded successfully:', notes);
+            const response = await fetch(`/api/customers/${this.currentCustomer.customer_id}/notes`, {
+                credentials: 'include'
+            });
+            
+            if (!response.ok) {
+                throw new Error('Failed to load notes');
+            }
+            
+            const notes = await response.json();
+            console.log('Notes loaded:', notes.length, 'notes found');
+            this.currentCustomer.notes = notes;
             this.renderNotesSection(notes);
         } catch (error) {
             console.error('Failed to load customer notes:', error);
-            // Show empty notes section if loading fails
             this.renderNotesSection([]);
         }
     }
 
     renderNotesSection(notes) {
-        const notesSection = document.querySelector('#notes-section .notes-list');
-        if (!notesSection) return;
-
-        if (notes.length === 0) {
-            notesSection.innerHTML = '<p style="color: #6c757d; text-align: center; padding: 24px;">No notes available.</p>';
+        console.log('Rendering notes section with', notes?.length || 0, 'notes');
+        const notesSection = document.querySelector('.notes-section .notes-list');
+        if (!notesSection) {
+            console.log('Notes section not found in DOM');
             return;
         }
 
-        const notesHtml = notes.map(note => `
-            <div class="note-item ${note.type === 'system' ? 'system-note' : 'manual-note'}">
-                <div class="note-meta">
-                    ${this.formatNoteTimestamp(note.timestamp)}
-                    ${note.author_name ? ` by ${note.author_name}` : ''}
-                    ${note.type === 'system' ? ' <span class="system-indicator">🤖 System</span>' : ''}
+        if (!notes || notes.length === 0) {
+            notesSection.innerHTML = '<p class="no-notes">No notes yet.</p>';
+            return;
+        }
+
+        const notesHtml = notes.map(note => {
+            const noteDate = new Date(note.timestamp).toLocaleString();
+            const isSystemNote = note.type === 'system';
+            const noteClass = isSystemNote ? 'system-note' : 'user-note';
+            
+            return `
+                <div class="note-item ${noteClass}">
+                    <div class="note-header">
+                        <span class="note-author">${note.author_name}</span>
+                        <span class="note-date">${noteDate}</span>
+                        ${!isSystemNote && this.currentUser && (this.currentUser.role === 'admin' || this.currentUser.id === note.author_id) ? 
+                            `<button class="note-delete-btn" onclick="app.deleteNote(${note.id})" title="Delete note">×</button>` : 
+                            ''
+                        }
+                    </div>
+                    <div class="note-content">${this.escapeHtml(note.content)}</div>
                 </div>
-                <div class="note-content">${this.escapeHtml(note.content)}</div>
-                ${note.type === 'manual' && this.currentUser && (this.currentUser.role === 'admin' || note.author_id === this.currentUser.id) && this.editingSections.has('notes') ? 
-                    `<div class="note-actions">
-                        <button class="btn-sm btn-danger" onclick="app.deleteNote(${note.id})">Delete</button>
-                    </div>` : ''
-                }
-            </div>
-        `).join('');
+            `;
+        }).join('');
 
         notesSection.innerHTML = notesHtml;
+        console.log('Notes rendered successfully');
     }
 
     renderFilesGrid(files) {
@@ -2074,6 +2112,8 @@ class CRMApp {
             }
             
             const notes = await response.json();
+            console.log('Notes loaded:', notes.length, 'notes found');
+            this.currentCustomer.notes = notes; // Store notes in customer object
             this.renderNotesSection(notes);
         } catch (error) {
             console.error('Failed to load customer notes:', error);
@@ -2112,8 +2152,21 @@ class CRMApp {
             const result = await this.api.createNote(this.currentCustomer.customer_id, noteData);
             console.log('Note added successfully:', result);
             
+            // Show success feedback
+            console.log('Note added successfully, refreshing display');
+            
+            // Refresh the notes display
             await this.loadCustomerNotes();
             this.clearNewNote();
+            
+            // Show success message
+            const noteInput = document.getElementById('new-note-content');
+            if (noteInput) {
+                noteInput.placeholder = 'Note added successfully! Add another note...';
+                setTimeout(() => {
+                    noteInput.placeholder = 'Enter your note here...';
+                }, 3000);
+            }
         } catch (error) {
             console.error('Failed to add note:', error);
             alert('Failed to add note: ' + error.message);
