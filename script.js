@@ -154,16 +154,28 @@ class DatabaseAPI {
 
     async deleteFile(customerId, fileId) {
         try {
+            console.log('Deleting file:', fileId, 'for customer:', customerId);
             const response = await fetch(`${this.baseURL}/customers/${customerId}/files/${fileId}`, {
                 method: 'DELETE'
             });
 
+            console.log('Delete response status:', response.status);
+
             if (!response.ok) {
-                const error = await response.json();
+                const errorText = await response.text();
+                console.error('Delete error response:', errorText);
+                let error;
+                try {
+                    error = JSON.parse(errorText);
+                } catch {
+                    error = { error: errorText };
+                }
                 throw new Error(error.error || 'Failed to delete file');
             }
 
-            return await response.json();
+            const result = await response.json();
+            console.log('File deleted successfully:', result);
+            return result;
         } catch (error) {
             console.error('Error deleting file:', error);
             throw error;
