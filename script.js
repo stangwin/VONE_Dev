@@ -1393,8 +1393,8 @@ class CRMApp {
                             </button>
                         </div>
                         <div class="notes-section">
-                            <div class="notes-list">
-                                <!-- Notes will be loaded here dynamically -->
+                            <div class="notes-list" id="customer-notes-list">
+                                <div class="loading-notes">Loading notes...</div>
                             </div>
                             
                             ${this.editingSections.has('notes') ? `
@@ -1503,10 +1503,23 @@ class CRMApp {
         }
 
         console.log('Loading notes for customer:', this.currentCustomer.customer_id);
+        
+        // Show loading indicator
+        const notesSection = document.querySelector('#customer-notes-list');
+        if (notesSection) {
+            notesSection.innerHTML = '<div class="loading-notes">Loading notes...</div>';
+        }
+        
         try {
             const response = await fetch(`/api/customers/${this.currentCustomer.customer_id}/notes`, {
-                credentials: 'include'
+                method: 'GET',
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
             });
+            
+            console.log('Notes response status:', response.status);
             
             if (!response.ok) {
                 if (response.status === 401) {
@@ -1514,11 +1527,16 @@ class CRMApp {
                     this.renderNotesSection([]);
                     return;
                 }
-                throw new Error('Failed to load notes');
+                const errorText = await response.text();
+                console.error('Notes fetch failed:', errorText);
+                throw new Error('Failed to load notes: ' + errorText);
             }
             
             const notes = await response.json();
-            console.log('Notes loaded:', notes.length, 'notes found');
+            console.log('Notes loaded successfully:', notes.length, 'notes found');
+            if (notes.length > 0) {
+                console.log('First note:', notes[0]);
+            }
             this.currentCustomer.notes = notes;
             this.renderNotesSection(notes);
         } catch (error) {
@@ -1531,7 +1549,10 @@ class CRMApp {
         console.log('Rendering notes section with', notes?.length || 0, 'notes');
         
         // Try multiple possible selectors for the notes section
-        let notesSection = document.querySelector('.notes-section .notes-list');
+        let notesSection = document.querySelector('#customer-notes-list');
+        if (!notesSection) {
+            notesSection = document.querySelector('.notes-section .notes-list');
+        }
         if (!notesSection) {
             notesSection = document.querySelector('#notes-section .notes-list');
         }
@@ -1548,7 +1569,7 @@ class CRMApp {
         console.log('Found notes section:', notesSection);
 
         if (!notes || notes.length === 0) {
-            notesSection.innerHTML = '<p class="no-notes">No notes yet. Login to view existing notes.</p>';
+            notesSection.innerHTML = '<p class="no-notes">No notes yet.</p>';
             return;
         }
 

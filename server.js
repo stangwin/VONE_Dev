@@ -773,18 +773,28 @@ const server = http.createServer(async (req, res) => {
 
     // Get notes for customer
     if (pathname.startsWith('/api/customers/') && pathname.endsWith('/notes') && req.method === 'GET') {
+      console.log('Notes GET request received for:', pathname);
+      
       if (!isAuthenticated(req)) {
+        console.log('Notes request - user not authenticated');
         res.writeHead(401, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: 'Authentication required' }));
         return;
       }
 
       const customerId = pathname.split('/')[3];
+      console.log('Fetching notes for customer:', customerId);
+      console.log('User session info:', req.session?.userId, req.session?.user?.email);
+      
       const result = await pool.query(
         'SELECT * FROM customer_notes WHERE customer_id = $1 ORDER BY timestamp DESC',
         [customerId]
       );
 
+      console.log('Notes found:', result.rows.length);
+      if (result.rows.length > 0) {
+        console.log('Sample note:', result.rows[0]);
+      }
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify(result.rows));
       return;

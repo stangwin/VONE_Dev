@@ -35,7 +35,14 @@ function requireAuth(req, res, next) {
 
 // Check if user is authenticated (doesn't redirect)
 function isAuthenticated(req) {
-  return req.session && req.session.userId;
+  const isAuth = req.session && req.session.userId;
+  console.log('Auth check:', {
+    hasSession: !!req.session,
+    userId: req.session?.userId,
+    userEmail: req.session?.user?.email,
+    isAuthenticated: isAuth
+  });
+  return isAuth;
 }
 
 module.exports = {
