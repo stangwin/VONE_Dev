@@ -1454,9 +1454,21 @@ class CRMApp {
             if (e.target === modal) modal.remove();
         };
 
-        const content = fileType.startsWith('image/') ?
-            `<img src="${fileUrl}" alt="${fileName}" class="modal-image">` :
+        const isImage = fileType.startsWith('image/');
+        const content = isImage ?
+            `<div class="image-container">
+                <img src="${fileUrl}" alt="${fileName}" class="modal-image" id="modal-image">
+            </div>` :
             `<iframe src="${fileUrl}" class="modal-pdf"></iframe>`;
+
+        const zoomControls = isImage ? `
+            <div class="zoom-controls">
+                <button class="zoom-btn" onclick="app.zoomImage(-0.2)" title="Zoom Out">−</button>
+                <span class="zoom-level" id="zoom-level">100%</span>
+                <button class="zoom-btn" onclick="app.zoomImage(0.2)" title="Zoom In">+</button>
+                <button class="zoom-btn" onclick="app.resetZoom()" title="Reset Zoom">Reset</button>
+            </div>
+        ` : '';
 
         modal.innerHTML = `
             <div class="modal-content">
@@ -1468,12 +1480,99 @@ class CRMApp {
                     ${content}
                 </div>
                 <div class="modal-footer">
+                    ${zoomControls}
                     <a href="${fileUrl}" download="${fileName}" class="btn btn-primary">Download</a>
                 </div>
             </div>
         `;
 
         document.body.appendChild(modal);
+        
+        // Initialize zoom for images
+        if (isImage) {
+            this.currentZoom = 1;
+            this.setupImageZoom();
+        }
+    }
+
+    setupImageZoom() {
+        const image = document.getElementById('modal-image');
+        const container = image.parentElement;
+        
+        // Mouse wheel zoom
+        container.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            const delta = e.deltaY > 0 ? -0.1 : 0.1;
+            this.zoomImage(delta);
+        });
+
+        // Double-click to reset zoom
+        image.addEventListener('dblclick', () => {
+            this.resetZoom();
+        });
+
+        // Pan functionality for zoomed images
+        let isDragging = false;
+        let startX, startY, scrollLeft, scrollTop;
+
+        image.addEventListener('mousedown', (e) => {
+            if (this.currentZoom > 1) {
+                isDragging = true;
+                image.style.cursor = 'grabbing';
+                startX = e.pageX - container.offsetLeft;
+                startY = e.pageY - container.offsetTop;
+                scrollLeft = container.scrollLeft;
+                scrollTop = container.scrollTop;
+            }
+        });
+
+        container.addEventListener('mouseleave', () => {
+            isDragging = false;
+            image.style.cursor = this.currentZoom > 1 ? 'grab' : 'default';
+        });
+
+        container.addEventListener('mouseup', () => {
+            isDragging = false;
+            image.style.cursor = this.currentZoom > 1 ? 'grab' : 'default';
+        });
+
+        container.addEventListener('mousemove', (e) => {
+            if (!isDragging || this.currentZoom <= 1) return;
+            e.preventDefault();
+            const x = e.pageX - container.offsetLeft;
+            const y = e.pageY - container.offsetTop;
+            const walkX = (x - startX) * 2;
+            const walkY = (y - startY) * 2;
+            container.scrollLeft = scrollLeft - walkX;
+            container.scrollTop = scrollTop - walkY;
+        });
+    }
+
+    zoomImage(delta) {
+        const image = document.getElementById('modal-image');
+        const zoomLevel = document.getElementById('zoom-level');
+        
+        if (!image || !zoomLevel) return;
+
+        this.currentZoom = Math.max(0.5, Math.min(3, this.currentZoom + delta));
+        image.style.transform = `scale(${this.currentZoom})`;
+        image.style.cursor = this.currentZoom > 1 ? 'grab' : 'default';
+        zoomLevel.textContent = Math.round(this.currentZoom * 100) + '%';
+    }
+
+    resetZoom() {
+        const image = document.getElementById('modal-image');
+        const zoomLevel = document.getElementById('zoom-level');
+        const container = image.parentElement;
+        
+        if (!image || !zoomLevel) return;
+
+        this.currentZoom = 1;
+        image.style.transform = 'scale(1)';
+        image.style.cursor = 'default';
+        container.scrollLeft = 0;
+        container.scrollTop = 0;
+        zoomLevel.textContent = '100%';
     }
 
     formatFileSize(bytes) {

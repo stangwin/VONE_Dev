@@ -220,6 +220,65 @@ header {
     color: #166534;
 }
 
+/* Image zoom styles */
+.image-container {
+    overflow: auto;
+    max-height: 70vh;
+    max-width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.modal-image {
+    max-width: none;
+    max-height: none;
+    transition: transform 0.2s ease;
+    transform-origin: center center;
+}
+
+.zoom-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-right: 16px;
+}
+
+.zoom-btn {
+    background: #f3f4f6;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    transition: all 0.2s;
+}
+
+.zoom-btn:hover {
+    background: #e5e7eb;
+    border-color: #9ca3af;
+}
+
+.zoom-level {
+    font-size: 14px;
+    color: #6b7280;
+    min-width: 40px;
+    text-align: center;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
 header h1 {
     font-size: 1.5rem;
     margin-bottom: 1rem;
