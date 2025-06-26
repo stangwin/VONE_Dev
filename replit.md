@@ -95,6 +95,7 @@ UI preferences: Minimal, compact interfaces - avoid large/obtrusive action butto
 
 Changelog:
 - June 26, 2025: **COMPLETED** - Added zoom functionality to image modal popups with zoom in/out controls, mouse wheel zoom, and pan capability
+- June 26, 2025: Improved zoom controls layout - moved to bottom left with better spacing and semi-transparent background overlay
 - June 26, 2025: Implemented zoom controls (buttons, percentage display, reset) and mouse interactions (wheel zoom, double-click reset, drag to pan)
 - June 26, 2025: **COMPLETED** - Implemented individual section editing with edit icons (✏️) replacing page-wide edit mode
 - June 26, 2025: Changed customer detail page from single "Edit Page" button to section-specific edit icons with independent save/cancel

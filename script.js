@@ -1480,9 +1480,9 @@ class CRMApp {
                     ${content}
                 </div>
                 <div class="modal-footer">
-                    ${zoomControls}
                     <a href="${fileUrl}" download="${fileName}" class="btn btn-primary">Download</a>
                 </div>
+                ${zoomControls}
             </div>
         `;
 
