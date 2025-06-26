@@ -33,7 +33,7 @@
                                 </svg>
                             </button>
                             <div class="dropdown-menu" id="dropdown-menu">
-                                <a href="#" id="my-profile" class="dropdown-item">My Profile</a>
+                                <a href="#" id="my-profile" class="dropdown-item" onclick="app.showUserProfile()">Account Settings</a>
                                 <a href="/users.html" id="manage-users" class="dropdown-item" style="display: none;">Manage Users</a>
                                 <div class="dropdown-divider"></div>
                                 <a href="#" id="logout-btn" class="dropdown-item">Logout</a>
@@ -501,6 +501,135 @@
                             </button>
                         </div>
                     </form>
+                </div>
+
+                <!-- User Profile Modal -->
+                <div id="user-profile-modal" class="modal" style="display: none;">
+                    <div class="modal-content large-modal">
+                        <div class="modal-header">
+                            <h3>Account Settings</h3>
+                            <button class="modal-close" onclick="app.closeUserProfile()">&times;</button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="profile-sections">
+                                <!-- Profile Information -->
+                                <div class="profile-section">
+                                    <h4>Profile Information</h4>
+                                    <div class="form-group">
+                                        <label for="profile-name">Name</label>
+                                        <input type="text" id="profile-name" name="name" readonly>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="profile-email">Email</label>
+                                        <input type="email" id="profile-email" name="email" readonly>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="profile-role">Role</label>
+                                        <input type="text" id="profile-role" name="role" readonly>
+                                    </div>
+                                </div>
+
+                                <!-- Two-Factor Authentication -->
+                                <div class="profile-section">
+                                    <h4>Two-Factor Authentication</h4>
+                                    <div class="security-status">
+                                        <div class="status-display">
+                                            <span class="security-label">Status:</span>
+                                            <span class="status-indicator" id="profile-2fa-status">
+                                                <span class="status-text">Disabled</span>
+                                            </span>
+                                        </div>
+                                        <div class="security-actions">
+                                            <button class="btn btn-primary" id="enable-profile-2fa-btn" style="display: none;" onclick="app.enable2FA()">Enable 2FA</button>
+                                            <button class="btn btn-danger" id="disable-profile-2fa-btn" style="display: none;" onclick="app.disable2FA()">Disable 2FA</button>
+                                        </div>
+                                    </div>
+                                    <div class="security-description">
+                                        <p>Two-factor authentication adds an extra layer of security to your account by requiring a verification code from your authenticator app in addition to your password.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2FA Setup Modal -->
+                <div id="setup-2fa-modal" class="modal" style="display: none;">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h3>Enable Two-Factor Authentication</h3>
+                            <button class="modal-close" onclick="app.close2FASetup()">&times;</button>
+                        </div>
+                        <div class="modal-body">
+                            <div id="password-verification-section">
+                                <p>Please enter your current password to continue:</p>
+                                <div class="form-group">
+                                    <label for="verify-password">Current Password</label>
+                                    <input type="password" id="verify-password" required>
+                                </div>
+                                <div class="form-actions">
+                                    <button class="btn btn-primary" onclick="app.verifyPasswordFor2FA()">Continue</button>
+                                    <button class="btn btn-secondary" onclick="app.close2FASetup()">Cancel</button>
+                                </div>
+                            </div>
+
+                            <div id="qr-setup-section" style="display: none;">
+                                <div class="setup-steps">
+                                    <div class="step">
+                                        <h5>Step 1: Install an Authenticator App</h5>
+                                        <p>Download Google Authenticator, Authy, or Microsoft Authenticator on your mobile device.</p>
+                                    </div>
+                                    
+                                    <div class="step">
+                                        <h5>Step 2: Scan QR Code</h5>
+                                        <div class="qr-code-container">
+                                            <img id="profile-qr-code" src="" alt="QR Code">
+                                        </div>
+                                        <p><strong>Can't scan the code?</strong> Enter this key manually:</p>
+                                        <div class="manual-entry" id="profile-manual-key"></div>
+                                    </div>
+
+                                    <div class="step">
+                                        <h5>Step 3: Enter Verification Code</h5>
+                                        <p>Enter the 6-digit code from your authenticator app:</p>
+                                        <div class="form-group">
+                                            <input type="text" id="profile-verify-token" class="two-factor-input" 
+                                                   placeholder="000000" maxlength="6" pattern="[0-9]{6}" required>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-actions">
+                                    <button class="btn btn-primary" onclick="app.complete2FASetup()">Enable 2FA</button>
+                                    <button class="btn btn-secondary" onclick="app.close2FASetup()">Cancel</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2FA Disable Confirmation Modal -->
+                <div id="disable-2fa-modal" class="modal" style="display: none;">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h3>Disable Two-Factor Authentication</h3>
+                            <button class="modal-close" onclick="app.closeDisable2FA()">&times;</button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="warning-message">
+                                <p><strong>Warning:</strong> Disabling two-factor authentication will make your account less secure.</p>
+                            </div>
+                            <p>Enter the 6-digit code from your authenticator app to confirm:</p>
+                            <div class="form-group">
+                                <input type="text" id="disable-verify-token" class="two-factor-input" 
+                                       placeholder="000000" maxlength="6" pattern="[0-9]{6}" required>
+                            </div>
+                            <div class="form-actions">
+                                <button class="btn btn-danger" onclick="app.confirmDisable2FA()">Disable 2FA</button>
+                                <button class="btn btn-secondary" onclick="app.closeDisable2FA()">Cancel</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Customer Detail View -->

@@ -313,6 +313,120 @@ class CRMApp {
         }
     }
 
+    showUserProfile() {
+        if (!this.currentUser) return;
+        
+        document.getElementById('profile-name').value = this.currentUser.name;
+        document.getElementById('profile-email').value = this.currentUser.email;
+        document.getElementById('profile-role').value = this.currentUser.role;
+        
+        this.update2FAStatus();
+        document.getElementById('user-profile-modal').style.display = 'flex';
+    }
+
+    closeUserProfile() {
+        document.getElementById('user-profile-modal').style.display = 'none';
+    }
+
+    update2FAStatus() {
+        const statusEl = document.getElementById('profile-2fa-status');
+        const statusText = statusEl.querySelector('.status-text');
+        const enableBtn = document.getElementById('enable-profile-2fa-btn');
+        const disableBtn = document.getElementById('disable-profile-2fa-btn');
+
+        if (this.currentUser.twoFactorEnabled) {
+            statusEl.className = 'status-indicator enabled';
+            statusText.textContent = 'Enabled';
+            enableBtn.style.display = 'none';
+            disableBtn.style.display = 'inline-block';
+        } else {
+            statusEl.className = 'status-indicator disabled';
+            statusText.textContent = 'Disabled';
+            enableBtn.style.display = 'inline-block';
+            disableBtn.style.display = 'none';
+        }
+    }
+
+    async enable2FA() {
+        document.getElementById('setup-2fa-modal').style.display = 'flex';
+        document.getElementById('password-verification-section').style.display = 'block';
+        document.getElementById('qr-setup-section').style.display = 'none';
+    }
+
+    close2FASetup() {
+        document.getElementById('setup-2fa-modal').style.display = 'none';
+        document.getElementById('verify-password').value = '';
+        document.getElementById('profile-verify-token').value = '';
+    }
+
+    async verifyPasswordFor2FA() {
+        const password = document.getElementById('verify-password').value;
+        if (!password) {
+            this.showError('main-error', 'Please enter your password');
+            return;
+        }
+
+        try {
+            const response = await this.api.setup2FA(password);
+            
+            document.getElementById('password-verification-section').style.display = 'none';
+            document.getElementById('qr-setup-section').style.display = 'block';
+            
+            document.getElementById('profile-qr-code').src = response.qrCode;
+            document.getElementById('profile-manual-key').textContent = response.manualEntryKey;
+            
+        } catch (error) {
+            this.showError('main-error', 'Invalid password. Please try again.');
+        }
+    }
+
+    async complete2FASetup() {
+        const token = document.getElementById('profile-verify-token').value;
+        if (!token || token.length !== 6) {
+            this.showError('main-error', 'Please enter a valid 6-digit code');
+            return;
+        }
+
+        try {
+            await this.api.enable2FA(token);
+            this.showError('main-error', '2FA enabled successfully!', 'success');
+            
+            await this.loadUserData();
+            this.update2FAStatus();
+            this.close2FASetup();
+        } catch (error) {
+            this.showError('main-error', 'Invalid verification code. Please try again.');
+        }
+    }
+
+    disable2FA() {
+        document.getElementById('disable-2fa-modal').style.display = 'flex';
+    }
+
+    closeDisable2FA() {
+        document.getElementById('disable-2fa-modal').style.display = 'none';
+        document.getElementById('disable-verify-token').value = '';
+    }
+
+    async confirmDisable2FA() {
+        const token = document.getElementById('disable-verify-token').value;
+        if (!token || token.length !== 6) {
+            this.showError('main-error', 'Please enter a valid 6-digit code');
+            return;
+        }
+
+        try {
+            await this.api.disable2FA(token);
+            this.showError('main-error', '2FA disabled successfully!', 'success');
+            
+            await this.loadUserData();
+            this.update2FAStatus();
+            this.closeDisable2FA();
+        } catch (error) {
+            this.showError('main-error', 'Invalid verification code. Please try again.');
+        }
+    }
+
     async loadCustomers() {
         console.log('=== LOAD CUSTOMERS DEBUG START ===');
         
