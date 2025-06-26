@@ -2,6 +2,43 @@
 class DatabaseAPI {
     constructor() {
         this.baseURL = '/api';
+        this.currentUser = null;
+    }
+
+    async checkAuth() {
+        try {
+            const response = await fetch(`${this.baseURL}/auth/me`, {
+                credentials: 'include'
+            });
+            
+            if (response.ok) {
+                const result = await response.json();
+                this.currentUser = result.user;
+                return result.user;
+            } else {
+                this.currentUser = null;
+                window.location.href = '/auth.html';
+                return null;
+            }
+        } catch (error) {
+            console.error('Auth check failed:', error);
+            this.currentUser = null;
+            window.location.href = '/auth.html';
+            return null;
+        }
+    }
+
+    async logout() {
+        try {
+            await fetch(`${this.baseURL}/auth/logout`, {
+                method: 'POST',
+                credentials: 'include'
+            });
+            this.currentUser = null;
+            window.location.href = '/auth.html';
+        } catch (error) {
+            console.error('Logout failed:', error);
+        }
     }
 
     async getCustomers() {
@@ -9,11 +46,19 @@ class DatabaseAPI {
             console.log('DatabaseAPI: Making fetch request to', `${this.baseURL}/customers`);
             console.log('Current window location:', window.location.href);
             
-            const response = await fetch(`${this.baseURL}/customers`);
+            const response = await fetch(`${this.baseURL}/customers`, {
+                credentials: 'include'
+            });
             
             console.log('DatabaseAPI: Response status:', response.status);
             console.log('DatabaseAPI: Response ok:', response.ok);
             console.log('DatabaseAPI: Response headers:', Object.fromEntries(response.headers.entries()));
+            
+            if (response.status === 401) {
+                console.log('User not authenticated, redirecting to auth page...');
+                window.location.href = '/auth.html';
+                return [];
+            }
             
             if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
             
