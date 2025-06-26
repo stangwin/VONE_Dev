@@ -793,7 +793,9 @@ const server = http.createServer(async (req, res) => {
 
       console.log('Notes found:', result.rows.length);
       if (result.rows.length > 0) {
-        console.log('Sample note:', result.rows[0]);
+        console.log('Sample note ID:', result.rows[0].id);
+        console.log('Sample note content length:', result.rows[0].content?.length);
+        console.log('Sample note preview:', result.rows[0].content?.substring(0, 50) + '...');
       }
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify(result.rows));

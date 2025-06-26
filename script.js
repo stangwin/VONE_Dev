@@ -1536,9 +1536,14 @@ class CRMApp {
             console.log('Notes loaded successfully:', notes.length, 'notes found');
             if (notes.length > 0) {
                 console.log('First note:', notes[0]);
+                console.log('Sample note content:', notes[0].content?.substring(0, 50) + '...');
             }
             this.currentCustomer.notes = notes;
-            this.renderNotesSection(notes);
+            
+            // Force re-render with delay to ensure DOM is ready
+            setTimeout(() => {
+                this.renderNotesSection(notes);
+            }, 100);
         } catch (error) {
             console.error('Failed to load customer notes:', error);
             this.renderNotesSection([]);
@@ -1551,22 +1556,25 @@ class CRMApp {
         // Try multiple possible selectors for the notes section
         let notesSection = document.querySelector('#customer-notes-list');
         if (!notesSection) {
-            notesSection = document.querySelector('.notes-section .notes-list');
+            notesSection = document.querySelector('#notes-list');
+        }
+        if (!notesSection) {
+            notesSection = document.querySelector('.notes-list');
         }
         if (!notesSection) {
             notesSection = document.querySelector('#notes-section .notes-list');
         }
         if (!notesSection) {
-            notesSection = document.querySelector('.notes-list');
+            notesSection = document.querySelector('.notes-section .notes-list');
         }
         
         if (!notesSection) {
             console.log('Notes section not found in DOM - available elements:', 
-                document.querySelectorAll('[class*="notes"], [id*="notes"]'));
+                Array.from(document.querySelectorAll('[class*="notes"], [id*="notes"]')).map(el => el.id || el.className));
             return;
         }
 
-        console.log('Found notes section:', notesSection);
+        console.log('Found notes section:', notesSection.id || notesSection.className);
 
         if (!notes || notes.length === 0) {
             notesSection.innerHTML = '<p class="no-notes">No notes yet.</p>';
@@ -1581,7 +1589,7 @@ class CRMApp {
             return `
                 <div class="note-item ${noteClass}">
                     <div class="note-header">
-                        <span class="note-author">${note.author_name}</span>
+                        <span class="note-author">${this.escapeHtml(note.author_name || 'Unknown')}</span>
                         <span class="note-date">${noteDate}</span>
                         ${!isSystemNote && this.currentUser && (this.currentUser.role === 'admin' || this.currentUser.id === note.author_id) ? 
                             `<button class="note-delete-btn" onclick="app.deleteNote(${note.id})" title="Delete note">×</button>` : 
