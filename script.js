@@ -1509,6 +1509,11 @@ class CRMApp {
             });
             
             if (!response.ok) {
+                if (response.status === 401) {
+                    console.log('Authentication required to load notes');
+                    this.renderNotesSection([]);
+                    return;
+                }
                 throw new Error('Failed to load notes');
             }
             
@@ -1524,14 +1529,26 @@ class CRMApp {
 
     renderNotesSection(notes) {
         console.log('Rendering notes section with', notes?.length || 0, 'notes');
-        const notesSection = document.querySelector('.notes-section .notes-list');
+        
+        // Try multiple possible selectors for the notes section
+        let notesSection = document.querySelector('.notes-section .notes-list');
         if (!notesSection) {
-            console.log('Notes section not found in DOM');
+            notesSection = document.querySelector('#notes-section .notes-list');
+        }
+        if (!notesSection) {
+            notesSection = document.querySelector('.notes-list');
+        }
+        
+        if (!notesSection) {
+            console.log('Notes section not found in DOM - available elements:', 
+                document.querySelectorAll('[class*="notes"], [id*="notes"]'));
             return;
         }
 
+        console.log('Found notes section:', notesSection);
+
         if (!notes || notes.length === 0) {
-            notesSection.innerHTML = '<p class="no-notes">No notes yet.</p>';
+            notesSection.innerHTML = '<p class="no-notes">No notes yet. Login to view existing notes.</p>';
             return;
         }
 
