@@ -72,6 +72,18 @@ const server = http.createServer(async (req, res) => {
       return;
     }
 
+    // Get files for customer (must come before general customer GET)
+    if (req.method === 'GET' && pathname.match(/^\/api\/customers\/[^\/]+\/files$/)) {
+      const customerId = pathname.split('/')[3];
+      
+      const query = 'SELECT * FROM customer_files WHERE customer_id = $1 ORDER BY upload_date DESC';
+      const result = await pool.query(query, [customerId]);
+      
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify(result.rows));
+      return;
+    }
+
     if (pathname.startsWith('/api/customers/') && req.method === 'GET') {
       const customerId = pathname.split('/')[3];
       const result = await pool.query('SELECT * FROM customers WHERE customer_id = $1', [customerId]);
@@ -346,17 +358,7 @@ const server = http.createServer(async (req, res) => {
       return;
     }
 
-    // Get files for customer
-    if (req.method === 'GET' && pathname.match(/^\/api\/customers\/[^\/]+\/files$/)) {
-      const customerId = pathname.split('/')[3];
-      
-      const query = 'SELECT * FROM customer_files WHERE customer_id = $1 ORDER BY upload_date DESC';
-      const result = await pool.query(query, [customerId]);
-      
-      res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify(result.rows));
-      return;
-    }
+
 
     // Delete file
     if (req.method === 'DELETE' && pathname.match(/^\/api\/customers\/[^\/]+\/files\/\d+$/)) {

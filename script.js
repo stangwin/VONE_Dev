@@ -126,14 +126,26 @@ class DatabaseAPI {
 
     async getCustomerFiles(customerId) {
         try {
+            console.log('Fetching files from:', `${this.baseURL}/customers/${customerId}/files`);
             const response = await fetch(`${this.baseURL}/customers/${customerId}/files`);
             
+            console.log('Files response status:', response.status);
+            
             if (!response.ok) {
-                const error = await response.json();
+                const errorText = await response.text();
+                console.error('Files fetch error response:', errorText);
+                let error;
+                try {
+                    error = JSON.parse(errorText);
+                } catch {
+                    error = { error: errorText };
+                }
                 throw new Error(error.error || 'Failed to fetch files');
             }
 
-            return await response.json();
+            const files = await response.json();
+            console.log('Files fetched successfully:', files);
+            return files;
         } catch (error) {
             console.error('Error fetching files:', error);
             throw error;
@@ -1058,13 +1070,19 @@ class CRMApp {
     }
 
     async loadCustomerFiles() {
-        if (!this.currentCustomer) return;
+        if (!this.currentCustomer) {
+            console.log('No current customer, skipping file load');
+            return;
+        }
 
+        console.log('Loading files for customer:', this.currentCustomer.customer_id);
         try {
             const files = await this.api.getCustomerFiles(this.currentCustomer.customer_id);
+            console.log('Files loaded successfully:', files);
             this.renderFilesGrid(files);
         } catch (error) {
             console.error('Failed to load customer files:', error);
+            console.error('Error details:', error.message, error.stack);
         }
     }
 
