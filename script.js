@@ -265,6 +265,27 @@ class DatabaseAPI {
         return this.createNote(customerId, noteData);
     }
 
+    async deleteNote(customerId, noteId) {
+        console.log('DatabaseAPI: Deleting note', noteId, 'for customer', customerId);
+        
+        const response = await fetch(`/api/customers/${customerId}/notes/${noteId}`, {
+            method: 'DELETE',
+            credentials: 'include'
+        });
+
+        console.log('DatabaseAPI: Note deletion response status:', response.status);
+        
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('DatabaseAPI: Note deletion failed:', errorText);
+            throw new Error(errorText || 'Failed to delete note');
+        }
+
+        const result = await response.json();
+        console.log('DatabaseAPI: Note deleted successfully:', result);
+        return result;
+    }
+
     async getCustomerNotes(customerId) {
         console.log('DatabaseAPI: Fetching notes for customer', customerId);
         
@@ -1412,7 +1433,14 @@ class CRMApp {
                     <!-- Notes -->
                     <div class="detail-section" id="notes-section" data-section="notes">
                         <div class="section-header">
-                            <h3>Notes</h3>
+                            <h3>Notes & Activity</h3>
+                            <div class="notes-filter">
+                                <select id="notes-filter-select" onchange="app.onNotesFilterChange(this.value)">
+                                    <option value="all">All Notes</option>
+                                    <option value="user">User Notes Only</option>
+                                    <option value="system">System Notes Only</option>
+                                </select>
+                            </div>
                             <button class="section-edit-btn" onclick="app.toggleSectionEdit('notes')" id="notes-edit-btn">
                                 ${this.editingSections.has('notes') ? '✕' : '✏️'}
                             </button>
@@ -1634,12 +1662,25 @@ class CRMApp {
 
         console.log('Found notes section:', notesSection.id || notesSection.className);
 
-        if (!notes || notes.length === 0) {
-            notesSection.innerHTML = '<p class="no-notes">No notes yet.</p>';
+        // Store all notes for filtering
+        this.allNotes = notes || [];
+        this.currentNotesFilter = this.currentNotesFilter || 'all';
+        
+        // Update filter dropdown
+        const filterSelect = document.getElementById('notes-filter-select');
+        if (filterSelect) {
+            filterSelect.value = this.currentNotesFilter;
+        }
+        
+        // Apply current filter
+        const filteredNotes = this.filterNotes(this.allNotes, this.currentNotesFilter);
+
+        if (!filteredNotes || filteredNotes.length === 0) {
+            notesSection.innerHTML = '<p class="no-notes">No notes available for this filter.</p>';
             return;
         }
 
-        const notesHtml = notes.map(note => {
+        const notesHtml = filteredNotes.map(note => {
             const noteDate = new Date(note.timestamp).toLocaleString();
             const isSystemNote = note.type === 'system';
             const noteClass = isSystemNote ? 'system-note' : 'user-note';
@@ -1790,8 +1831,17 @@ class CRMApp {
             const result = await this.api.uploadFiles(this.currentCustomer.customer_id, validFiles);
             console.log('Upload result:', result);
             
-            // Reload files
+            // Create system note for file uploads
+            const fileNames = validFiles.map(f => f.name);
+            const uploadSummary = validFiles.length === 1 ? 
+                `File uploaded: "${fileNames[0]}"` : 
+                `${validFiles.length} files uploaded: ${fileNames.join(', ')}`;
+            
+            await this.api.createSystemNote(this.currentCustomer.customer_id, 'Files uploaded', uploadSummary);
+            
+            // Reload files and notes
             await this.loadCustomerFiles();
+            await this.loadCustomerNotes();
 
             // Reset file input
             const fileInput = document.getElementById('file-input');
