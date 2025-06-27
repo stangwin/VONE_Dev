@@ -1691,6 +1691,8 @@ class CRMApp {
             const isSystemNote = note.type === 'system';
             const noteClass = isSystemNote ? 'system-note' : 'user-note';
             
+            console.log('Rendering note:', note.id, 'type:', note.type, 'isSystemNote:', isSystemNote);
+            
             const displayAuthor = isSystemNote ? '🤖 System' : this.escapeHtml(note.author_name || 'Unknown');
             
             return `
