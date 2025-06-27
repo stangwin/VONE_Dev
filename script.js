@@ -1520,6 +1520,7 @@ class CRMApp {
             });
             
             console.log('Notes response status:', response.status);
+            console.log('Notes response headers:', Object.fromEntries(response.headers.entries()));
             
             if (!response.ok) {
                 if (response.status === 401) {
@@ -1528,24 +1529,37 @@ class CRMApp {
                     return;
                 }
                 const errorText = await response.text();
-                console.error('Notes fetch failed:', errorText);
-                throw new Error('Failed to load notes: ' + errorText);
+                console.error('Notes fetch failed:', response.status, errorText);
+                throw new Error(`Failed to load notes (${response.status}): ${errorText}`);
             }
             
-            const notes = await response.json();
-            console.log('Notes loaded successfully:', notes.length, 'notes found');
-            if (notes.length > 0) {
-                console.log('First note:', notes[0]);
-                console.log('Sample note content:', notes[0].content?.substring(0, 50) + '...');
-            }
-            this.currentCustomer.notes = notes;
+            const responseText = await response.text();
+            console.log('Raw notes response:', responseText.substring(0, 200) + '...');
             
-            // Force re-render with delay to ensure DOM is ready
-            setTimeout(() => {
-                this.renderNotesSection(notes);
-            }, 100);
+            let notes;
+            try {
+                notes = JSON.parse(responseText);
+            } catch (parseError) {
+                console.error('Failed to parse notes JSON:', parseError, 'Raw response:', responseText);
+                throw new Error('Invalid JSON response from notes API');
+            }
+            
+            console.log('Notes loaded successfully:', notes?.length || 0, 'notes found');
+            if (notes && notes.length > 0) {
+                console.log('First note sample:', {
+                    id: notes[0].id,
+                    author: notes[0].author_name,
+                    contentLength: notes[0].content?.length,
+                    preview: notes[0].content?.substring(0, 50) + '...'
+                });
+            }
+            
+            this.currentCustomer.notes = notes || [];
+            this.renderNotesSection(notes || []);
+            
         } catch (error) {
-            console.error('Failed to load customer notes:', error);
+            console.error('Failed to load customer notes:', error.message || error);
+            console.error('Full error object:', error);
             this.renderNotesSection([]);
         }
     }

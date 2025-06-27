@@ -782,24 +782,31 @@ const server = http.createServer(async (req, res) => {
         return;
       }
 
-      const customerId = pathname.split('/')[3];
-      console.log('Fetching notes for customer:', customerId);
-      console.log('User session info:', req.session?.userId, req.session?.user?.email);
-      
-      const result = await pool.query(
-        'SELECT * FROM customer_notes WHERE customer_id = $1 ORDER BY timestamp DESC',
-        [customerId]
-      );
+      try {
+        const customerId = pathname.split('/')[3];
+        console.log('Fetching notes for customer:', customerId);
+        console.log('User session info:', req.session?.userId, req.session?.user?.email);
+        
+        const result = await pool.query(
+          'SELECT * FROM customer_notes WHERE customer_id = $1 ORDER BY timestamp DESC',
+          [customerId]
+        );
 
-      console.log('Notes found:', result.rows.length);
-      if (result.rows.length > 0) {
-        console.log('Sample note ID:', result.rows[0].id);
-        console.log('Sample note content length:', result.rows[0].content?.length);
-        console.log('Sample note preview:', result.rows[0].content?.substring(0, 50) + '...');
+        console.log('Notes found:', result.rows.length);
+        if (result.rows.length > 0) {
+          console.log('Sample note ID:', result.rows[0].id);
+          console.log('Sample note content length:', result.rows[0].content?.length);
+          console.log('Sample note preview:', result.rows[0].content?.substring(0, 50) + '...');
+        }
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify(result.rows));
+        return;
+      } catch (error) {
+        console.error('Error fetching notes:', error);
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Failed to fetch notes', details: error.message }));
+        return;
       }
-      res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify(result.rows));
-      return;
     }
 
     if (pathname === '/api/health') {
