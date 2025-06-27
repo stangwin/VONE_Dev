@@ -805,11 +805,14 @@ const server = http.createServer(async (req, res) => {
 
           console.log('Creating note with user:', user.name);
           
+          const noteType = noteData.type || 'manual';
+          const authorName = noteType === 'system' ? 'System' : user.name;
+          
           const result = await pool.query(
             `INSERT INTO customer_notes (customer_id, author_id, author_name, content, type, timestamp, created_at, updated_at)
-             VALUES ($1, $2, $3, $4, 'manual', NOW(), NOW(), NOW())
+             VALUES ($1, $2, $3, $4, $5, NOW(), NOW(), NOW())
              RETURNING *`,
-            [customerId, user.id, user.name, noteData.content]
+            [customerId, user.id, authorName, noteData.content, noteType]
           );
 
           console.log('Note created successfully:', result.rows[0]);

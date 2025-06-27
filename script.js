@@ -253,12 +253,12 @@ class DatabaseAPI {
         return result;
     }
 
-    async createSystemNote(customerId, action, details) {
+    async createSystemNote(customerId, action, content) {
         console.log('DatabaseAPI: Creating system note for customer', customerId);
-        console.log('DatabaseAPI: System note action:', action, 'details:', details);
+        console.log('DatabaseAPI: System note content:', content);
         
         const noteData = {
-            content: details || action, // Use details if provided, otherwise just the action
+            content: content, // Direct content without prefixes
             type: 'system'
         };
         
@@ -783,7 +783,7 @@ class CRMApp {
             
             // Create system note for status change
             if (originalValue !== newStatus) {
-                await this.api.createSystemNote(customerId, 'Status changed', `from "${originalValue}" to "${newStatus}"`);
+                await this.api.createSystemNote(customerId, '', `Status changed from "${originalValue}" to "${newStatus}"`);
             }
             
             // Update local data
@@ -834,10 +834,10 @@ class CRMApp {
             
             // Create system note for next step change
             if (originalValue !== newNextStep) {
-                const details = originalValue ? 
-                    `from "${originalValue}" to "${newNextStep}"` : 
-                    `set to "${newNextStep}"`;
-                await this.api.createSystemNote(customerId, 'Next step updated', details);
+                const content = originalValue ? 
+                    `Next step updated from "${originalValue}" to "${newNextStep}"` : 
+                    `Next step set to "${newNextStep}"`;
+                await this.api.createSystemNote(customerId, '', content);
             }
             
             // Update local data
@@ -1690,12 +1690,12 @@ class CRMApp {
             const isSystemNote = note.type === 'system';
             const noteClass = isSystemNote ? 'system-note' : 'user-note';
             
-            const authorPrefix = isSystemNote ? '🤖 ' : '';
+            const displayAuthor = isSystemNote ? '🤖 System' : this.escapeHtml(note.author_name || 'Unknown');
             
             return `
                 <div class="note-item ${noteClass}">
                     <div class="note-header">
-                        <span class="note-author">${authorPrefix}${this.escapeHtml(note.author_name || 'System')}</span>
+                        <span class="note-author">${displayAuthor}</span>
                         <span class="note-date">${noteDate}</span>
                         ${this.currentUser && this.currentUser.role === 'admin' ? 
                             `<button class="note-delete-btn" onclick="app.deleteNote(${note.id})" title="Delete note">×</button>` : 
@@ -1838,11 +1838,11 @@ class CRMApp {
             
             // Create system note for file uploads
             const fileNames = validFiles.map(f => f.name);
-            const uploadSummary = validFiles.length === 1 ? 
+            const uploadContent = validFiles.length === 1 ? 
                 `File uploaded: "${fileNames[0]}"` : 
                 `${validFiles.length} files uploaded: ${fileNames.join(', ')}`;
             
-            await this.api.createSystemNote(this.currentCustomer.customer_id, 'Files uploaded', uploadSummary);
+            await this.api.createSystemNote(this.currentCustomer.customer_id, '', uploadContent);
             
             // Reload files and notes
             await this.loadCustomerFiles();
