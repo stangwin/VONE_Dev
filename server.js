@@ -81,6 +81,16 @@ const server = http.createServer(async (req, res) => {
 
   // Wrap all requests with session handling
   return handleWithSession(req, res, async (req, res) => {
+    
+    // Debug logging for notes requests
+    if (pathname.includes('notes')) {
+      console.log('=== NOTES REQUEST INTERCEPTED ===');
+      console.log('Method:', req.method);
+      console.log('Pathname:', pathname);
+      console.log('Full URL:', req.url);
+      console.log('Session exists:', !!req.session);
+      console.log('User ID:', req.session?.userId);
+    }
 
     try {
       // Authentication Routes
@@ -771,43 +781,7 @@ const server = http.createServer(async (req, res) => {
       return;
     }
 
-    // Get notes for customer
-    if (pathname.startsWith('/api/customers/') && pathname.endsWith('/notes') && req.method === 'GET') {
-      console.log('Notes GET request received for:', pathname);
-      
-      if (!isAuthenticated(req)) {
-        console.log('Notes request - user not authenticated');
-        res.writeHead(401, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: 'Authentication required' }));
-        return;
-      }
-
-      try {
-        const customerId = pathname.split('/')[3];
-        console.log('Fetching notes for customer:', customerId);
-        console.log('User session info:', req.session?.userId, req.session?.user?.email);
-        
-        const result = await pool.query(
-          'SELECT * FROM customer_notes WHERE customer_id = $1 ORDER BY timestamp DESC',
-          [customerId]
-        );
-
-        console.log('Notes found:', result.rows.length);
-        if (result.rows.length > 0) {
-          console.log('Sample note ID:', result.rows[0].id);
-          console.log('Sample note content length:', result.rows[0].content?.length);
-          console.log('Sample note preview:', result.rows[0].content?.substring(0, 50) + '...');
-        }
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify(result.rows));
-        return;
-      } catch (error) {
-        console.error('Error fetching notes:', error);
-        res.writeHead(500, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: 'Failed to fetch notes', details: error.message }));
-        return;
-      }
-    }
+    // This notes route was moved above to fix route matching order
 
     if (pathname === '/api/health') {
       res.writeHead(200, { 'Content-Type': 'application/json' });
