@@ -350,6 +350,49 @@ const server = http.createServer(async (req, res) => {
         return;
       }
 
+      // Get notes for customer (must come before general customer GET)
+      if (req.method === 'GET' && pathname.match(/^\/api\/customers\/[^\/]+\/notes$/)) {
+        console.log('=== NOTES GET REQUEST MATCHED ===');
+        console.log('Notes GET request received for:', pathname);
+        console.log('Request method:', req.method);
+        console.log('Full URL:', req.url);
+        
+        if (!isAuthenticated(req)) {
+          console.log('Notes request - user not authenticated');
+          res.writeHead(401, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Authentication required' }));
+          return;
+        }
+
+        try {
+          const customerId = pathname.split('/')[3];
+          console.log('Fetching notes for customer:', customerId);
+          console.log('User session info:', req.session?.userId, req.session?.user?.email);
+          
+          const result = await pool.query(
+            'SELECT * FROM customer_notes WHERE customer_id = $1 ORDER BY timestamp DESC',
+            [customerId]
+          );
+
+          console.log('Notes query completed. Found:', result.rows.length);
+          if (result.rows.length > 0) {
+            console.log('Sample note ID:', result.rows[0].id);
+            console.log('Sample note content length:', result.rows[0].content?.length);
+            console.log('Sample note preview:', result.rows[0].content?.substring(0, 50) + '...');
+          }
+          
+          console.log('Sending notes response with status 200');
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify(result.rows));
+          return;
+        } catch (error) {
+          console.error('Error fetching notes:', error);
+          res.writeHead(500, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Failed to fetch notes', details: error.message }));
+          return;
+        }
+      }
+
       // Get files for customer (must come before general customer GET)
       if (req.method === 'GET' && pathname.match(/^\/api\/customers\/[^\/]+\/files$/)) {
         if (!isAuthenticated(req)) {

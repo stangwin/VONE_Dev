@@ -1502,6 +1502,7 @@ class CRMApp {
             return;
         }
 
+        console.log('=== LOADING CUSTOMER NOTES ===');
         console.log('Loading notes for customer:', this.currentCustomer.customer_id);
         
         // Show loading indicator
@@ -1519,7 +1520,9 @@ class CRMApp {
                 }
             });
             
+            console.log('=== NOTES API RESPONSE ===');
             console.log('Notes response status:', response.status);
+            console.log('Notes response ok:', response.ok);
             console.log('Notes response headers:', Object.fromEntries(response.headers.entries()));
             
             if (!response.ok) {
@@ -1534,11 +1537,24 @@ class CRMApp {
             }
             
             const responseText = await response.text();
-            console.log('Raw notes response:', responseText.substring(0, 200) + '...');
+            console.log('=== RAW RESPONSE ===');
+            console.log('Raw notes response length:', responseText.length);
+            console.log('Raw notes response preview:', responseText.substring(0, 300));
+            
+            if (!responseText.trim()) {
+                console.warn('Empty response body from notes API');
+                this.renderNotesSection([]);
+                return;
+            }
             
             let notes;
             try {
                 notes = JSON.parse(responseText);
+                console.log('=== PARSED NOTES ===');
+                console.log('Parsed notes type:', typeof notes);
+                console.log('Is array:', Array.isArray(notes));
+                console.log('Notes length:', notes?.length);
+                console.log('Raw notes object:', notes);
             } catch (parseError) {
                 console.error('Failed to parse notes JSON:', parseError, 'Raw response:', responseText);
                 throw new Error('Invalid JSON response from notes API');
@@ -1558,7 +1574,10 @@ class CRMApp {
             this.renderNotesSection(notes || []);
             
         } catch (error) {
-            console.error('Failed to load customer notes:', error.message || error);
+            console.error('=== NOTES LOADING ERROR ===');
+            console.error('Error type:', typeof error);
+            console.error('Error message:', error.message || error);
+            console.error('Error stack:', error.stack);
             console.error('Full error object:', error);
             this.renderNotesSection([]);
         }
