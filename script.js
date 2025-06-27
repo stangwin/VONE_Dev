@@ -258,7 +258,7 @@ class DatabaseAPI {
         console.log('DatabaseAPI: System note action:', action, 'details:', details);
         
         const noteData = {
-            content: `${action}${details ? ': ' + details : ''}`,
+            content: details || action, // Use details if provided, otherwise just the action
             type: 'system'
         };
         
