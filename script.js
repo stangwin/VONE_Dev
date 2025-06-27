@@ -253,6 +253,18 @@ class DatabaseAPI {
         return result;
     }
 
+    async createSystemNote(customerId, action, details) {
+        console.log('DatabaseAPI: Creating system note for customer', customerId);
+        console.log('DatabaseAPI: System note action:', action, 'details:', details);
+        
+        const noteData = {
+            content: `${action}${details ? ': ' + details : ''}`,
+            type: 'system'
+        };
+        
+        return this.createNote(customerId, noteData);
+    }
+
     async getCustomerNotes(customerId) {
         console.log('DatabaseAPI: Fetching notes for customer', customerId);
         
@@ -748,6 +760,11 @@ class CRMApp {
             await this.api.updateCustomer(customerId, updateData);
             console.log(`Successfully updated customer ${customerId} status to ${newStatus}`);
             
+            // Create system note for status change
+            if (originalValue !== newStatus) {
+                await this.api.createSystemNote(customerId, 'Status changed', `from "${originalValue}" to "${newStatus}"`);
+            }
+            
             // Update local data
             const customer = this.customers.find(c => c.customer_id === customerId);
             if (customer) {
@@ -793,6 +810,14 @@ class CRMApp {
             
             await this.api.updateCustomer(customerId, updateData);
             console.log(`Updated customer ${customerId} next step to "${newNextStep}"`);
+            
+            // Create system note for next step change
+            if (originalValue !== newNextStep) {
+                const details = originalValue ? 
+                    `from "${originalValue}" to "${newNextStep}"` : 
+                    `set to "${newNextStep}"`;
+                await this.api.createSystemNote(customerId, 'Next step updated', details);
+            }
             
             // Update local data
             const customer = this.customers.find(c => c.customer_id === customerId);
@@ -1619,12 +1644,14 @@ class CRMApp {
             const isSystemNote = note.type === 'system';
             const noteClass = isSystemNote ? 'system-note' : 'user-note';
             
+            const authorPrefix = isSystemNote ? '🤖 ' : '';
+            
             return `
                 <div class="note-item ${noteClass}">
                     <div class="note-header">
-                        <span class="note-author">${this.escapeHtml(note.author_name || 'Unknown')}</span>
+                        <span class="note-author">${authorPrefix}${this.escapeHtml(note.author_name || 'System')}</span>
                         <span class="note-date">${noteDate}</span>
-                        ${!isSystemNote && this.currentUser && (this.currentUser.role === 'admin' || this.currentUser.id === note.author_id) ? 
+                        ${this.currentUser && this.currentUser.role === 'admin' ? 
                             `<button class="note-delete-btn" onclick="app.deleteNote(${note.id})" title="Delete note">×</button>` : 
                             ''
                         }

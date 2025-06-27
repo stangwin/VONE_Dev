@@ -824,6 +824,64 @@ const server = http.createServer(async (req, res) => {
       return;
     }
 
+    // Delete note for customer
+    if (pathname.match(/^\/api\/customers\/[^\/]+\/notes\/\d+$/) && req.method === 'DELETE') {
+      console.log('Delete note request received for:', pathname);
+      
+      if (!isAuthenticated(req)) {
+        console.log('Delete note failed: Not authenticated');
+        res.writeHead(401, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Authentication required' }));
+        return;
+      }
+
+      try {
+        const pathParts = pathname.split('/');
+        const customerId = pathParts[3];
+        const noteId = parseInt(pathParts[5]);
+        
+        console.log('Deleting note:', noteId, 'for customer:', customerId);
+        
+        // Get the authenticated user
+        const user = await authService.getUserById(req.session.userId);
+        if (!user) {
+          console.log('Delete note failed: User not found');
+          res.writeHead(401, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'User not found' }));
+          return;
+        }
+
+        // Only admins can delete notes
+        if (user.role !== 'admin') {
+          console.log('Delete note failed: User not admin');
+          res.writeHead(403, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Only administrators can delete notes' }));
+          return;
+        }
+        
+        const result = await pool.query(
+          'DELETE FROM customer_notes WHERE id = $1 AND customer_id = $2 RETURNING *',
+          [noteId, customerId]
+        );
+
+        if (result.rows.length === 0) {
+          res.writeHead(404, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Note not found' }));
+          return;
+        }
+
+        console.log('Note deleted successfully:', result.rows[0]);
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ message: 'Note deleted successfully' }));
+        
+      } catch (error) {
+        console.error('Error deleting note:', error);
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Failed to delete note: ' + error.message }));
+      }
+      return;
+    }
+
     // This notes route was moved above to fix route matching order
 
     if (pathname === '/api/health') {
