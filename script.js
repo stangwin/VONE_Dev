@@ -1672,8 +1672,13 @@ class CRMApp {
             filterSelect.value = this.currentNotesFilter;
         }
         
-        // Apply current filter
-        const filteredNotes = this.filterNotes(this.allNotes, this.currentNotesFilter);
+        // Apply current filter - simple inline filtering since filterNotes might not be defined yet
+        let filteredNotes = notes || [];
+        if (this.currentNotesFilter === 'user') {
+            filteredNotes = notes.filter(note => note.type !== 'system');
+        } else if (this.currentNotesFilter === 'system') {
+            filteredNotes = notes.filter(note => note.type === 'system');
+        }
 
         if (!filteredNotes || filteredNotes.length === 0) {
             notesSection.innerHTML = '<p class="no-notes">No notes available for this filter.</p>';
