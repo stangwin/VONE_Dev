@@ -253,15 +253,16 @@ class DatabaseAPI {
         return result;
     }
 
-    async createSystemNote(customerId, action, content) {
+    async createSystemNote(customerId, content) {
         console.log('DatabaseAPI: Creating system note for customer', customerId);
         console.log('DatabaseAPI: System note content:', content);
         
         const noteData = {
-            content: content, // Direct content without prefixes
+            content: content,
             type: 'system'
         };
         
+        console.log('DatabaseAPI: Sending note data:', noteData);
         return this.createNote(customerId, noteData);
     }
 
@@ -783,7 +784,7 @@ class CRMApp {
             
             // Create system note for status change
             if (originalValue !== newStatus) {
-                await this.api.createSystemNote(customerId, '', `Status changed from "${originalValue}" to "${newStatus}"`);
+                await this.api.createSystemNote(customerId, `Status changed from "${originalValue}" to "${newStatus}"`);
             }
             
             // Update local data
@@ -837,7 +838,7 @@ class CRMApp {
                 const content = originalValue ? 
                     `Next step updated from "${originalValue}" to "${newNextStep}"` : 
                     `Next step set to "${newNextStep}"`;
-                await this.api.createSystemNote(customerId, '', content);
+                await this.api.createSystemNote(customerId, content);
             }
             
             // Update local data
@@ -1437,8 +1438,8 @@ class CRMApp {
                             <div class="notes-filter">
                                 <select id="notes-filter-select" onchange="app.onNotesFilterChange(this.value)">
                                     <option value="all">All Notes</option>
-                                    <option value="user">User Notes Only</option>
-                                    <option value="system">System Notes Only</option>
+                                    <option value="user">User Notes</option>
+                                    <option value="system">System Notes</option>
                                 </select>
                             </div>
                             <button class="section-edit-btn" onclick="app.toggleSectionEdit('notes')" id="notes-edit-btn">
@@ -1672,10 +1673,10 @@ class CRMApp {
             filterSelect.value = this.currentNotesFilter;
         }
         
-        // Apply current filter - simple inline filtering since filterNotes might not be defined yet
+        // Apply current filter
         let filteredNotes = notes || [];
         if (this.currentNotesFilter === 'user') {
-            filteredNotes = notes.filter(note => note.type !== 'system');
+            filteredNotes = notes.filter(note => note.type === 'manual');
         } else if (this.currentNotesFilter === 'system') {
             filteredNotes = notes.filter(note => note.type === 'system');
         }
@@ -1839,10 +1840,10 @@ class CRMApp {
             // Create system note for file uploads
             const fileNames = validFiles.map(f => f.name);
             const uploadContent = validFiles.length === 1 ? 
-                `File uploaded: "${fileNames[0]}"` : 
+                `File uploaded: ${fileNames[0]}` : 
                 `${validFiles.length} files uploaded: ${fileNames.join(', ')}`;
             
-            await this.api.createSystemNote(this.currentCustomer.customer_id, '', uploadContent);
+            await this.api.createSystemNote(this.currentCustomer.customer_id, uploadContent);
             
             // Reload files and notes
             await this.loadCustomerFiles();

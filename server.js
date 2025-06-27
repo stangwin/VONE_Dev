@@ -804,9 +804,12 @@ const server = http.createServer(async (req, res) => {
           }
 
           console.log('Creating note with user:', user.name);
+          console.log('Note data received:', noteData);
           
           const noteType = noteData.type || 'manual';
           const authorName = noteType === 'system' ? 'System' : user.name;
+          
+          console.log('Final note type:', noteType, 'Author name:', authorName);
           
           const result = await pool.query(
             `INSERT INTO customer_notes (customer_id, author_id, author_name, content, type, timestamp, created_at, updated_at)
