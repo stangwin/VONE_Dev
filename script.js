@@ -2609,19 +2609,23 @@ class CRMApp {
     populateFormFromExtractedData(data) {
         console.log('Populating form with AI-extracted data:', data);
 
-        // Map AI response fields to form fields
+        // Map AI response fields to form fields - using CORRECT field IDs
         const fieldMappings = {
             // Company information
             'company-name': data.customer_name || data.company_name || data.companyName,
             'company-address': data.company_address || data.address,
             
-            // Primary contact
-            'primary-contact-name': data.contact_name || data.primaryContact?.name,
-            'primary-contact-title': data.contact_title || data.primaryContact?.title,
-            'primary-contact-phone': data.contact_phone || data.primaryContact?.phone,
-            'primary-contact-email': data.contact_email || data.primaryContact?.email,
+            // Primary contact - CORRECT FIELD IDs
+            'primary-name': data.contact_name || data.primaryContact?.name,
+            'primary-title': data.contact_title || data.primaryContact?.title,
+            'primary-phone': data.contact_phone || data.primaryContact?.phone,
+            'primary-email': data.contact_email || data.primaryContact?.email,
             
-            // Billing address (if different)
+            // Billing contact - CORRECT FIELD IDs  
+            'billing-name': data.billing_contact?.name,
+            'billing-title': data.billing_contact?.title,
+            'billing-phone': data.billing_contact?.phone,
+            'billing-email': data.billing_contact?.email,
             'billing-address': data.billing_address,
             
             // Service and business info
