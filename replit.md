@@ -147,6 +147,10 @@ UI preferences: Minimal, compact interfaces - avoid large/obtrusive action butto
 ## Changelog
 
 Changelog:
+- June 27, 2025: **COMPLETED** - Implemented OpenAI GPT-4o integration for intelligent text parsing in customer creation form
+- June 27, 2025: Added /api/parse-text endpoint with authentication and comprehensive prompt engineering for CRM data extraction
+- June 27, 2025: Updated Quick Fill from Text feature to use AI instead of regex parsing with loading indicators and error handling
+- June 27, 2025: Raw GPT responses logged to console for debugging; form auto-populates with extracted customer data including company info, contacts, services, and urgency levels
 - June 26, 2025: **COMPLETED** - Added comprehensive video file support (.mp4, .mov, .avi, .webm, etc.) to Files & Media system
 - June 26, 2025: Enhanced file upload with 100MB limit for videos, HTML5 video player modal preview, and video file icons
 - June 26, 2025: Fixed note creation functionality - notes are successfully saved to database but require authentication to view

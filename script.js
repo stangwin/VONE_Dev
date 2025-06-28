@@ -307,6 +307,31 @@ class DatabaseAPI {
         console.log('DatabaseAPI: Notes fetched successfully:', result.length, 'notes');
         return result;
     }
+
+    async parseTextWithAI(text) {
+        console.log('DatabaseAPI: Parsing text with OpenAI');
+        try {
+            const response = await fetch('/api/parse-text', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include',
+                body: JSON.stringify({ text })
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const result = await response.json();
+            console.log('DatabaseAPI: Text parsed successfully:', result);
+            return result;
+        } catch (error) {
+            console.error('DatabaseAPI: Failed to parse text:', error);
+            throw error;
+        }
+    }
 }
 
 // CRM Application
@@ -2461,6 +2486,149 @@ class CRMApp {
         } catch (error) {
             console.error('Failed to delete note:', error);
             alert('Failed to delete note. Please try again.');
+        }
+    }
+
+    // Auto-fill functionality
+    handlePasteTextChange(e) {
+        const text = e.target.value.trim();
+        const autoFillBtn = document.getElementById('auto-fill-btn');
+        if (autoFillBtn) {
+            autoFillBtn.disabled = text.length === 0;
+        }
+    }
+
+    clearPasteText() {
+        const pasteTextArea = document.getElementById('paste-note-email');
+        const autoFillBtn = document.getElementById('auto-fill-btn');
+        
+        if (pasteTextArea) pasteTextArea.value = '';
+        if (autoFillBtn) autoFillBtn.disabled = true;
+    }
+
+    async autoFillForm() {
+        const pasteText = document.getElementById('paste-note-email').value.trim();
+        if (!pasteText) {
+            alert('Please paste some text first');
+            return;
+        }
+
+        // Show loading indicator
+        const autoFillBtn = document.getElementById('auto-fill-btn');
+        const originalText = autoFillBtn.textContent;
+        autoFillBtn.textContent = 'Parsing with AI...';
+        autoFillBtn.disabled = true;
+
+        try {
+            console.log('Starting AI parsing for text:', pasteText.substring(0, 100) + '...');
+            const extractedData = await this.api.parseTextWithAI(pasteText);
+            
+            // Log the raw GPT response for debugging
+            console.log('Raw GPT-4 response:', extractedData);
+            
+            this.populateFormFromExtractedData(extractedData);
+            this.clearPasteText();
+            
+            // Show success message
+            this.showMessage('Form populated successfully with AI-parsed data!', 'success');
+            
+        } catch (error) {
+            console.error('AI auto-fill error:', error);
+            this.showMessage(`AI parsing failed: ${error.message}. Some required fields may need to be filled manually.`, 'error');
+        } finally {
+            // Restore button
+            autoFillBtn.textContent = originalText;
+            autoFillBtn.disabled = false;
+        }
+    }
+
+    populateFormFromExtractedData(data) {
+        console.log('Populating form with AI-extracted data:', data);
+
+        // Map AI response fields to form fields
+        const fieldMappings = {
+            // Company information
+            'company-name': data.customer_name || data.company_name || data.companyName,
+            'company-address': data.company_address || data.address,
+            
+            // Primary contact
+            'primary-contact-name': data.contact_name || data.primaryContact?.name,
+            'primary-contact-title': data.contact_title || data.primaryContact?.title,
+            'primary-contact-phone': data.contact_phone || data.primaryContact?.phone,
+            'primary-contact-email': data.contact_email || data.primaryContact?.email,
+            
+            // Billing address (if different)
+            'billing-address': data.billing_address,
+            
+            // Service and business info
+            'number-of-locations': data.number_of_locations,
+            'initial-notes': data.notes_summary || data.notes
+        };
+
+        // Populate form fields
+        Object.entries(fieldMappings).forEach(([fieldId, value]) => {
+            if (value) {
+                const field = document.getElementById(fieldId);
+                if (field) {
+                    field.value = value;
+                    console.log(`Populated ${fieldId}:`, value);
+                }
+            }
+        });
+
+        // Handle dropdown fields
+        if (data.service_requested) {
+            const serviceSelect = document.getElementById('service-requested');
+            if (serviceSelect) {
+                // Try to match the service to existing options
+                for (let option of serviceSelect.options) {
+                    if (option.text.toLowerCase().includes(data.service_requested.toLowerCase()) ||
+                        data.service_requested.toLowerCase().includes(option.text.toLowerCase())) {
+                        serviceSelect.value = option.value;
+                        console.log('Matched service:', option.text);
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (data.urgency_level) {
+            const urgencySelect = document.getElementById('urgency');
+            if (urgencySelect) {
+                // Map urgency levels
+                const urgencyMap = {
+                    'high': 'high',
+                    'urgent': 'high',
+                    'medium': 'medium',
+                    'normal': 'medium',
+                    'low': 'low'
+                };
+                const mappedUrgency = urgencyMap[data.urgency_level.toLowerCase()];
+                if (mappedUrgency) {
+                    urgencySelect.value = mappedUrgency;
+                    console.log('Set urgency:', mappedUrgency);
+                }
+            }
+        }
+
+        console.log('Form populated successfully with AI data');
+    }
+
+    showMessage(text, type) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `${type}-message`;
+        messageDiv.textContent = text;
+        
+        if (type === 'success') {
+            messageDiv.style.cssText = 'background: #d4edda; border: 1px solid #c3e6cb; color: #155724; padding: 10px; border-radius: 4px; margin: 10px 0;';
+        } else {
+            messageDiv.style.cssText = 'background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; padding: 10px; border-radius: 4px; margin: 10px 0;';
+        }
+        
+        const pasteSection = document.querySelector('.paste-section') || document.querySelector('.form-section');
+        if (pasteSection) {
+            pasteSection.insertBefore(messageDiv, pasteSection.firstChild);
+            setTimeout(() => messageDiv.remove(), type === 'success' ? 5000 : 8000);
         }
     }
 

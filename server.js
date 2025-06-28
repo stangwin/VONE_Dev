@@ -5,6 +5,7 @@ const fs = require('fs');
 const { Pool } = require('pg');
 const { IncomingForm } = require('formidable');
 const crypto = require('crypto');
+const OpenAI = require('openai');
 const { AuthService } = require('./server/auth');
 const { createSessionMiddleware, requireAuth, isAuthenticated } = require('./server/middleware');
 
@@ -15,6 +16,11 @@ const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
 // Initialize auth service
 const authService = new AuthService(pool);
+
+// Initialize OpenAI
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
 
 // Initialize session middleware
 const sessionMiddleware = createSessionMiddleware(pool);
@@ -888,8 +894,60 @@ const server = http.createServer(async (req, res) => {
       return;
     }
 
-    // This notes route was moved above to fix route matching order
+    // Parse text with OpenAI
+    if (pathname === '/api/parse-text' && req.method === 'POST') {
+      console.log('Parse text request received');
+      
+      if (!isAuthenticated(req)) {
+        res.writeHead(401, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Authentication required' }));
+        return;
+      }
 
+      let body = '';
+      req.on('data', chunk => {
+        body += chunk.toString();
+      });
+
+      req.on('end', async () => {
+        try {
+          const { text } = JSON.parse(body);
+          
+          if (!text || typeof text !== 'string') {
+            res.writeHead(400, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'Text content is required' }));
+            return;
+          }
+
+          console.log('Sending text to OpenAI for parsing:', text.substring(0, 100) + '...');
+
+          const prompt = `You are an assistant for a CRM system. Given this unstructured email or note, extract and return structured customer data in JSON format. Include: customer_name, contact_name, contact_title, contact_phone, contact_email, company_address, billing_address (if different), number_of_locations, service_requested, urgency_level, notes_summary, and any other relevant customer information fields. Only include fields where information is available. Return only valid JSON.
+
+Text to parse:
+${text}`;
+
+          const response = await openai.chat.completions.create({
+            model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+            messages: [{ role: "user", content: prompt }],
+            response_format: { type: "json_object" },
+            max_tokens: 1000,
+          });
+
+          const parsedData = JSON.parse(response.choices[0].message.content);
+          console.log('OpenAI parsed data:', parsedData);
+
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify(parsedData));
+        } catch (error) {
+          console.error('Error parsing text with OpenAI:', error);
+          res.writeHead(500, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Failed to parse text: ' + error.message }));
+        }
+      });
+      return;
+    }
+
+    // Health check endpoint
     if (pathname === '/api/health') {
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ status: 'OK', timestamp: new Date().toISOString() }));
