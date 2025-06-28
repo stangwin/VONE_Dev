@@ -2633,16 +2633,36 @@ class CRMApp {
             'initial-notes': data.notes_summary || data.notes || data.additional_info
         };
 
-        // Populate form fields
-        Object.entries(fieldMappings).forEach(([fieldId, value]) => {
+        // Populate each field with detailed logging
+        console.log('=== DETAILED FIELD POPULATION ===');
+        for (const [fieldId, value] of Object.entries(fieldMappings)) {
+            console.log(`Checking field: ${fieldId}, value: ${value}`);
+            
             if (value) {
                 const field = document.getElementById(fieldId);
                 if (field) {
                     field.value = value;
-                    console.log(`Populated ${fieldId}:`, value);
+                    // Trigger change events
+                    field.dispatchEvent(new Event('change', { bubbles: true }));
+                    field.dispatchEvent(new Event('input', { bubbles: true }));
+                    console.log(`✓ Successfully populated ${fieldId}: "${value}"`);
+                } else {
+                    console.error(`✗ Field ID '${fieldId}' not found in DOM!`);
+                    
+                    // Try to find similar field names
+                    const allFields = document.querySelectorAll('input, textarea, select');
+                    const similarFields = Array.from(allFields)
+                        .filter(f => f.id && f.id.toLowerCase().includes(fieldId.split('-')[0]))
+                        .map(f => f.id);
+                    
+                    if (similarFields.length > 0) {
+                        console.log(`   Similar field IDs found: ${similarFields.join(', ')}`);
+                    }
                 }
+            } else {
+                console.log(`○ Skipping ${fieldId} - no value provided`);
             }
-        });
+        }
 
         // Handle dropdown fields
         if (data.service_requested) {
