@@ -2493,8 +2493,10 @@ class CRMApp {
     handlePasteTextChange(e) {
         const text = e.target.value.trim();
         const autoFillBtn = document.getElementById('auto-fill-btn');
+        console.log('Text changed, length:', text.length);
         if (autoFillBtn) {
             autoFillBtn.disabled = text.length === 0;
+            console.log('Auto-fill button disabled:', autoFillBtn.disabled);
         }
     }
 

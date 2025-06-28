@@ -440,7 +440,6 @@
                                     id="paste-note-email"
                                     rows="5"
                                     placeholder="Paste emails, notes, or any text containing customer information. AI will automatically extract and populate the form fields."
-                                    oninput="app.handlePasteTextChange(event)"
                                 ></textarea>
                             </div>
                             <div class="form-group">
@@ -449,7 +448,6 @@
                                     id="auto-fill-btn"
                                     class="btn btn-secondary"
                                     disabled
-                                    onclick="app.autoFillForm()"
                                 >
                                     Auto-Fill Form
                                 </button>
@@ -457,7 +455,6 @@
                                     type="button"
                                     id="clear-paste-btn"
                                     class="btn btn-secondary"
-                                    onclick="app.clearPasteText()"
                                 >
                                     Clear
                                 </button>
