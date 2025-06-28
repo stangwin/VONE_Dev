@@ -2562,7 +2562,7 @@ class CRMApp {
             
             // Service and business info
             'number-of-locations': data.number_of_locations,
-            'initial-notes': data.notes_summary || data.notes
+            'initial-notes': data.notes_summary || data.notes || data.additional_info
         };
 
         // Populate form fields
@@ -2611,6 +2611,11 @@ class CRMApp {
             }
         }
 
+        // Log what went into notes for user awareness
+        if (data.notes_summary) {
+            console.log('Additional information captured in notes:', data.notes_summary);
+        }
+        
         console.log('Form populated successfully with AI data');
     }
 

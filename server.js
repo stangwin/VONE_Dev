@@ -921,7 +921,29 @@ const server = http.createServer(async (req, res) => {
 
           console.log('Sending text to OpenAI for parsing:', text.substring(0, 100) + '...');
 
-          const prompt = `You are an assistant for a CRM system. Given this unstructured email or note, extract and return structured customer data in JSON format. Include: customer_name, contact_name, contact_title, contact_phone, contact_email, company_address, billing_address (if different), number_of_locations, service_requested, urgency_level, notes_summary, and any other relevant customer information fields. Only include fields where information is available. Return only valid JSON.
+          const prompt = `You are an assistant for a CRM system. Given this unstructured email or note, extract and return structured customer data in JSON format. 
+
+Extract these specific fields if available:
+- customer_name (company/business name)
+- contact_name (primary contact person)
+- contact_title (job title/position)  
+- contact_phone
+- contact_email
+- company_address (physical location)
+- billing_address (if different from company address)
+- number_of_locations
+- service_requested (type of service needed)
+- urgency_level (high/medium/low)
+
+IMPORTANT: Also include a "notes_summary" field that captures ALL additional relevant information that doesn't fit into the specific fields above. This should include:
+- Timeline details, deadlines, meeting dates
+- Special requirements or preferences
+- Budget information or financial details
+- Background context or history
+- Follow-up actions needed
+- Any other business-relevant details mentioned
+
+Return only valid JSON with all available information structured appropriately.
 
 Text to parse:
 ${text}`;
