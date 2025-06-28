@@ -2609,28 +2609,31 @@ class CRMApp {
     populateFormFromExtractedData(data) {
         console.log('Populating form with AI-extracted data:', data);
 
-        // Map AI response fields to form fields - using CORRECT field IDs
+        // Map AI response fields to ACTUAL form field IDs from the HTML
         const fieldMappings = {
             // Company information
             'company-name': data.customer_name || data.company_name || data.companyName,
-            'company-address': data.company_address || data.address,
+            'physical-address': data.company_address || data.address,
             
-            // Primary contact - CORRECT FIELD IDs
+            // Primary contact
             'primary-name': data.contact_name || data.primaryContact?.name,
-            'primary-title': data.contact_title || data.primaryContact?.title,
-            'primary-phone': data.contact_phone || data.primaryContact?.phone,
             'primary-email': data.contact_email || data.primaryContact?.email,
+            'primary-phone': data.contact_phone || data.primaryContact?.phone,
             
-            // Billing contact - CORRECT FIELD IDs  
-            'billing-name': data.billing_contact?.name,
-            'billing-title': data.billing_contact?.title,
-            'billing-phone': data.billing_contact?.phone,
-            'billing-email': data.billing_contact?.email,
-            'billing-address': data.billing_address,
+            // Authorized signer (use same contact info if not specified)
+            'signer-name': data.signer_name || data.contact_name,
+            'signer-email': data.signer_email || data.contact_email,
+            'signer-phone': data.signer_phone || data.contact_phone,
+            
+            // Billing contact
+            'billing-name': data.billing_contact?.name || data.contact_name,
+            'billing-email': data.billing_contact?.email || data.contact_email,
+            'billing-phone': data.billing_contact?.phone || data.contact_phone,
+            'billing-address': data.billing_address || data.company_address,
             
             // Service and business info
             'number-of-locations': data.number_of_locations,
-            'initial-notes': data.notes_summary || data.notes || data.additional_info
+            'paste-text': data.notes_summary || data.notes || data.additional_info
         };
 
         // Populate each field with detailed logging
