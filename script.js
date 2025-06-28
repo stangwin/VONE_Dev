@@ -1059,6 +1059,8 @@ class CRMApp {
     }
 
     bindEvents() {
+        console.log('=== BINDING EVENTS START ===');
+        
         // Navigation
         const dashboardBtn = document.getElementById("dashboard-btn");
         if (dashboardBtn) {
@@ -1073,6 +1075,46 @@ class CRMApp {
         const addFirstCustomer = document.getElementById("add-first-customer");
         if (addFirstCustomer) {
             addFirstCustomer.addEventListener("click", () => this.showAddCustomerForm());
+        }
+
+        // Auto-fill functionality events - CRITICAL FOR TEXT PARSING
+        console.log('Binding auto-fill events...');
+        const pasteTextArea = document.getElementById('paste-note-email');
+        const autoFillBtn = document.getElementById('auto-fill-btn');
+        const clearPasteBtn = document.getElementById('clear-paste-btn');
+        
+        console.log('Elements found:', {
+            pasteTextArea: !!pasteTextArea,
+            autoFillBtn: !!autoFillBtn,
+            clearPasteBtn: !!clearPasteBtn
+        });
+        
+        if (pasteTextArea) {
+            pasteTextArea.addEventListener('input', (e) => {
+                console.log('Text changed - input event triggered');
+                this.handlePasteTextChange(e);
+            });
+            console.log('Paste text area input event bound successfully');
+        } else {
+            console.error('CRITICAL: paste-note-email textarea not found!');
+        }
+        
+        if (autoFillBtn) {
+            autoFillBtn.addEventListener('click', () => {
+                console.log('Auto-fill button clicked');
+                this.autoFillForm();
+            });
+            console.log('Auto-fill button click event bound successfully');
+        } else {
+            console.error('CRITICAL: auto-fill-btn button not found!');
+        }
+        
+        if (clearPasteBtn) {
+            clearPasteBtn.addEventListener('click', () => {
+                console.log('Clear paste button clicked');
+                this.clearPasteText();
+            });
+            console.log('Clear paste button click event bound successfully');
         }
 
         // User dropdown events
@@ -1123,6 +1165,8 @@ class CRMApp {
                 this.sortTable(sortKey);
             });
         });
+        
+        console.log('=== BINDING EVENTS COMPLETE ===');
     }
 
     setupUserDropdown() {
@@ -2491,12 +2535,30 @@ class CRMApp {
 
     // Auto-fill functionality
     handlePasteTextChange(e) {
+        console.log('handlePasteTextChange called - Text changed event triggered!');
         const text = e.target.value.trim();
         const autoFillBtn = document.getElementById('auto-fill-btn');
-        console.log('Text changed, length:', text.length);
+        
+        console.log('Current text content:', text.substring(0, 50) + '...');
+        console.log('Text length:', text.length);
+        console.log('Auto-fill button found:', !!autoFillBtn);
+        
         if (autoFillBtn) {
-            autoFillBtn.disabled = text.length === 0;
-            console.log('Auto-fill button disabled:', autoFillBtn.disabled);
+            const shouldEnable = text.length > 0;
+            autoFillBtn.disabled = !shouldEnable;
+            console.log('Auto-fill button disabled state:', autoFillBtn.disabled);
+            console.log('Button should be enabled:', shouldEnable);
+            
+            // Force visual update
+            if (shouldEnable) {
+                autoFillBtn.classList.remove('disabled');
+                autoFillBtn.style.opacity = '1';
+            } else {
+                autoFillBtn.classList.add('disabled');
+                autoFillBtn.style.opacity = '0.5';
+            }
+        } else {
+            console.error('CRITICAL: Auto-fill button not found in handlePasteTextChange!');
         }
     }
 
