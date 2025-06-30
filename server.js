@@ -836,6 +836,56 @@ const server = http.createServer(async (req, res) => {
       return;
     }
 
+    // Create system note endpoint
+    if (pathname.match(/^\/api\/customers\/[^\/]+\/system-notes$/) && req.method === 'POST') {
+      if (!isAuthenticated(req)) {
+        res.writeHead(401, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Authentication required' }));
+        return;
+      }
+
+      const customerId = pathname.split('/')[3];
+      
+      let body = '';
+      req.on('data', chunk => {
+        body += chunk.toString();
+      });
+
+      req.on('end', async () => {
+        try {
+          const systemNoteData = JSON.parse(body);
+          
+          // Get user info for system note
+          const user = await authService.getUserById(req.session.userId);
+          if (!user) {
+            res.writeHead(401, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'User not found' }));
+            return;
+          }
+          
+          const systemContent = `🤖 System: ${systemNoteData.content} (triggered by ${user.name || user.email})`;
+          
+          console.log('Creating system note for customer:', customerId, 'Content:', systemContent);
+
+          const result = await pool.query(
+            `INSERT INTO customer_notes (customer_id, author_id, author_name, content, type, timestamp, created_at, updated_at)
+             VALUES ($1, $2, $3, $4, 'system', NOW(), NOW(), NOW())
+             RETURNING *`,
+            [customerId, user.id, 'System', systemContent]
+          );
+
+          console.log('System note created successfully:', result.rows[0]);
+          res.writeHead(201, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify(result.rows[0]));
+        } catch (error) {
+          console.error('Error creating system note:', error);
+          res.writeHead(500, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Failed to create system note: ' + error.message }));
+        }
+      });
+      return;
+    }
+
     // Delete note for customer
     if (pathname.match(/^\/api\/customers\/[^\/]+\/notes\/\d+$/) && req.method === 'DELETE') {
       console.log('Delete note request received for:', pathname);

@@ -255,15 +255,10 @@ class DatabaseAPI {
 
     async createSystemNote(customerId, content) {
         console.log('DatabaseAPI: Creating system note for customer', customerId);
-        console.log('DatabaseAPI: System note content:', content);
-        
-        const noteData = {
-            content: content,
-            type: 'system'
-        };
-        
-        console.log('DatabaseAPI: Sending note data:', noteData);
-        return this.createNote(customerId, noteData);
+        const response = await this.makeRequest('POST', `/api/customers/${customerId}/system-notes`, {
+            content: content
+        });
+        return response;
     }
 
     async deleteNote(customerId, noteId) {
@@ -946,6 +941,9 @@ class CRMApp {
 
             console.log('Saving customer data:', updatedData);
 
+            // Track field changes for system notes
+            const changes = this.detectFieldChanges(this.currentCustomer, updatedData);
+            
             // Save to API
             await this.api.updateCustomer(this.currentCustomerId, updatedData);
             
@@ -962,6 +960,12 @@ class CRMApp {
             const filteredIndex = this.filteredCustomers.findIndex(c => c.customer_id === this.currentCustomerId);
             if (filteredIndex >= 0) {
                 Object.assign(this.filteredCustomers[filteredIndex], updatedData);
+            }
+
+            // Create system notes for field changes
+            if (changes.length > 0) {
+                const changesSummary = changes.map(change => `${change.field}: "${change.oldValue}" → "${change.newValue}"`).join('; ');
+                await this.createSystemNote(this.currentCustomerId, `Customer information updated: ${changesSummary}`);
             }
 
             console.log('Customer updated successfully');
@@ -2480,6 +2484,86 @@ class CRMApp {
         });
     }
 
+    extractCustomerData(formData) {
+        return {
+            company_name: formData.get('company-name').trim(),
+            status: formData.get('status') || 'Lead',
+            affiliate_partner: formData.get('affiliate-partner'),
+            next_step: formData.get('next-step').trim(),
+            physical_address: formData.get('physical-address').trim(),
+            billing_address: formData.get('billing-address').trim(),
+            primary_contact: {
+                name: formData.get('primary-name').trim(),
+                email: formData.get('primary-email').trim(),
+                phone: formData.get('primary-phone').trim()
+            },
+            authorized_signer: {
+                name: formData.get('signer-name').trim(),
+                email: formData.get('signer-email').trim(),
+                phone: null
+            },
+            billing_contact: {
+                name: formData.get('billing-name').trim(),
+                email: formData.get('billing-email').trim(),
+                phone: formData.get('billing-phone').trim()
+            }
+        };
+    }
+
+    checkDuplicatesBeforeSave(customerData) {
+        // Simple duplicate check - can be enhanced
+        const duplicates = this.customers.filter(customer => 
+            customer.company_name.toLowerCase() === customerData.company_name.toLowerCase()
+        );
+        return duplicates.length > 0;
+    }
+
+    async handleSaveCustomer(e) {
+        e.preventDefault();
+        this.clearErrors();
+
+        const formData = new FormData(e.target);
+        const testMode = document.getElementById('test-mode-toggle')?.checked;
+        
+        // Prevent saving if in test mode
+        if (testMode) {
+            alert('Test Mode is enabled. Please disable Test Mode to save the customer to the database.');
+            return;
+        }
+        
+        try {
+            const customerData = this.extractCustomerData(formData);
+            console.log('Extracted customer data:', customerData);
+
+            // Check for duplicates
+            if (this.checkDuplicatesBeforeSave(customerData)) {
+                if (!confirm('A customer with this company name already exists. Continue anyway?')) {
+                    return;
+                }
+            }
+
+            const newCustomer = await this.api.createCustomer(customerData);
+            console.log('Customer created:', newCustomer);
+            
+            // Create system note for customer creation
+            await this.createSystemNote(newCustomer.customer_id, `Customer record created`);
+            
+            this.customers.push(newCustomer);
+            this.applyFilters();
+            this.showView('dashboard');
+            
+            // Show success message
+            this.showMessage('Customer saved successfully!', 'success');
+            
+            // Reset form
+            e.target.reset();
+            
+        } catch (error) {
+            console.error('Error saving customer:', error);
+            this.showMessage('Failed to save customer: ' + error.message, 'error');
+        }
+    }
+
     toggleSectionEdit(sectionName) {
         if (this.editingSections.has(sectionName)) {
             this.editingSections.delete(sectionName);
@@ -2572,6 +2656,8 @@ class CRMApp {
 
     async autoFillForm() {
         const pasteText = document.getElementById('paste-note-email').value.trim();
+        const testMode = document.getElementById('test-mode-toggle')?.checked;
+        
         if (!pasteText) {
             alert('Please paste some text first');
             return;
@@ -2590,15 +2676,21 @@ class CRMApp {
             // Log the raw GPT response for debugging
             console.log('Raw GPT-4 response:', extractedData);
             
+            // Validate extracted data has minimum required fields
+            if (!this.validateExtractedData(extractedData)) {
+                throw new Error('Insufficient data extracted. Please ensure the text contains customer information including company name and contact details.');
+            }
+            
             this.populateFormFromExtractedData(extractedData);
             this.clearPasteText();
             
-            // Show success message
-            this.showMessage('Form populated successfully with AI-parsed data!', 'success');
+            // Show success message with test mode indicator
+            const modeMsg = testMode ? ' (Test Mode - will not save to database)' : '';
+            this.showMessage(`Form populated successfully with AI-parsed data!${modeMsg}`, 'success');
             
         } catch (error) {
             console.error('AI auto-fill error:', error);
-            this.showMessage(`AI parsing failed: ${error.message}. Some required fields may need to be filled manually.`, 'error');
+            this.showMessage(`AI parsing failed: ${error.message}`, 'error');
         } finally {
             // Restore button
             autoFillBtn.textContent = originalText;
@@ -2733,6 +2825,84 @@ class CRMApp {
         const div = document.createElement('div');
         div.textContent = text;
         return div.innerHTML;
+    }
+
+    // Add new utility methods for Version 1.1
+    validateExtractedData(data) {
+        // Check for minimum required fields
+        const hasCompanyName = data.customer_name || data.company_name;
+        const hasContactInfo = data.contact_name || data.contact_email || data.contact_phone;
+        
+        return hasCompanyName && hasContactInfo;
+    }
+    
+    detectFieldChanges(originalData, updatedData) {
+        const changes = [];
+        
+        // Check simple fields
+        const fieldsToCheck = {
+            'company_name': 'Company Name',
+            'status': 'Status',
+            'affiliate_partner': 'Affiliate Partner',
+            'next_step': 'Next Step',
+            'physical_address': 'Physical Address',
+            'billing_address': 'Billing Address'
+        };
+        
+        for (const [key, label] of Object.entries(fieldsToCheck)) {
+            if (originalData[key] !== updatedData[key]) {
+                changes.push({
+                    field: label,
+                    oldValue: originalData[key] || 'None',
+                    newValue: updatedData[key] || 'None'
+                });
+            }
+        }
+        
+        // Check contact objects
+        const contactFields = {
+            'primary_contact': 'Primary Contact',
+            'authorized_signer': 'Authorized Signer',
+            'billing_contact': 'Billing Contact'
+        };
+        
+        for (const [key, label] of Object.entries(contactFields)) {
+            const original = originalData[key] || {};
+            const updated = updatedData[key] || {};
+            
+            if (JSON.stringify(original) !== JSON.stringify(updated)) {
+                changes.push({
+                    field: label,
+                    oldValue: this.formatContactInfo(original),
+                    newValue: this.formatContactInfo(updated)
+                });
+            }
+        }
+        
+        return changes;
+    }
+    
+    formatContactInfo(contact) {
+        if (!contact || (!contact.name && !contact.email && !contact.phone)) {
+            return 'None';
+        }
+        const parts = [];
+        if (contact.name) parts.push(contact.name);
+        if (contact.email) parts.push(contact.email);
+        if (contact.phone) parts.push(contact.phone);
+        return parts.join(', ');
+    }
+
+    async createSystemNote(customerId, content) {
+        try {
+            console.log('Creating system note for customer:', customerId, 'Content:', content);
+            const result = await this.api.createSystemNote(customerId, content);
+            console.log('System note created successfully:', result);
+            return result;
+        } catch (error) {
+            console.error('Failed to create system note:', error);
+            throw error;
+        }
     }
 }
 
