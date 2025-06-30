@@ -144,9 +144,31 @@ UI preferences: Minimal, compact interfaces - avoid large/obtrusive action butto
 - ✅ Secure QR code generation and manual key backup
 - ✅ Database storage of secrets and enabled status
 
+## Environment Separation
+
+### Production Environment (Current)
+- **Status**: Fully functional and unchanged
+- **Database**: Production PostgreSQL database
+- **UI**: Clean interface without development indicators
+- **API Keys**: Production OpenAI and service integrations
+- **Title**: "Vantix CRM"
+
+### Development Environment (Clone Setup)
+- **Setup**: Created via .env.example and DEV_SETUP.md guide
+- **Visual Indicators**: Red banner "🚧 DEV ENVIRONMENT 🚧" and "[DEV]" in browser title
+- **Database**: Same PostgreSQL by default (optionally separate via DATABASE_URL)
+- **Configuration**: Uses .env file with test API keys
+- **Data Isolation**: Test Mode prevents database writes, dev environment uses separate config
+- **Environment Detection**: Automatic via `/api/environment` endpoint
+
 ## Changelog
 
 Changelog:
+- June 30, 2025: **COMPLETED** - Implemented Prod/Dev environment separation with visual indicators and isolated configuration
+- June 30, 2025: Added development environment detection via .env file and /api/environment endpoint
+- June 30, 2025: Created .env.example template and DEV_SETUP.md guide for cloned development environments
+- June 30, 2025: Added development UI indicators (red banner, [DEV] title) shown only in development mode
+- June 30, 2025: Production environment remains completely unchanged while dev clone shows clear development indicators
 - June 28, 2025: **COMPLETED** - OpenAI GPT-4o auto-fill system fully functional with comprehensive field population
 - June 28, 2025: Enhanced field mapping system with detailed debugging and proper event triggering for form validation
 - June 28, 2025: AI successfully extracts and populates: company details, primary contact, authorized signer, billing contact, and detailed notes

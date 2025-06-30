@@ -1,13 +1,53 @@
 class AuthManager {
     constructor() {
         this.isLoginMode = true;
+        this.isDevelopment = false; // Will be set after environment check
         this.init();
     }
 
-    init() {
+    async init() {
+        await this.checkEnvironment();
         this.bindEvents();
         this.updateUI();
         this.checkAuthStatus();
+    }
+
+    async checkEnvironment() {
+        try {
+            const response = await fetch('/api/environment');
+            const envData = await response.json();
+            this.isDevelopment = envData.isDevelopment;
+            
+            if (this.isDevelopment) {
+                console.log('Development environment detected');
+                this.setupDevelopmentUI();
+            } else {
+                console.log('Production environment detected');
+            }
+        } catch (error) {
+            console.error('Failed to check environment:', error);
+            // Default to production if check fails
+            this.isDevelopment = false;
+        }
+    }
+
+    setupDevelopmentUI() {
+        // Show development banner
+        const banner = document.getElementById('dev-environment-banner');
+        if (banner) {
+            banner.style.display = 'block';
+            
+            // Adjust body padding to account for banner
+            document.body.style.paddingTop = '40px';
+        }
+        
+        // Update page title
+        const currentTitle = document.title;
+        if (!currentTitle.includes('[DEV]')) {
+            document.title = `[DEV] ${currentTitle}`;
+        }
+        
+        console.log('Development UI setup complete');
     }
 
     bindEvents() {

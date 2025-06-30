@@ -9,6 +9,13 @@ const OpenAI = require('openai');
 const { AuthService } = require('./server/auth');
 const { createSessionMiddleware, requireAuth, isAuthenticated } = require('./server/middleware');
 
+// Load environment variables
+require('dotenv').config();
+
+// Environment detection
+const isDevelopment = process.env.ENVIRONMENT === 'development';
+console.log('Environment:', isDevelopment ? 'DEVELOPMENT' : 'PRODUCTION');
+
 const PORT = process.env.PORT || 5000;
 
 // Initialize database
@@ -82,6 +89,27 @@ const server = http.createServer(async (req, res) => {
   if (req.method === 'OPTIONS') {
     res.writeHead(200);
     res.end();
+    return;
+  }
+
+  // Environment info endpoint (before session handling)
+  if (pathname === '/api/environment') {
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ 
+      environment: isDevelopment ? 'development' : 'production',
+      isDevelopment: isDevelopment
+    }));
+    return;
+  }
+
+  // Health check endpoint (before session handling)
+  if (pathname === '/health') {
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ 
+      status: 'OK', 
+      environment: isDevelopment ? 'development' : 'production',
+      timestamp: new Date().toISOString() 
+    }));
     return;
   }
 

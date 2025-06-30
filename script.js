@@ -342,7 +342,18 @@ class CRMApp {
         this.editingSections = new Set();
         this.filters = { status: '', affiliate: '', search: '' };
         this.isEditingCustomer = false;
-        this.editingSections = new Set(); // Track which sections are in edit mode
+        this.isDevelopment = false; // Will be set after environment check
+        
+        // Initialize zoom and pan state
+        this.currentZoom = 1;
+        this.panState = {
+            isDragging: false,
+            startX: 0,
+            startY: 0,
+            imageX: 0,
+            imageY: 0
+        };
+        
         this.init();
     }
 
@@ -352,16 +363,19 @@ class CRMApp {
         try {
             console.log('Step 1: CRM App starting initialization...');
             
-            console.log('Step 2: Loading user data...');
+            console.log('Step 2: Checking environment...');
+            await this.checkEnvironment();
+            
+            console.log('Step 3: Loading user data...');
             await this.loadUserData();
             
-            console.log('Step 3: Loading customers...');
+            console.log('Step 4: Loading customers...');
             await this.loadCustomers();
             
-            console.log('Step 4: Binding events...');
+            console.log('Step 5: Binding events...');
             this.bindEvents();
             
-            console.log('Step 5: Showing dashboard view...');
+            console.log('Step 6: Showing dashboard view...');
             this.showView("dashboard");
             
             console.log("=== CRM INIT SUCCESSFUL ===");
@@ -370,6 +384,54 @@ class CRMApp {
             console.error("Error stack:", error.stack);
             this.showError("dashboard-error", "Failed to load application data.");
         }
+    }
+
+    async checkEnvironment() {
+        try {
+            const response = await fetch('/api/environment', {
+                credentials: 'include'
+            });
+            
+            if (response.ok) {
+                const envData = await response.json();
+                this.isDevelopment = envData.isDevelopment;
+                
+                console.log('Environment API response:', envData);
+                
+                if (this.isDevelopment) {
+                    console.log('Development environment detected');
+                    this.setupDevelopmentUI();
+                } else {
+                    console.log('Production environment detected');
+                }
+            } else {
+                console.log('Environment API not available, defaulting to production');
+                this.isDevelopment = false;
+            }
+        } catch (error) {
+            console.error('Failed to check environment:', error);
+            // Default to production if check fails
+            this.isDevelopment = false;
+        }
+    }
+
+    setupDevelopmentUI() {
+        // Show development banner
+        const banner = document.getElementById('dev-environment-banner');
+        if (banner) {
+            banner.style.display = 'block';
+            
+            // Adjust body padding to account for banner
+            document.body.style.paddingTop = '40px';
+        }
+        
+        // Update page title
+        const currentTitle = document.title;
+        if (!currentTitle.includes('[DEV]')) {
+            document.title = `[DEV] ${currentTitle}`;
+        }
+        
+        console.log('Development UI setup complete');
     }
 
     async loadUserData() {
