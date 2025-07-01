@@ -2045,3 +2045,45 @@ nav {
         margin-bottom: 1.5rem;
     }
 }
+
+/* File Attachment Indicators */
+.files-cell {
+    width: 60px;
+    text-align: center;
+}
+
+.file-attachment-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: #6c757d;
+    font-size: 0.75rem;
+    text-decoration: none;
+    min-width: 40px;
+    justify-content: center;
+}
+
+.file-attachment-indicator:hover {
+    background: #e9ecef;
+    border-color: #dee2e6;
+    color: #495057;
+    transform: translateY(-1px);
+}
+
+.file-icon {
+    font-size: 0.875rem;
+    color: #6c757d;
+}
+
+.file-count {
+    font-weight: 500;
+    font-size: 0.75rem;
+    color: #495057;
+    line-height: 1;
+}

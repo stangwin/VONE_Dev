@@ -427,6 +427,28 @@ const server = http.createServer(async (req, res) => {
         }
       }
 
+      // Get file counts for all customers
+      if (req.method === 'GET' && pathname === '/api/customers/file-counts') {
+        if (!isAuthenticated(req)) {
+          res.writeHead(401, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Authentication required' }));
+          return;
+        }
+        
+        const query = 'SELECT customer_id, COUNT(*) as file_count FROM customer_files GROUP BY customer_id';
+        const result = await pool.query(query);
+        
+        // Convert to object for easier lookup
+        const fileCounts = {};
+        result.rows.forEach(row => {
+          fileCounts[row.customer_id] = parseInt(row.file_count);
+        });
+        
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify(fileCounts));
+        return;
+      }
+
       // Get files for customer (must come before general customer GET)
       if (req.method === 'GET' && pathname.match(/^\/api\/customers\/[^\/]+\/files$/)) {
         if (!isAuthenticated(req)) {

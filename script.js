@@ -197,6 +197,26 @@ class DatabaseAPI {
         }
     }
 
+    async getCustomerFileCount(customerId) {
+        try {
+            const files = await this.getCustomerFiles(customerId);
+            return files ? files.length : 0;
+        } catch (error) {
+            console.error('Error getting file count for customer', customerId, ':', error);
+            return 0;
+        }
+    }
+
+    async getAllCustomerFileCounts() {
+        try {
+            const response = await this.makeRequest('GET', '/customers/file-counts');
+            return response || {};
+        } catch (error) {
+            console.error('Error getting all customer file counts:', error);
+            return {};
+        }
+    }
+
     async deleteFile(customerId, fileId) {
         try {
             console.log('Deleting file:', fileId, 'for customer:', customerId);
@@ -616,11 +636,22 @@ class CRMApp {
                 console.warn('Loading element not found');
             }
             
-            console.log('Step 2: Calling API...');
-            this.customers = await this.api.getCustomers();
+            console.log('Step 2: Calling APIs...');
+            // Load customers and file counts in parallel
+            const [customers, fileCounts] = await Promise.all([
+                this.api.getCustomers(),
+                this.api.getAllCustomerFileCounts()
+            ]);
             
-            console.log('Step 3: API Response received');
+            // Add file counts to customer data
+            this.customers = customers.map(customer => ({
+                ...customer,
+                fileCount: fileCounts[customer.customer_id] || 0
+            }));
+            
+            console.log('Step 3: API Responses received');
             console.log(`Loaded ${this.customers.length} customers from PostgreSQL`);
+            console.log('File counts loaded:', fileCounts);
             console.log('First customer sample:', this.customers[0]);
             console.log('All customer company names:', this.customers.map(c => c.company_name));
             
@@ -711,6 +742,9 @@ class CRMApp {
                                    onblur="app.updateCustomerNextStep(this)"
                                    onkeypress="if(event.key==='Enter') this.blur()">
                         </td>
+                        <td class="files-cell">
+                            ${this.renderFileAttachmentIndicator(customer)}
+                        </td>
                         <td class="last-note">${this.escapeHtml(lastNote)}</td>
                         <td class="table-actions">
                             <button class="action-icon" onclick="app.createInQBO('${customer.customer_id}')" title="Create in QuickBooks">💼</button>
@@ -763,6 +797,23 @@ class CRMApp {
         `).join('');
 
         nextActionsBody.innerHTML = rowsHTML;
+    }
+
+    renderFileAttachmentIndicator(customer) {
+        const fileCount = customer.fileCount || 0;
+        
+        if (fileCount === 0) {
+            return '';
+        }
+
+        return `
+            <div class="file-attachment-indicator" 
+                 onclick="app.showCustomerDetail('${customer.customer_id}', 'files')" 
+                 title="Customer has ${fileCount} uploaded file${fileCount === 1 ? '' : 's'}">
+                <span class="file-icon">📎</span>
+                <span class="file-count">${fileCount}</span>
+            </div>
+        `;
     }
 
     getLatestNote(notes) {
@@ -1288,9 +1339,9 @@ class CRMApp {
         this.showView("customer-form");
     }
 
-    async showCustomerDetail(customerId) {
+    async showCustomerDetail(customerId, scrollToSection = null) {
         try {
-            console.log("showCustomerDetail called with:", customerId);
+            console.log("showCustomerDetail called with:", customerId, "section:", scrollToSection);
             this.currentCustomer = await this.api.getCustomer(customerId);
             this.currentCustomerId = customerId;
             console.log("Customer loaded:", this.currentCustomer);
@@ -1309,6 +1360,21 @@ class CRMApp {
             // Small delay to ensure DOM is ready
             setTimeout(() => {
                 this.renderCustomerDetail();
+                
+                // Scroll to specific section if requested
+                if (scrollToSection) {
+                    setTimeout(() => {
+                        const section = document.getElementById(`${scrollToSection}-section`);
+                        if (section) {
+                            section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                            // Add visual highlight
+                            section.style.background = '#f0f8ff';
+                            setTimeout(() => {
+                                section.style.background = '';
+                            }, 2000);
+                        }
+                    }, 200);
+                }
             }, 100);
 
         } catch (error) {
@@ -1985,6 +2051,9 @@ class CRMApp {
             // Reload files and notes
             await this.loadCustomerFiles();
             await this.loadCustomerNotes();
+            
+            // Refresh customer file counts for dashboard
+            await this.refreshCustomerFileCounts();
 
             // Reset file input
             const fileInput = document.getElementById('file-input');
@@ -2003,12 +2072,39 @@ class CRMApp {
         }
     }
 
+    async refreshCustomerFileCounts() {
+        try {
+            const fileCounts = await this.api.getAllCustomerFileCounts();
+            
+            // Update file counts in customer data
+            this.customers = this.customers.map(customer => ({
+                ...customer,
+                fileCount: fileCounts[customer.customer_id] || 0
+            }));
+            
+            this.filteredCustomers = this.filteredCustomers.map(customer => ({
+                ...customer,
+                fileCount: fileCounts[customer.customer_id] || 0
+            }));
+            
+            // Re-render customer list if on dashboard
+            if (document.getElementById('dashboard-view').style.display !== 'none') {
+                this.renderCustomerList();
+            }
+        } catch (error) {
+            console.error('Failed to refresh file counts:', error);
+        }
+    }
+
     async deleteCustomerFile(fileId) {
         if (!confirm('Are you sure you want to delete this file?')) return;
 
         try {
             await this.api.deleteFile(this.currentCustomer.customer_id, fileId);
             await this.loadCustomerFiles();
+            
+            // Refresh customer file counts for dashboard
+            await this.refreshCustomerFileCounts();
         } catch (error) {
             console.error('Failed to delete file:', error);
             alert('Failed to delete file: ' + error.message);
