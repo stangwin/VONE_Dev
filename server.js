@@ -18,8 +18,41 @@ console.log('Environment:', isDevelopment ? 'DEVELOPMENT' : 'PRODUCTION');
 
 const PORT = process.env.PORT || 5000;
 
-// Initialize database
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+// Database URL selection with isolation safeguards
+let databaseUrl;
+if (isDevelopment) {
+  // Development mode - ONLY use development database
+  databaseUrl = process.env.DATABASE_URL_DEV;
+  if (!databaseUrl) {
+    console.error('CRITICAL ERROR: Development mode requires DATABASE_URL_DEV in .env file');
+    console.error('This prevents accidental connection to production database');
+    process.exit(1);
+  }
+  console.log('🔒 Using DEVELOPMENT database (isolated from production)');
+} else {
+  // Production mode - ONLY use production database
+  databaseUrl = process.env.DATABASE_URL_PROD || process.env.DATABASE_URL;
+  if (!databaseUrl) {
+    console.error('CRITICAL ERROR: Production mode requires DATABASE_URL_PROD or DATABASE_URL');
+    process.exit(1);
+  }
+  console.log('🔒 Using PRODUCTION database');
+}
+
+// Additional safety check to prevent cross-environment contamination
+if (isDevelopment && databaseUrl.includes('prod')) {
+  console.error('🚨 SAFETY VIOLATION: Development mode cannot use production database URL');
+  console.error('Database URL contains "prod" but environment is development');
+  process.exit(1);
+}
+
+if (!isDevelopment && databaseUrl.includes('dev')) {
+  console.warn('⚠️  WARNING: Production mode using database URL containing "dev"');
+  console.warn('Verify this is intentional');
+}
+
+// Initialize database with selected URL
+const pool = new Pool({ connectionString: databaseUrl });
 
 // Initialize auth service
 const authService = new AuthService(pool);
@@ -97,8 +130,27 @@ const server = http.createServer(async (req, res) => {
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ 
       environment: isDevelopment ? 'development' : 'production',
-      isDevelopment: isDevelopment
+      isDevelopment: isDevelopment,
+      databaseType: isDevelopment ? 'development' : 'production',
+      databaseIsolated: true
     }));
+    return;
+  }
+
+  // Database status endpoint (before session handling)
+  if (pathname === '/api/database-status') {
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    const dbInfo = {
+      environment: isDevelopment ? 'development' : 'production',
+      databaseUrl: databaseUrl ? databaseUrl.substring(0, 30) + '...' : 'not configured',
+      isolation: {
+        isDevelopment: isDevelopment,
+        usesDevDatabase: isDevelopment && databaseUrl?.includes('dev'),
+        usesProdDatabase: !isDevelopment && (databaseUrl?.includes('prod') || !databaseUrl?.includes('dev')),
+        safetyChecksActive: true
+      }
+    };
+    res.end(JSON.stringify(dbInfo));
     return;
   }
 

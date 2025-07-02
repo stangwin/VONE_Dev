@@ -70,10 +70,17 @@ After setting up your dev environment:
 - Use **Test Mode** toggle to prevent saving test data
 - Good for: Testing features without affecting real data
 
-### Option 2: Separate Database (Recommended)
-- Add separate `DATABASE_URL` in dev .env file
+### Option 2: Separate Database (REQUIRED for Full Isolation)
+- **REQUIRED**: Set `DATABASE_URL_DEV` and `DATABASE_URL_PROD` in dev .env file
 - Complete data isolation between environments
-- Good for: Extensive testing, data experiments
+- **Safety**: Development can NEVER access production database
+- Good for: Extensive testing, data experiments, complete environment separation
+
+### 🔒 Database Isolation Safety Features:
+- Development mode **requires** `DATABASE_URL_DEV` (will exit if missing)
+- Production mode **requires** `DATABASE_URL_PROD` (or fallback to `DATABASE_URL`)
+- Cross-environment safety checks prevent accidental database mixing
+- URL validation prevents dev mode from using production database URLsa experiments
 
 ## 🚨 Troubleshooting
 
