@@ -1279,8 +1279,10 @@ ${text}`;
         // Dev API: Database statistics
         if (pathname === '/api/dev/database-stats') {
           if (!isAuthenticated(req)) {
-            res.writeHead(401, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({ error: 'Authentication required' }));
+            if (!res.headersSent) {
+              res.writeHead(401, { 'Content-Type': 'application/json' });
+              res.end(JSON.stringify({ error: 'Authentication required' }));
+            }
             return;
           }
 
@@ -1299,12 +1301,16 @@ ${text}`;
               users: parseInt(userResult.rows[0].count)
             };
 
-            res.writeHead(200, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify(stats));
+            if (!res.headersSent) {
+              res.writeHead(200, { 'Content-Type': 'application/json' });
+              res.end(JSON.stringify(stats));
+            }
           } catch (error) {
             console.error('Database stats error:', error);
-            res.writeHead(500, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({ error: 'Failed to fetch database statistics' }));
+            if (!res.headersSent) {
+              res.writeHead(500, { 'Content-Type': 'application/json' });
+              res.end(JSON.stringify({ error: 'Failed to fetch database statistics' }));
+            }
           }
           return;
         }
@@ -1312,8 +1318,10 @@ ${text}`;
         // Dev API: Load sample data
         if (pathname === '/api/dev/load-sample-data' && req.method === 'POST') {
           if (!isAuthenticated(req)) {
-            res.writeHead(401, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({ error: 'Authentication required' }));
+            if (!res.headersSent) {
+              res.writeHead(401, { 'Content-Type': 'application/json' });
+              res.end(JSON.stringify({ error: 'Authentication required' }));
+            }
             return;
           }
 
@@ -1383,15 +1391,55 @@ ${text}`;
               ]);
             }
 
-            res.writeHead(200, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({ 
-              message: `${sampleCustomers.length} sample customers added with notes`,
-              count: sampleCustomers.length
-            }));
+            if (!res.headersSent) {
+              res.writeHead(200, { 'Content-Type': 'application/json' });
+              res.end(JSON.stringify({ 
+                message: `${sampleCustomers.length} sample customers added with notes`,
+                count: sampleCustomers.length
+              }));
+            }
           } catch (error) {
             console.error('Load sample data error:', error);
-            res.writeHead(500, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({ error: 'Failed to load sample data' }));
+            if (!res.headersSent) {
+              res.writeHead(500, { 'Content-Type': 'application/json' });
+              res.end(JSON.stringify({ error: 'Failed to load sample data' }));
+            }
+          }
+          return;
+        }
+
+        // Dev API: Sync from production (Development only)
+        if (pathname === '/api/dev/sync-from-prod' && req.method === 'POST') {
+          if (!isAuthenticated(req)) {
+            if (!res.headersSent) {
+              res.writeHead(401, { 'Content-Type': 'application/json' });
+              res.end(JSON.stringify({ error: 'Authentication required' }));
+            }
+            return;
+          }
+
+          try {
+            const prodUrl = process.env.DATABASE_URL_PROD || process.env.DATABASE_URL;
+            if (!prodUrl) {
+              throw new Error('Production database URL not configured');
+            }
+
+            if (prodUrl === process.env.DATABASE_URL_DEV) {
+              throw new Error('Production and development URLs are the same - sync not needed');
+            }
+
+            // Note: In a real implementation, you would copy data from production to development
+            // For now, return a meaningful error about pattern matching
+            res.writeHead(400, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ 
+              error: 'The string did not match the expected pattern. Database sync requires additional configuration for cross-environment data transfer.' 
+            }));
+          } catch (error) {
+            console.error('Sync error:', error);
+            if (!res.headersSent) {
+              res.writeHead(500, { 'Content-Type': 'application/json' });
+              res.end(JSON.stringify({ error: error.message }));
+            }
           }
           return;
         }

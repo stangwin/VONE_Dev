@@ -35,6 +35,28 @@ class DatabaseAPI {
         return options;
     }
 
+    async makeRequest(method, endpoint, body = null) {
+        try {
+            const url = endpoint.startsWith('/api/') ? `${this.baseURL}${endpoint}` : `${this.baseURL}/api${endpoint}`;
+            const response = await fetch(url, this.getFetchOptions(method, body));
+            
+            if (response.status === 401) {
+                console.log('User not authenticated, redirecting to auth page...');
+                window.location.href = '/auth.html';
+                return null;
+            }
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
+            return await response.json();
+        } catch (error) {
+            console.error('DatabaseAPI makeRequest error:', error);
+            throw error;
+        }
+    }
+
     async checkAuth() {
         try {
             const response = await fetch(`${this.baseURL}/auth/me`, this.getFetchOptions('GET'));
