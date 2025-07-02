@@ -124,10 +124,20 @@ function handleWithSession(req, res, handler) {
         }
       };
       console.log('Dev session found:', { userId: sessionData.userId, email: sessionData.user?.email });
+      // Call handler directly with dev session
+      return handler(req, res);
     }
   }
   
-  sessionMiddleware(req, res, () => {
+  sessionMiddleware(req, res, (err) => {
+    if (err) {
+      console.error('Session middleware error:', err);
+      if (!res.headersSent) {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Session error' }));
+      }
+      return;
+    }
     handler(req, res);
   });
 }
@@ -554,22 +564,34 @@ const server = http.createServer(async (req, res) => {
       // Get file counts for all customers
       if (req.method === 'GET' && pathname === '/api/customers/file-counts') {
         if (!isAuthenticated(req)) {
-          res.writeHead(401, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ error: 'Authentication required' }));
+          if (!res.headersSent) {
+            res.writeHead(401, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'Authentication required' }));
+          }
           return;
         }
         
-        const query = 'SELECT customer_id, COUNT(*) as file_count FROM customer_files GROUP BY customer_id';
-        const result = await pool.query(query);
-        
-        // Convert to object for easier lookup
-        const fileCounts = {};
-        result.rows.forEach(row => {
-          fileCounts[row.customer_id] = parseInt(row.file_count);
-        });
-        
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify(fileCounts));
+        try {
+          const query = 'SELECT customer_id, COUNT(*) as file_count FROM customer_files GROUP BY customer_id';
+          const result = await pool.query(query);
+          
+          // Convert to object for easier lookup
+          const fileCounts = {};
+          result.rows.forEach(row => {
+            fileCounts[row.customer_id] = parseInt(row.file_count);
+          });
+          
+          if (!res.headersSent) {
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify(fileCounts));
+          }
+        } catch (error) {
+          console.error('Error fetching file counts:', error);
+          if (!res.headersSent) {
+            res.writeHead(500, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'Failed to fetch file counts' }));
+          }
+        }
         return;
       }
 
@@ -1420,8 +1442,10 @@ ${text}`;
 
     } catch (error) {
       console.error('Server error:', error);
-      res.writeHead(500, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ error: 'Internal server error' }));
+      if (!res.headersSent) {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Internal server error' }));
+      }
     }
   });
 });
