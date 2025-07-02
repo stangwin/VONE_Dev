@@ -5,11 +5,39 @@ class DatabaseAPI {
         this.currentUser = null;
     }
 
+    // Helper method to get headers with development session token for iframe contexts
+    getAuthHeaders() {
+        const headers = {
+            'Content-Type': 'application/json'
+        };
+        
+        // In development mode, check for dev session token in localStorage
+        const devSessionToken = localStorage.getItem('devSessionToken');
+        if (devSessionToken) {
+            headers['X-Dev-Session'] = devSessionToken;
+        }
+        
+        return headers;
+    }
+
+    // Helper method to get fetch options with authentication
+    getFetchOptions(method = 'GET', body = null) {
+        const options = {
+            method,
+            headers: this.getAuthHeaders(),
+            credentials: 'include'
+        };
+        
+        if (body) {
+            options.body = JSON.stringify(body);
+        }
+        
+        return options;
+    }
+
     async checkAuth() {
         try {
-            const response = await fetch(`${this.baseURL}/auth/me`, {
-                credentials: 'include'
-            });
+            const response = await fetch(`${this.baseURL}/auth/me`, this.getFetchOptions('GET'));
             
             if (response.ok) {
                 const result = await response.json();
@@ -30,10 +58,7 @@ class DatabaseAPI {
 
     async logout() {
         try {
-            await fetch(`${this.baseURL}/auth/logout`, {
-                method: 'POST',
-                credentials: 'include'
-            });
+            await fetch(`${this.baseURL}/auth/logout`, this.getFetchOptions('POST'));
             this.currentUser = null;
             window.location.href = '/auth.html';
         } catch (error) {
@@ -46,9 +71,7 @@ class DatabaseAPI {
             console.log('DatabaseAPI: Making fetch request to', `${this.baseURL}/customers`);
             console.log('Current window location:', window.location.href);
             
-            const response = await fetch(`${this.baseURL}/customers`, {
-                credentials: 'include'
-            });
+            const response = await fetch(`${this.baseURL}/customers`, this.getFetchOptions('GET'));
             
             console.log('DatabaseAPI: Response status:', response.status);
             console.log('DatabaseAPI: Response ok:', response.ok);

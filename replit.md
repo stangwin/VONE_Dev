@@ -169,6 +169,10 @@ UI preferences: Minimal, compact interfaces - avoid large/obtrusive action butto
 ## Changelog
 
 Changelog:
+- July 2, 2025: **COMPLETED** - Session/cookie handling debugged and fixed for dev environment iframe contexts
+- July 2, 2025: Implemented development session token system for iframe authentication (cookies blocked in preview tab)
+- July 2, 2025: Enhanced CORS headers and session isolation between dev/prod environments
+- July 2, 2025: Added comprehensive session debugging and authentication flow logging
 - July 2, 2025: **COMPLETED** - Full Dev/Prod environment separation and workflow support implementation
 - July 2, 2025: Added startup selector (startup.js) for choosing environment mode with interactive CLI
 - July 2, 2025: Created development console at /dev-console with system monitoring and database tools

@@ -5,11 +5,13 @@ const PostgresStore = connectPgSimple(session);
 
 // Session configuration
 function createSessionMiddleware(pool) {
+  const isDevelopment = process.env.ENVIRONMENT === 'development';
+  
   return session({
     store: new PostgresStore({
       pool: pool,
       createTableIfMissing: true,
-      tableName: 'session'
+      tableName: isDevelopment ? 'session_dev' : 'session'
     }),
     secret: process.env.SESSION_SECRET || 'vantix-crm-secret-key-change-in-production',
     resave: false,
@@ -17,9 +19,11 @@ function createSessionMiddleware(pool) {
     cookie: {
       secure: false, // Set to true in production with HTTPS
       httpOnly: true,
-      maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
+      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+      sameSite: isDevelopment ? 'lax' : 'lax' // Use lax for iframe compatibility
     },
-    name: 'vantix.sid'
+    name: isDevelopment ? 'vantix.dev.sid' : 'vantix.sid',
+    proxy: isDevelopment // Trust proxy headers in dev environment
   });
 }
 

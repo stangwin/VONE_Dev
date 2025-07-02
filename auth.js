@@ -130,6 +130,12 @@ class AuthManager {
             const result = await response.json();
 
             if (response.ok) {
+                // Handle development session token for iframe contexts
+                if (result.devSessionToken) {
+                    localStorage.setItem('devSessionToken', result.devSessionToken);
+                    console.log('Dev session token stored for iframe authentication');
+                }
+                
                 this.showSuccess(this.isLoginMode ? 'Signed in successfully!' : 'Account created successfully!');
                 setTimeout(() => {
                     window.location.href = '/';

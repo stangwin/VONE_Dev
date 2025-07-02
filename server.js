@@ -101,8 +101,32 @@ const parseJsonBody = (req) => {
   });
 };
 
+// Development session storage for iframe contexts where cookies don't work
+const devSessions = new Map();
+
 // Session middleware wrapper for HTTP server
 function handleWithSession(req, res, handler) {
+  // In development mode, check for alternative session handling
+  if (isDevelopment && req.headers['x-dev-session']) {
+    const sessionToken = req.headers['x-dev-session'];
+    const sessionData = devSessions.get(sessionToken);
+    
+    if (sessionData) {
+      // Create a mock session object compatible with express-session
+      req.session = {
+        id: sessionToken,
+        userId: sessionData.userId,
+        user: sessionData.user,
+        save: (callback) => callback && callback(),
+        destroy: (callback) => {
+          devSessions.delete(sessionToken);
+          callback && callback();
+        }
+      };
+      console.log('Dev session found:', { userId: sessionData.userId, email: sessionData.user?.email });
+    }
+  }
+  
   sessionMiddleware(req, res, () => {
     handler(req, res);
   });
@@ -113,10 +137,10 @@ const server = http.createServer(async (req, res) => {
   const parsedUrl = url.parse(req.url, true);
   const pathname = parsedUrl.pathname;
   
-  // Set CORS headers
+  // Enhanced CORS headers for development iframe support
   res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Dev-Session');
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   
   if (req.method === 'OPTIONS') {
@@ -187,13 +211,20 @@ const server = http.createServer(async (req, res) => {
   return handleWithSession(req, res, async (req, res) => {
     
     // Debug logging for notes requests
-    if (pathname.includes('notes')) {
-      console.log('=== NOTES REQUEST INTERCEPTED ===');
+    // Enhanced session debugging for auth issues
+    if (pathname.includes('auth') || pathname.includes('customers') || pathname.includes('user')) {
+      console.log('=== SESSION DEBUG ===');
       console.log('Method:', req.method);
       console.log('Pathname:', pathname);
-      console.log('Full URL:', req.url);
+      console.log('Headers present:', {
+        cookie: !!req.headers.cookie,
+        referer: req.headers.referer?.substring(0, 60) + '...'
+      });
       console.log('Session exists:', !!req.session);
+      console.log('Session ID:', req.session?.id?.substring(0, 8) + '...');
       console.log('User ID:', req.session?.userId);
+      console.log('Session keys:', req.session ? Object.keys(req.session) : 'none');
+      console.log('==================');
     }
 
     // Block all dev endpoints in production
@@ -227,8 +258,22 @@ const server = http.createServer(async (req, res) => {
         req.session.userId = user.id;
         req.session.user = user;
         
+        let devSessionToken = null;
+        
+        // In development mode, if no cookies present, create a dev session token for iframe contexts
+        if (isDevelopment && !req.headers.cookie) {
+          devSessionToken = 'dev_' + Math.random().toString(36).substring(2) + Date.now().toString(36);
+          devSessions.set(devSessionToken, { userId: user.id, user: user });
+          console.log('Created dev session token for iframe:', devSessionToken);
+        }
+        
+        const response = { user };
+        if (devSessionToken) {
+          response.devSessionToken = devSessionToken;
+        }
+        
         res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ user }));
+        res.end(JSON.stringify(response));
         return;
       }
 
