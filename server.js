@@ -165,6 +165,24 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  // Dev console route protection
+  if (pathname === '/dev-console') {
+    if (!isDevelopment) {
+      res.writeHead(403, { 'Content-Type': 'text/html' });
+      res.end('<h1>403 Forbidden</h1><p>Dev console is only available in development mode.</p>');
+      return;
+    }
+    
+    // Serve dev console HTML
+    const filePath = path.join(__dirname, 'dev-console.html');
+    if (fs.existsSync(filePath)) {
+      const content = fs.readFileSync(filePath);
+      res.writeHead(200, { 'Content-Type': 'text/html' });
+      res.end(content);
+      return;
+    }
+  }
+
   // Wrap all requests with session handling
   return handleWithSession(req, res, async (req, res) => {
     
@@ -176,6 +194,15 @@ const server = http.createServer(async (req, res) => {
       console.log('Full URL:', req.url);
       console.log('Session exists:', !!req.session);
       console.log('User ID:', req.session?.userId);
+    }
+
+    // Block all dev endpoints in production
+    if (pathname.startsWith('/api/dev/')) {
+      if (!isDevelopment) {
+        res.writeHead(403, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Development endpoints only available in development mode' }));
+        return;
+      }
     }
 
     try {
@@ -1176,6 +1203,173 @@ ${text}`;
       } catch {
         res.writeHead(404);
         res.end('Not Found');
+        }
+      }
+
+      // Development-only API endpoints
+      if (pathname.startsWith('/api/dev/') && isDevelopment) {
+        
+        // Dev API: Database statistics
+        if (pathname === '/api/dev/database-stats') {
+          if (!isAuthenticated(req)) {
+            res.writeHead(401, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'Authentication required' }));
+            return;
+          }
+
+          try {
+            const [customerResult, fileResult, noteResult, userResult] = await Promise.all([
+              pool.query('SELECT COUNT(*) FROM customers'),
+              pool.query('SELECT COUNT(*) FROM customer_files'),
+              pool.query('SELECT COUNT(*) FROM customer_notes'),
+              pool.query('SELECT COUNT(*) FROM users')
+            ]);
+
+            const stats = {
+              customers: parseInt(customerResult.rows[0].count),
+              files: parseInt(fileResult.rows[0].count),
+              notes: parseInt(noteResult.rows[0].count),
+              users: parseInt(userResult.rows[0].count)
+            };
+
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify(stats));
+          } catch (error) {
+            console.error('Database stats error:', error);
+            res.writeHead(500, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'Failed to fetch database statistics' }));
+          }
+          return;
+        }
+
+        // Dev API: Load sample data
+        if (pathname === '/api/dev/load-sample-data' && req.method === 'POST') {
+          if (!isAuthenticated(req)) {
+            res.writeHead(401, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'Authentication required' }));
+            return;
+          }
+
+          try {
+            const sampleCustomers = [
+              {
+                customer_id: 'sample_001',
+                company_name: 'TechStart Inc',
+                primary_contact: JSON.stringify({
+                  name: 'John Smith',
+                  email: 'john@techstart.com',
+                  phone: '555-0101'
+                }),
+                status: 'active',
+                affiliate_partner: 'Tech Partners',
+                next_step: 'Schedule demo'
+              },
+              {
+                customer_id: 'sample_002',
+                company_name: 'Digital Solutions LLC',
+                primary_contact: JSON.stringify({
+                  name: 'Sarah Johnson',
+                  email: 'sarah@digitalsolutions.com',
+                  phone: '555-0102'
+                }),
+                status: 'pending',
+                affiliate_partner: 'Growth Network',
+                next_step: 'Send proposal'
+              },
+              {
+                customer_id: 'sample_003',
+                company_name: 'Innovation Labs',
+                primary_contact: JSON.stringify({
+                  name: 'Mike Chen',
+                  email: 'mike@innovationlabs.com',
+                  phone: '555-0103'
+                }),
+                status: 'completed',
+                affiliate_partner: 'Direct',
+                next_step: 'Project complete'
+              }
+            ];
+
+            for (const customer of sampleCustomers) {
+              await pool.query(`
+                INSERT INTO customers (customer_id, company_name, primary_contact, status, affiliate_partner, next_step, created_at)
+                VALUES ($1, $2, $3, $4, $5, $6, NOW())
+                ON CONFLICT (customer_id) DO NOTHING
+              `, [
+                customer.customer_id,
+                customer.company_name,
+                customer.primary_contact,
+                customer.status,
+                customer.affiliate_partner,
+                customer.next_step
+              ]);
+
+              // Add sample notes
+              await pool.query(`
+                INSERT INTO customer_notes (customer_id, content, author_name, type, created_at)
+                VALUES ($1, $2, $3, $4, NOW())
+              `, [
+                customer.customer_id,
+                `Sample note for ${customer.company_name}: Initial contact established and requirements discussed.`,
+                'System',
+                'system'
+              ]);
+            }
+
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ 
+              message: `${sampleCustomers.length} sample customers added with notes`,
+              count: sampleCustomers.length
+            }));
+          } catch (error) {
+            console.error('Load sample data error:', error);
+            res.writeHead(500, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'Failed to load sample data' }));
+          }
+          return;
+        }
+
+        // Dev API: Changelog management
+        if (pathname === '/api/dev/changelog') {
+          if (!isAuthenticated(req)) {
+            res.writeHead(401, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'Authentication required' }));
+            return;
+          }
+
+          if (req.method === 'GET') {
+            try {
+              const changelogPath = path.join(__dirname, 'CHANGELOG.md');
+              let content = '';
+              if (fs.existsSync(changelogPath)) {
+                content = fs.readFileSync(changelogPath, 'utf8');
+              }
+              res.writeHead(200, { 'Content-Type': 'application/json' });
+              res.end(JSON.stringify({ content }));
+            } catch (error) {
+              res.writeHead(500, { 'Content-Type': 'application/json' });
+              res.end(JSON.stringify({ error: 'Failed to read changelog' }));
+            }
+            return;
+          }
+
+          if (req.method === 'POST') {
+            let body = '';
+            req.on('data', chunk => body += chunk.toString());
+            req.on('end', () => {
+              try {
+                const { content } = JSON.parse(body);
+                const changelogPath = path.join(__dirname, 'CHANGELOG.md');
+                fs.writeFileSync(changelogPath, content, 'utf8');
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ message: 'Changelog saved successfully' }));
+              } catch (error) {
+                res.writeHead(500, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ error: 'Failed to save changelog' }));
+              }
+            });
+            return;
+          }
         }
       }
 

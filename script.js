@@ -451,7 +451,31 @@ class CRMApp {
             document.title = `[DEV] ${currentTitle}`;
         }
         
+        // Show debug info in development mode
+        if (window.createDebugInfo) {
+            window.createDebugInfo(true);
+        }
+        
+        // Add dev console link to navigation
+        this.addDevConsoleLink();
+        
         console.log('Development UI setup complete');
+    }
+
+    addDevConsoleLink() {
+        const nav = document.querySelector('nav');
+        if (nav && !document.getElementById('dev-console-btn')) {
+            const devConsoleBtn = document.createElement('button');
+            devConsoleBtn.id = 'dev-console-btn';
+            devConsoleBtn.className = 'nav-btn';
+            devConsoleBtn.innerHTML = '🛠️ Dev Console';
+            devConsoleBtn.style.backgroundColor = '#ff6b35';
+            devConsoleBtn.style.color = 'white';
+            devConsoleBtn.addEventListener('click', () => {
+                window.location.href = '/dev-console';
+            });
+            nav.appendChild(devConsoleBtn);
+        }
     }
 
     async loadUserData() {
@@ -3096,19 +3120,26 @@ document.addEventListener("DOMContentLoaded", () => {
     console.log('- dashboard-loading:', !!document.getElementById('dashboard-loading'));
     console.log('- dashboard-error:', !!document.getElementById('dashboard-error'));
     
-    // Add environment info to page for debugging
-    const debugInfo = document.createElement('div');
-    debugInfo.id = 'debug-info';
-    debugInfo.style.cssText = 'position: fixed; top: 0; right: 0; background: rgba(0,0,0,0.8); color: white; padding: 10px; font-size: 12px; z-index: 9999; max-width: 300px;';
-    debugInfo.innerHTML = `
-        <strong>Debug Info:</strong><br>
-        Iframe: ${env.isIframe}<br>
-        Replit: ${env.isReplit}<br>
-        URL: ${window.location.hostname}<br>
-        <button onclick="window.debugApp && window.debugApp.loadCustomers()" style="margin-top: 5px;">Reload Customers</button>
-        <button onclick="this.parentElement.style.display='none'" style="margin-top: 5px;">Hide</button>
-    `;
-    document.body.appendChild(debugInfo);
+    // Debug info only in development mode (will be set by CRMApp after environment check)
+    window.createDebugInfo = function(isDevelopment) {
+        if (!isDevelopment) {
+            return; // Hide debug info in production
+        }
+        
+        const debugInfo = document.createElement('div');
+        debugInfo.id = 'debug-info';
+        debugInfo.style.cssText = 'position: fixed; top: 0; right: 0; background: rgba(0,0,0,0.8); color: white; padding: 10px; font-size: 12px; z-index: 9999; max-width: 300px;';
+        debugInfo.innerHTML = `
+            <strong>🔧 Dev Debug Info:</strong><br>
+            Iframe: ${env.isIframe}<br>
+            Replit: ${env.isReplit}<br>
+            URL: ${window.location.hostname}<br>
+            <button onclick="window.debugApp && window.debugApp.loadCustomers()" style="margin-top: 5px;">Reload Customers</button>
+            <button onclick="this.parentElement.style.display='none'" style="margin-top: 5px;">Hide</button>
+            <a href="/dev-console" style="display: block; color: #4CAF50; margin-top: 5px; text-decoration: none;">🛠️ Dev Console</a>
+        `;
+        document.body.appendChild(debugInfo);
+    };
     
     console.log('Creating CRM app instance...');
     app = new CRMApp();

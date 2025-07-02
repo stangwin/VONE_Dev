@@ -169,6 +169,13 @@ UI preferences: Minimal, compact interfaces - avoid large/obtrusive action butto
 ## Changelog
 
 Changelog:
+- July 2, 2025: **COMPLETED** - Full Dev/Prod environment separation and workflow support implementation
+- July 2, 2025: Added startup selector (startup.js) for choosing environment mode with interactive CLI
+- July 2, 2025: Created development console at /dev-console with system monitoring and database tools
+- July 2, 2025: Implemented database statistics dashboard, sample data loader, and changelog editor
+- July 2, 2025: Added version management system with version.json and switching interface
+- July 2, 2025: Enhanced production security - debug dropdown and dev tools hidden in production mode
+- July 2, 2025: Added comprehensive dev API endpoints protected by environment checks
 - July 2, 2025: **COMPLETED** - Implemented full database isolation between development and production environments with safety safeguards
 - July 2, 2025: Added DATABASE_URL_DEV and DATABASE_URL_PROD environment variables for complete database separation
 - July 2, 2025: Enhanced server startup with safety checks preventing cross-environment database contamination

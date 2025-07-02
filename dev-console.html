@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Dev Console - Vantix CRM</title>
+        <link rel="stylesheet" href="styles.css" />
+        <style>
+            .dev-console {
+                max-width: 1200px;
+                margin: 0 auto;
+                padding: 20px;
+                background: #1a1a1a;
+                color: #f0f0f0;
+                min-height: 100vh;
+                font-family: 'Courier New', monospace;
+            }
+            
+            .console-header {
+                border-bottom: 2px solid #ff6b35;
+                padding-bottom: 20px;
+                margin-bottom: 30px;
+            }
+            
+            .console-section {
+                background: #2a2a2a;
+                border: 1px solid #444;
+                border-radius: 8px;
+                padding: 20px;
+                margin-bottom: 20px;
+            }
+            
+            .console-grid {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 20px;
+            }
+            
+            .status-item {
+                display: flex;
+                justify-content: space-between;
+                padding: 8px 0;
+                border-bottom: 1px solid #444;
+            }
+            
+            .status-value {
+                color: #4CAF50;
+                font-weight: bold;
+            }
+            
+            .danger-btn {
+                background: #dc3545;
+                color: white;
+                border: none;
+                padding: 10px 20px;
+                border-radius: 5px;
+                cursor: pointer;
+                margin: 5px;
+            }
+            
+            .warning-btn {
+                background: #ff6b35;
+                color: white;
+                border: none;
+                padding: 10px 20px;
+                border-radius: 5px;
+                cursor: pointer;
+                margin: 5px;
+            }
+            
+            .success-btn {
+                background: #4CAF50;
+                color: white;
+                border: none;
+                padding: 10px 20px;
+                border-radius: 5px;
+                cursor: pointer;
+                margin: 5px;
+            }
+            
+            .version-table {
+                width: 100%;
+                border-collapse: collapse;
+                background: #333;
+            }
+            
+            .version-table th, .version-table td {
+                border: 1px solid #555;
+                padding: 12px;
+                text-align: left;
+            }
+            
+            .version-table th {
+                background: #444;
+                color: #ff6b35;
+            }
+            
+            .changelog-editor {
+                width: 100%;
+                height: 200px;
+                background: #333;
+                color: #f0f0f0;
+                border: 1px solid #555;
+                padding: 10px;
+                font-family: 'Courier New', monospace;
+                resize: vertical;
+            }
+            
+            .back-link {
+                color: #4CAF50;
+                text-decoration: none;
+                display: inline-block;
+                margin-bottom: 20px;
+            }
+        </style>
+    </head>
+    <body>
+        <!-- Development Environment Banner -->
+        <div id="dev-environment-banner" style="display: none; background: #dc3545; color: white; text-align: center; padding: 8px; font-weight: bold; position: fixed; top: 0; left: 0; right: 0; z-index: 10000; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+            🚧 DEV ENVIRONMENT 🚧
+        </div>
+        
+        <div class="dev-console">
+            <a href="/" class="back-link">← Back to CRM Dashboard</a>
+            
+            <div class="console-header">
+                <h1>🛠️ Development Console</h1>
+                <p>Environment management and debugging tools</p>
+            </div>
+            
+            <div class="console-grid">
+                <div class="console-section">
+                    <h2>📊 System Status</h2>
+                    <div id="system-status">
+                        <div class="status-item">
+                            <span>Environment:</span>
+                            <span class="status-value" id="current-environment">Loading...</span>
+                        </div>
+                        <div class="status-item">
+                            <span>Database URL:</span>
+                            <span class="status-value" id="database-url">Loading...</span>
+                        </div>
+                        <div class="status-item">
+                            <span>CRM Version:</span>
+                            <span class="status-value" id="crm-version">Loading...</span>
+                        </div>
+                        <div class="status-item">
+                            <span>Test Mode:</span>
+                            <span class="status-value" id="test-mode-status">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="console-section">
+                    <h2>📈 Database Stats</h2>
+                    <div id="database-stats">
+                        <div class="status-item">
+                            <span>Customers:</span>
+                            <span class="status-value" id="customer-count">Loading...</span>
+                        </div>
+                        <div class="status-item">
+                            <span>Files:</span>
+                            <span class="status-value" id="file-count">Loading...</span>
+                        </div>
+                        <div class="status-item">
+                            <span>Notes:</span>
+                            <span class="status-value" id="note-count">Loading...</span>
+                        </div>
+                        <div class="status-item">
+                            <span>Users:</span>
+                            <span class="status-value" id="user-count">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="console-section">
+                <h2>🔄 Database Operations</h2>
+                <p>Manage development database and test data</p>
+                <button class="danger-btn" onclick="syncDevFromProd()">
+                    ⬇️ Sync Dev DB from Production
+                </button>
+                <button class="warning-btn" onclick="loadSampleData()">
+                    📊 Load Sample/Test Data
+                </button>
+                <div id="sync-status" style="margin-top: 10px; color: #4CAF50;"></div>
+            </div>
+            
+            <div class="console-section">
+                <h2>📋 Version Management</h2>
+                <table class="version-table">
+                    <thead>
+                        <tr>
+                            <th>Version</th>
+                            <th>Name</th>
+                            <th>Release Date</th>
+                            <th>Features</th>
+                        </tr>
+                    </thead>
+                    <tbody id="version-table-body">
+                        <!-- Populated by JavaScript -->
+                    </tbody>
+                </table>
+                
+                <div style="margin-top: 20px;">
+                    <label for="version-selector">Switch Version:</label>
+                    <select id="version-selector" style="background: #333; color: #f0f0f0; border: 1px solid #555; padding: 5px; margin: 0 10px;">
+                        <option value="">Select version...</option>
+                    </select>
+                    <button class="warning-btn" onclick="switchVersion()">🔄 Switch</button>
+                </div>
+            </div>
+            
+            <div class="console-section">
+                <h2>📝 Changelog Editor</h2>
+                <textarea id="changelog-editor" class="changelog-editor" placeholder="Add changelog entries here..."></textarea>
+                <div style="margin-top: 10px;">
+                    <button class="success-btn" onclick="saveChangelog()">💾 Save Changelog</button>
+                    <span id="changelog-status" style="margin-left: 10px; color: #4CAF50;"></span>
+                </div>
+                <div id="changelog-preview" style="margin-top: 20px; background: #333; padding: 15px; border: 1px solid #555; border-radius: 5px;">
+                    <h4>Preview:</h4>
+                    <div id="changelog-preview-content">Enter changelog text above to see preview...</div>
+                </div>
+            </div>
+        </div>
+        
+        <script src="dev-console.js"></script>
+    </body>
+</html>

@@ -1,0 +1,29 @@
+{
+  "versions": [
+    {
+      "version": "1.0",
+      "name": "MVP",
+      "releaseDate": "2025-06-20",
+      "features": "Basic CRM functionality, Customer management, File upload system, PostgreSQL database",
+      "branch": "main",
+      "startup": "server.js"
+    },
+    {
+      "version": "1.1",
+      "name": "System Notes + Test Mode",
+      "releaseDate": "2025-06-27",
+      "features": "System notes, Test mode toggle, Enhanced UI, Two-factor authentication, OpenAI integration",
+      "branch": "main",
+      "startup": "server.js"
+    },
+    {
+      "version": "1.2",
+      "name": "Environment Separation",
+      "releaseDate": "2025-07-02",
+      "features": "Dev/Prod environment isolation, Database separation, Development console, Startup selector",
+      "branch": "main",
+      "startup": "server.js"
+    }
+  ],
+  "current": "1.2"
+}
