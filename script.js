@@ -37,7 +37,9 @@ class DatabaseAPI {
 
     async makeRequest(method, endpoint, body = null) {
         try {
+            // Fix URL construction to avoid double /api/
             const url = endpoint.startsWith('/api/') ? `${this.baseURL}${endpoint}` : `${this.baseURL}/api${endpoint}`;
+            console.log('makeRequest URL:', url); // Debug logging
             const response = await fetch(url, this.getFetchOptions(method, body));
             
             if (response.status === 401) {
@@ -706,11 +708,20 @@ class CRMApp {
             }
             
             console.log('Step 2: Calling APIs...');
-            // Load customers and file counts in parallel
-            const [customers, fileCounts] = await Promise.all([
-                this.api.getCustomers(),
-                this.api.getAllCustomerFileCounts()
-            ]);
+            // Load customers first
+            const customers = await this.api.getCustomers();
+            
+            // Only load file counts if we're authenticated (customers call succeeded)
+            let fileCounts = {};
+            if (customers && customers.length > 0) {
+                try {
+                    fileCounts = await this.api.getAllCustomerFileCounts();
+                    console.log('File counts loaded successfully:', fileCounts);
+                } catch (error) {
+                    console.log('File counts failed (likely authentication issue), using empty counts');
+                    fileCounts = {};
+                }
+            }
             
             // Add file counts to customer data
             this.customers = customers.map(customer => ({
