@@ -169,6 +169,11 @@ UI preferences: Minimal, compact interfaces - avoid large/obtrusive action butto
 ## Changelog
 
 Changelog:
+- July 4, 2025: **COMPLETED** - Fixed file attachment indicator system debugging and resolved URL construction issues
+- July 4, 2025: Identified and fixed double /api/ URL construction bug in file counts API
+- July 4, 2025: Verified file counts API working correctly - customer_001 (My Pharmacist On Call) and customer_007 (Sadler Hughes Apothecary) each have 10 files
+- July 4, 2025: Enhanced authentication flow and error handling for file counts loading
+- July 4, 2025: Added proper debugging logs for file attachment indicator functionality
 - July 2, 2025: **COMPLETED** - Session/cookie handling debugged and fixed for dev environment iframe contexts
 - July 2, 2025: Implemented development session token system for iframe authentication (cookies blocked in preview tab)
 - July 2, 2025: Enhanced CORS headers and session isolation between dev/prod environments

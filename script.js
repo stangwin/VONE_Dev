@@ -256,7 +256,7 @@ class DatabaseAPI {
 
     async getAllCustomerFileCounts() {
         try {
-            const response = await this.makeRequest('GET', '/customers/file-counts');
+            const response = await this.makeRequest('GET', '/api/customers/file-counts');
             return response || {};
         } catch (error) {
             console.error('Error getting all customer file counts:', error);
