@@ -169,6 +169,11 @@ UI preferences: Minimal, compact interfaces - avoid large/obtrusive action butto
 ## Changelog
 
 Changelog:
+- July 5, 2025: **COMPLETED** - Fixed file upload functionality in production environment by adding missing authentication credentials
+- July 5, 2025: Resolved "Uploading..." infinite loading issue by including 'credentials: include' in upload fetch requests
+- July 5, 2025: Fixed double /api/ URL construction bug in createSystemNote method preventing proper system note creation
+- July 5, 2025: Verified complete upload flow - successfully processed 16 HEIC files for customer_011 with proper database storage
+- July 5, 2025: Confirmed upload directories exist and are writable, formidable middleware active and processing files correctly
 - July 4, 2025: **COMPLETED** - Fixed file attachment indicator system debugging and resolved URL construction issues
 - July 4, 2025: Identified and fixed double /api/ URL construction bug in file counts API
 - July 4, 2025: Verified file counts API working correctly - customer_001 (My Pharmacist On Call) and customer_007 (Sadler Hughes Apothecary) each have 10 files

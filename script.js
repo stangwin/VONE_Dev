@@ -323,7 +323,7 @@ class DatabaseAPI {
 
     async createSystemNote(customerId, content) {
         console.log('DatabaseAPI: Creating system note for customer', customerId);
-        const response = await this.makeRequest('POST', `/api/customers/${customerId}/system-notes`, {
+        const response = await this.makeRequest('POST', `/customers/${customerId}/system-notes`, {
             content: content
         });
         return response;
