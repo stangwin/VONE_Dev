@@ -166,9 +166,48 @@ UI preferences: Minimal, compact interfaces - avoid large/obtrusive action butto
   - Prevents accidental production database access
   - URL validation blocks cross-environment contamination
 
+## Database Synchronization System
+
+### Core Principles
+- **Production is the permanent source of truth**
+- **No automatic sync operations - manual review required**
+- **Development cannot overwrite Production without explicit approval**
+- **All sync operations are additive only (no destructive operations)**
+- **Comprehensive audit trail and error handling**
+
+### Sync Tool Features
+- **Database Comparison**: Compare Dev vs Prod across all critical tables
+- **Selective Sync**: Choose specific records to sync from Dev to Prod
+- **Safety Safeguards**: Multiple confirmation dialogs and rollback capabilities
+- **Report Generation**: Detailed comparison reports with recommendations
+- **Real-time Monitoring**: Live sync progress and result reporting
+
+### Access Methods
+- **Web Interface**: Development Console at `/dev-console` → Database Comparison section
+- **Command Line**: `node dev-database-sync.js` for terminal-based reports
+- **API Endpoints**: `/api/dev/compare-databases` and `/api/dev/sync-to-production`
+
+### Tables Monitored
+- **customers**: Core customer records and company information
+- **customer_files**: File attachments and media uploads  
+- **customer_notes**: Customer interaction notes and history
+- **users**: User accounts and authentication data
+
+### Security Model
+- **Authentication**: Admin role required for all sync operations
+- **Environment Isolation**: Only available in Development environment
+- **Data Validation**: Record integrity checks before sync
+- **Audit Trail**: Complete logging of all sync operations
+
 ## Changelog
 
 Changelog:
+- July 5, 2025: **COMPLETED** - Comprehensive database synchronization system implemented with Production as permanent source of truth
+- July 5, 2025: Added database comparison tool to identify differences between Dev and Production environments
+- July 5, 2025: Created selective sync interface with manual review and explicit approval required for Production changes
+- July 5, 2025: Implemented safety safeguards: no automatic sync, confirmation dialogs, audit trails, and rollback capabilities
+- July 5, 2025: Built web interface in Development Console for easy access to comparison and sync tools
+- July 5, 2025: Added comprehensive documentation in DATABASE_SYNC_GUIDE.md and updated replit.md architecture section
 - July 5, 2025: **COMPLETED** - Development environment fully restored and verified working in browser tabs
 - July 5, 2025: Fixed database connection issues by resolving environment variable expansion and session table conflicts
 - July 5, 2025: Cleared and recreated session table to resolve primary key constraint conflicts

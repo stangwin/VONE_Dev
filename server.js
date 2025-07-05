@@ -1444,6 +1444,120 @@ ${text}`;
           return;
         }
 
+        // Dev API: Database comparison
+        if (pathname === '/api/dev/compare-databases' && req.method === 'POST') {
+          if (!isAuthenticated(req)) {
+            res.writeHead(401, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'Authentication required' }));
+            return;
+          }
+
+          try {
+            const { DatabaseSyncTool } = require('./dev-database-sync.js');
+            const syncTool = new DatabaseSyncTool();
+            
+            await syncTool.init();
+            const report = await syncTool.generateReport();
+            await syncTool.close();
+            
+            if (!res.headersSent) {
+              res.writeHead(200, { 'Content-Type': 'application/json' });
+              res.end(JSON.stringify(report));
+            }
+          } catch (error) {
+            console.error('Database comparison error:', error);
+            if (!res.headersSent) {
+              res.writeHead(500, { 'Content-Type': 'application/json' });
+              res.end(JSON.stringify({ 
+                error: 'Failed to compare databases: ' + error.message,
+                details: error.stack
+              }));
+            }
+          }
+          return;
+        }
+
+        // Dev API: Selective sync to production
+        if (pathname === '/api/dev/sync-to-production' && req.method === 'POST') {
+          if (!isAuthenticated(req)) {
+            res.writeHead(401, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'Authentication required' }));
+            return;
+          }
+
+          let body = '';
+          req.on('data', chunk => body += chunk.toString());
+          req.on('end', async () => {
+            try {
+              const { selectedItems } = JSON.parse(body);
+              
+              if (!selectedItems || !Array.isArray(selectedItems)) {
+                res.writeHead(400, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ error: 'selectedItems array is required' }));
+                return;
+              }
+
+              const { DatabaseSyncTool } = require('./dev-database-sync.js');
+              const syncTool = new DatabaseSyncTool();
+              
+              await syncTool.init();
+              
+              // Get the current comparison report
+              const report = await syncTool.generateReport();
+              
+              let successful = 0;
+              let failed = 0;
+              const results = [];
+              
+              // Process each selected item
+              for (const itemId of selectedItems) {
+                const [tableName, recordId] = itemId.split('-');
+                
+                // Find the record in the missing data
+                const missingRecords = report.missingInProd[tableName] || [];
+                const record = missingRecords.find(r => r.id.toString() === recordId);
+                
+                if (record) {
+                  try {
+                    const success = await syncTool.syncRecordToProd(tableName, record);
+                    if (success) {
+                      successful++;
+                      results.push({ item: itemId, status: 'success' });
+                    } else {
+                      failed++;
+                      results.push({ item: itemId, status: 'failed', error: 'Sync operation failed' });
+                    }
+                  } catch (error) {
+                    failed++;
+                    results.push({ item: itemId, status: 'failed', error: error.message });
+                  }
+                } else {
+                  failed++;
+                  results.push({ item: itemId, status: 'failed', error: 'Record not found' });
+                }
+              }
+              
+              await syncTool.close();
+              
+              res.writeHead(200, { 'Content-Type': 'application/json' });
+              res.end(JSON.stringify({
+                successful,
+                failed,
+                total: selectedItems.length,
+                results
+              }));
+              
+            } catch (error) {
+              console.error('Sync to production error:', error);
+              res.writeHead(500, { 'Content-Type': 'application/json' });
+              res.end(JSON.stringify({ 
+                error: 'Failed to sync to production: ' + error.message 
+              }));
+            }
+          });
+          return;
+        }
+
         // Dev API: Changelog management
         if (pathname === '/api/dev/changelog') {
           if (!isAuthenticated(req)) {
