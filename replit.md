@@ -169,6 +169,11 @@ UI preferences: Minimal, compact interfaces - avoid large/obtrusive action butto
 ## Changelog
 
 Changelog:
+- July 5, 2025: **COMPLETED** - Development environment fully restored and verified working in browser tabs
+- July 5, 2025: Fixed database connection issues by resolving environment variable expansion and session table conflicts
+- July 5, 2025: Cleared and recreated session table to resolve primary key constraint conflicts
+- July 5, 2025: Verified authentication working with test@test.com/test123 and dev session token generation for iframe contexts
+- July 5, 2025: Development environment now shows proper indicators: red DEV banner, [DEV] title prefix, debug dropdown, and /dev-console access
 - July 5, 2025: **COMPLETED** - Fixed file upload functionality in production environment by adding missing authentication credentials
 - July 5, 2025: Resolved "Uploading..." infinite loading issue by including 'credentials: include' in upload fetch requests
 - July 5, 2025: Fixed double /api/ URL construction bug in createSystemNote method preventing proper system note creation
