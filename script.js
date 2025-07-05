@@ -190,7 +190,8 @@ class DatabaseAPI {
             console.log('Sending upload request to:', `${this.baseURL}/customers/${customerId}/files`);
             const response = await fetch(`${this.baseURL}/customers/${customerId}/files`, {
                 method: 'POST',
-                body: formData
+                body: formData,
+                credentials: 'include'
             });
 
             console.log('Upload response status:', response.status);
