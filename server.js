@@ -51,8 +51,29 @@ if (!isDevelopment && databaseUrl.includes('dev')) {
   console.warn('Verify this is intentional');
 }
 
-// Initialize database with selected URL
-const pool = new Pool({ connectionString: databaseUrl });
+// Initialize database with selected URL and schema handling
+let pool;
+if (isDevelopment && databaseUrl.includes('schema=vantix_dev')) {
+  // Development with schema isolation
+  const baseUrl = databaseUrl.split('?')[0];
+  pool = new Pool({ connectionString: baseUrl });
+  
+  // Create wrapped pool that sets search_path for development
+  const originalQuery = pool.query.bind(pool);
+  pool.query = async function(text, params) {
+    const client = await pool.connect();
+    try {
+      await client.query('SET search_path TO vantix_dev');
+      const result = await client.query(text, params);
+      return result;
+    } finally {
+      client.release();
+    }
+  };
+} else {
+  // Production or separate development database - use as-is
+  pool = new Pool({ connectionString: databaseUrl });
+}
 
 // Initialize auth service
 const authService = new AuthService(pool);
@@ -106,8 +127,8 @@ const devSessions = new Map();
 
 // Session middleware wrapper for HTTP server
 function handleWithSession(req, res, handler) {
-  // In development mode, check for alternative session handling
-  if (isDevelopment && req.headers['x-dev-session']) {
+  // Check for session token for iframe contexts (both dev and prod)
+  if (req.headers['x-dev-session']) {
     const sessionToken = req.headers['x-dev-session'];
     const sessionData = devSessions.get(sessionToken);
     
@@ -123,8 +144,9 @@ function handleWithSession(req, res, handler) {
           callback && callback();
         }
       };
-      console.log('Dev session found:', { userId: sessionData.userId, email: sessionData.user?.email });
-      // Call handler directly with dev session
+      const envMode = isDevelopment ? 'Development' : 'Production';
+      console.log(`${envMode} session token found:`, { userId: sessionData.userId, email: sessionData.user?.email });
+      // Call handler directly with session token
       return handler(req, res);
     }
   }
@@ -265,21 +287,36 @@ const server = http.createServer(async (req, res) => {
           return;
         }
 
+        // Ensure session is properly saved
         req.session.userId = user.id;
         req.session.user = user;
         
-        let devSessionToken = null;
+        // Force session save for production
+        await new Promise((resolve, reject) => {
+          req.session.save((err) => {
+            if (err) {
+              console.error('Session save error:', err);
+              reject(err);
+            } else {
+              console.log('Session saved successfully for user:', user.id);
+              resolve();
+            }
+          });
+        });
         
-        // In development mode, if no cookies present, create a dev session token for iframe contexts
-        if (isDevelopment && !req.headers.cookie) {
-          devSessionToken = 'dev_' + Math.random().toString(36).substring(2) + Date.now().toString(36);
-          devSessions.set(devSessionToken, { userId: user.id, user: user });
-          console.log('Created dev session token for iframe:', devSessionToken);
+        let sessionToken = null;
+        
+        // For iframe contexts (both dev and prod), create session token when cookies not present
+        if (!req.headers.cookie) {
+          const tokenPrefix = isDevelopment ? 'dev_' : 'prod_';
+          sessionToken = tokenPrefix + Math.random().toString(36).substring(2) + Date.now().toString(36);
+          devSessions.set(sessionToken, { userId: user.id, user: user });
+          console.log(`Created ${isDevelopment ? 'development' : 'production'} session token for iframe:`, sessionToken);
         }
         
         const response = { user };
-        if (devSessionToken) {
-          response.devSessionToken = devSessionToken;
+        if (sessionToken) {
+          response.devSessionToken = sessionToken; // Keep same key name for client compatibility
         }
         
         res.writeHead(200, { 'Content-Type': 'application/json' });

@@ -6,12 +6,16 @@ const PostgresStore = connectPgSimple(session);
 // Session configuration
 function createSessionMiddleware(pool) {
   const isDevelopment = process.env.ENVIRONMENT === 'development';
+  const tableName = isDevelopment ? 'session_dev' : 'session_prod';
+  
+  console.log(`🔧 Session middleware: Using table "${tableName}" for ${isDevelopment ? 'development' : 'production'}`);
   
   return session({
     store: new PostgresStore({
       pool: pool,
-      createTableIfMissing: true,
-      tableName: isDevelopment ? 'session_dev' : 'session'
+      createTableIfMissing: false, // Tables already exist, don't try to create
+      tableName: tableName,
+      schemaName: 'public' // Explicitly set schema
     }),
     secret: process.env.SESSION_SECRET || 'vantix-crm-secret-key-change-in-production',
     resave: false,
@@ -20,7 +24,7 @@ function createSessionMiddleware(pool) {
       secure: false, // Set to true in production with HTTPS
       httpOnly: true,
       maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
-      sameSite: isDevelopment ? 'lax' : 'lax' // Use lax for iframe compatibility
+      sameSite: 'none' // Required for iframe compatibility in all environments
     },
     name: isDevelopment ? 'vantix.dev.sid' : 'vantix.sid',
     proxy: isDevelopment // Trust proxy headers in dev environment
