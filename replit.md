@@ -146,25 +146,31 @@ UI preferences: Minimal, compact interfaces - avoid large/obtrusive action butto
 
 ## Environment Separation
 
-### Production Environment (Current)
-- **Status**: Fully functional and unchanged
-- **Database**: Production PostgreSQL database via `DATABASE_URL_PROD` or `DATABASE_URL`
+### Production Environment
+- **Status**: Default mode when no .env file exists
+- **Database**: Production PostgreSQL database via `DATABASE_URL` (public schema)
 - **UI**: Clean interface without development indicators
 - **API Keys**: Production OpenAI and service integrations
 - **Title**: "Vantix CRM"
-- **Safety**: Cannot access development database URLs
+- **Safety**: Protected from development modifications
 
-### Development Environment (Clone Setup)
-- **Setup**: Created via .env.example and DEV_SETUP.md guide
+### Development Environment (Schema-Based Isolation)
+- **Setup**: Activated via .env file with `DATABASE_URL_DEV`
 - **Visual Indicators**: Red banner "🚧 DEV ENVIRONMENT 🚧" and "[DEV]" in browser title
-- **Database**: **COMPLETELY ISOLATED** - Uses only `DATABASE_URL_DEV`
-- **Configuration**: Uses .env file with test API keys
-- **Data Isolation**: **FULL DATABASE ISOLATION** - Cannot access production database
+- **Database**: **SCHEMA ISOLATED** - Uses `vantix_dev` schema on same database
+- **Configuration**: Uses .env file with test API keys and schema parameter
+- **Data Isolation**: **COMPLETE SCHEMA SEPARATION** - Cannot access production schema
 - **Environment Detection**: Automatic via `/api/environment` endpoint
 - **Safety Features**: 
-  - Requires `DATABASE_URL_DEV` or server exits
-  - Prevents accidental production database access
-  - URL validation blocks cross-environment contamination
+  - Schema-based isolation (`?schema=vantix_dev` parameter)
+  - Automatic schema routing in database queries
+  - URL validation with schema parameter checking
+  - Environment switching scripts with validation
+
+### Environment Management
+- **Switch Scripts**: `./switch-to-production.sh` and `./switch-to-development.sh`
+- **Status Check**: `./check-environment.sh` shows current configuration
+- **Schema Isolation**: Single database with separate schemas for complete data isolation
 
 ## Database Synchronization System
 
@@ -202,6 +208,15 @@ UI preferences: Minimal, compact interfaces - avoid large/obtrusive action butto
 ## Changelog
 
 Changelog:
+- July 10, 2025: **COMPLETED** - Environment switching scripts implemented with schema-based isolation validation
+- July 10, 2025: Created switch-to-production.sh and switch-to-development.sh for easy environment management
+- July 10, 2025: Added check-environment.sh script for instant environment status verification
+- July 10, 2025: Updated database sync tool to support schema-based isolation with proper query routing
+- July 10, 2025: Created comprehensive ENVIRONMENT_GUIDE.md with troubleshooting and best practices
+- July 10, 2025: **COMPLETED** - Schema-based database isolation verified working with test development customer
+- July 10, 2025: Production environment (public schema): 12 customers, 53 files, 9 notes, 3 users intact
+- July 10, 2025: Development environment (vantix_dev schema): 1 test customer isolated from production
+- July 10, 2025: Database sync tool updated to handle schema isolation with proper Production→Dev sync capabilities
 - July 5, 2025: **COMPLETED** - Comprehensive database synchronization system implemented with Production as permanent source of truth
 - July 5, 2025: Added database comparison tool to identify differences between Dev and Production environments
 - July 5, 2025: Created selective sync interface with manual review and explicit approval required for Production changes
