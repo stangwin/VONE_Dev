@@ -1394,6 +1394,18 @@ class CRMApp {
                 this.sortTable(sortKey);
             });
         });
+
+        // Customer form submission - CRITICAL FIX
+        const customerForm = document.getElementById('customer-form');
+        if (customerForm) {
+            customerForm.addEventListener('submit', (e) => {
+                console.log('Customer form submit event triggered');
+                this.handleSaveCustomer(e);
+            });
+            console.log('Customer form submit event bound successfully');
+        } else {
+            console.error('CRITICAL: customer-form not found!');
+        }
         
         console.log('=== BINDING EVENTS COMPLETE ===');
     }
