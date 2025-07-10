@@ -135,12 +135,23 @@ class DatabaseAPI {
 
     async createCustomer(customerData) {
         try {
+            // Generate customer ID if not provided
+            if (!customerData.customerId) {
+                customerData.customerId = 'customer_' + String(Date.now()).slice(-6).padStart(3, '0');
+            }
+
+            console.log('Creating customer with data:', customerData);
+            
             const response = await fetch(`${this.baseURL}/customers`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(customerData)
+                ...this.getFetchOptions('POST', customerData)
             });
-            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('Server error response:', errorText);
+                throw new Error(`HTTP ${response.status}: ${errorText}`);
+            }
+            
             return await response.json();
         } catch (error) {
             console.error('Error creating customer:', error);
@@ -2724,27 +2735,51 @@ class CRMApp {
     }
 
     extractCustomerData(formData) {
+        // Helper function to safely get and trim form data
+        const getField = (name) => {
+            const value = formData.get(name);
+            return value ? value.trim() : '';
+        };
+
+        // Build physical address from individual fields
+        const physicalAddress = [
+            getField('phys_street1'),
+            getField('phys_street2'),
+            getField('phys_city'),
+            getField('phys_state'),
+            getField('phys_zip')
+        ].filter(Boolean).join(', ') || null;
+
+        // Build billing address from individual fields  
+        const billingAddress = [
+            getField('bill_street1'),
+            getField('bill_street2'),
+            getField('bill_city'),
+            getField('bill_state'),
+            getField('bill_zip')
+        ].filter(Boolean).join(', ') || null;
+
         return {
-            company_name: formData.get('company-name').trim(),
+            company_name: getField('companyName') || getField('company-name'),
             status: formData.get('status') || 'Lead',
-            affiliate_partner: formData.get('affiliate-partner'),
-            next_step: formData.get('next-step').trim(),
-            physical_address: formData.get('physical-address').trim(),
-            billing_address: formData.get('billing-address').trim(),
+            affiliate_partner: formData.get('affiliatePartner') || formData.get('affiliate-partner'),
+            next_step: getField('nextStep') || getField('next-step'),
+            physical_address: physicalAddress,
+            billing_address: billingAddress,
             primary_contact: {
-                name: formData.get('primary-name').trim(),
-                email: formData.get('primary-email').trim(),
-                phone: formData.get('primary-phone').trim()
+                name: getField('primaryContact.name') || getField('primary-name'),
+                email: getField('primaryContact.email') || getField('primary-email'),
+                phone: getField('primaryContact.phone') || getField('primary-phone')
             },
             authorized_signer: {
-                name: formData.get('signer-name').trim(),
-                email: formData.get('signer-email').trim(),
-                phone: null
+                name: getField('authorizedSigner.name') || getField('signer-name'),
+                email: getField('authorizedSigner.email') || getField('signer-email'),
+                phone: getField('authorizedSigner.phone') || null
             },
             billing_contact: {
-                name: formData.get('billing-name').trim(),
-                email: formData.get('billing-email').trim(),
-                phone: formData.get('billing-phone').trim()
+                name: getField('billingContact.name') || getField('billing-name'),
+                email: getField('billingContact.email') || getField('billing-email'),
+                phone: getField('billingContact.phone') || getField('billing-phone')
             }
         };
     }
