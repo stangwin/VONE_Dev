@@ -2772,6 +2772,12 @@ class CRMApp {
             const value = formData.get(name);
             return value ? value.trim() : '';
         };
+        
+        // Debug: Log all form data
+        console.log('=== FORM DATA DEBUG ===');
+        for (let [key, value] of formData.entries()) {
+            console.log(`FormData: ${key} = "${value}"`);
+        }
 
         // Build physical address from individual fields
         const physicalAddress = [
@@ -2792,7 +2798,7 @@ class CRMApp {
         ].filter(Boolean).join(', ') || null;
 
         return {
-            company_name: getField('companyName') || getField('company-name'),
+            company_name: getField('companyName') || getField('company-name') || formData.get('company-name'),
             status: formData.get('status') || 'Lead',
             affiliate_partner: formData.get('affiliatePartner') || formData.get('affiliate-partner'),
             next_step: getField('nextStep') || getField('next-step'),
@@ -2840,6 +2846,13 @@ class CRMApp {
         try {
             const customerData = this.extractCustomerData(formData);
             console.log('Extracted customer data:', customerData);
+            
+            // Validate required fields
+            if (!customerData.company_name || customerData.company_name.trim() === '') {
+                this.showMessage('Company Name is required', 'error');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                return;
+            }
 
             // Check for duplicates
             if (this.checkDuplicatesBeforeSave(customerData)) {
@@ -2867,6 +2880,9 @@ class CRMApp {
         } catch (error) {
             console.error('Error saving customer:', error);
             this.showMessage('Failed to save customer: ' + error.message, 'error');
+            
+            // Scroll to top to show error message
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
     }
 
@@ -3009,7 +3025,7 @@ class CRMApp {
 
         // Map AI response fields to ACTUAL form field IDs from the HTML
         const fieldMappings = {
-            // Company information
+            // Company information (use the correct HTML field ID)
             'company-name': data.customer_name || data.company_name || data.companyName,
             'physical-address': data.company_address || data.address,
             
@@ -3109,12 +3125,45 @@ class CRMApp {
     }
 
     showMessage(text, type) {
+        // Remove any existing messages first
+        const existingMessages = document.querySelectorAll('.success-message, .error-message');
+        existingMessages.forEach(msg => msg.remove());
+        
         const messageDiv = document.createElement('div');
         messageDiv.className = `${type}-message`;
         messageDiv.textContent = text;
         
         if (type === 'success') {
-            messageDiv.style.cssText = 'background: #d4edda; border: 1px solid #c3e6cb; color: #155724; padding: 10px; border-radius: 4px; margin: 10px 0;';
+            messageDiv.style.cssText = 'background: #d4edda; border: 1px solid #c3e6cb; color: #155724; padding: 10px; border-radius: 4px; margin: 10px 0; position: relative; z-index: 1000;';
+        } else if (type === 'error') {
+            messageDiv.style.cssText = 'background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; padding: 10px; border-radius: 4px; margin: 10px 0; position: relative; z-index: 1000; font-weight: bold;';
+        }
+        
+        // Insert at the top of the form view
+        const formView = document.getElementById('customer-form-view');
+        if (formView) {
+            const formHeader = formView.querySelector('.form-header');
+            if (formHeader) {
+                formHeader.parentNode.insertBefore(messageDiv, formHeader.nextSibling);
+            } else {
+                formView.insertBefore(messageDiv, formView.firstChild);
+            }
+        } else {
+            // Fallback: insert at top of active view
+            const activeView = document.querySelector('.view.active');
+            if (activeView) {
+                activeView.insertBefore(messageDiv, activeView.firstChild);
+            }
+        }
+        
+        // Auto-remove success messages after 5 seconds
+        if (type === 'success') {
+            setTimeout(() => {
+                if (messageDiv.parentNode) {
+                    messageDiv.remove();
+                }
+            }, 5000);
+        }
         } else {
             messageDiv.style.cssText = 'background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; padding: 10px; border-radius: 4px; margin: 10px 0;';
         }
