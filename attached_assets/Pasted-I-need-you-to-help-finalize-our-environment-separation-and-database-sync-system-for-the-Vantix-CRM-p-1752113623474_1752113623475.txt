@@ -1,0 +1,34 @@
+I need you to help finalize our environment separation and database sync system for the Vantix CRM project.
+
+✅ Step 1: Confirm whether *any records exist in Dev UI* that are not visible in Prod UI (like customer files, photos, or notes). Specifically, check if the 32 HEIC files uploaded to customer_011 are visible in Production mode — if not, export a list of any records (including customer_id and file names) that exist in Dev DB but are not appearing in Prod UI.
+
+✅ Step 2: If all records are confirmed present in Prod UI, mark the Production database as the authoritative source of truth going forward. Create a backup snapshot or dump of the Production DB in case we need to restore from it later.
+
+✅ Step 3: Create a completely separate Development database using Neon or another available provider. Name it `vantix_dev`. Then obtain the full connection string in this format:  
+`postgresql://<user>:<password>@<host>/<db>?sslmode=require`
+
+Once created, save the connection string securely and add it to the project as `DATABASE_URL_DEV` in the environment config.
+
+✅ Step 4: Modify the `.env` switching logic and the database connection module (`db.ts`) to ensure:
+- Development mode uses `DATABASE_URL_DEV`
+- Production mode uses `DATABASE_URL`
+
+Double check that both modes load the correct connection string at runtime based on the `ENVIRONMENT` value in the `.env` file.
+
+✅ Step 5: Restart the environment and test isolation:
+- Launch in **Development mode**
+- Create a test customer with `customer_id = 'dev_only_customer'`
+- Confirm this customer does **not** show up in Production mode or in the Production database.
+
+✅ Step 6: Validate the sync tool (`dev-database-sync.js`) now works correctly:
+- Show a side-by-side diff displaying that `dev_only_customer` exists only in Dev
+- Do **not** sync at this time — we just want to validate that the tool now detects true differences
+
+📌 Important: Do not remove or reset the production database during any of these steps. Only create a new development database and rewire the environment logic to use it correctly.
+
+Once complete, summarize status:
+- ✅ Whether Dev and Prod now point to different databases
+- 📊 Number of records in each environment
+- 🔄 Whether sync tool now shows differences when expected
+
+Proceed step-by-step. Report status after each major checkpoint.

@@ -27,21 +27,39 @@ class DatabaseSyncTool {
         
         // Production database (source of truth)
         const prodUrl = process.env.DATABASE_URL_PROD || process.env.DATABASE_URL;
+        if (!prodUrl) {
+            throw new Error('Production database URL not found');
+        }
         this.prodPool = new Pool({
             connectionString: prodUrl,
             ssl: { rejectUnauthorized: false }
         });
 
-        // Development database
+        // Development database with strict validation
         const devUrl = process.env.DATABASE_URL_DEV;
+        if (!devUrl) {
+            throw new Error('DATABASE_URL_DEV is required for database comparison. Please create a separate development database.');
+        }
+        if (devUrl === prodUrl) {
+            throw new Error('🚨 DATABASE_URL_DEV cannot be the same as production URL. Environment isolation required.');
+        }
         this.devPool = new Pool({
             connectionString: devUrl,
             ssl: { rejectUnauthorized: false }
         });
 
         console.log('🔄 Database Sync Tool initialized');
-        console.log('📊 Production DB:', this.prodPool.options.connectionString?.substring(0, 50) + '...');
-        console.log('🚧 Development DB:', this.devPool.options.connectionString?.substring(0, 50) + '...');
+        console.log('📊 Production DB:', prodUrl.substring(0, 50) + '...');
+        console.log('🚧 Development DB:', devUrl.substring(0, 50) + '...');
+        
+        // Verify connections work
+        try {
+            await this.prodPool.query('SELECT 1');
+            await this.devPool.query('SELECT 1');
+        } catch (error) {
+            console.error('Database connection test failed:', error);
+            throw error;
+        }
     }
 
     async compareTable(tableName, primaryKey = 'id') {
