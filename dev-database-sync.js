@@ -40,13 +40,22 @@ class DatabaseSyncTool {
         if (!devUrl) {
             throw new Error('DATABASE_URL_DEV is required for database comparison. Please create a separate development database.');
         }
-        if (devUrl === prodUrl) {
-            throw new Error('🚨 DATABASE_URL_DEV cannot be the same as production URL. Environment isolation required.');
+        
+        // Handle schema-based isolation
+        const isSchemaIsolated = devUrl.includes('schema=vantix_dev');
+        const baseDevUrl = devUrl.split('?')[0];
+        const baseProdUrl = prodUrl.split('?')[0];
+        
+        if (baseDevUrl === baseProdUrl && !isSchemaIsolated) {
+            throw new Error('🚨 DATABASE_URL_DEV must use either separate database or schema=vantix_dev parameter for isolation.');
         }
+        
         this.devPool = new Pool({
-            connectionString: devUrl,
+            connectionString: baseDevUrl,
             ssl: { rejectUnauthorized: false }
         });
+        
+        this.useSchemaIsolation = isSchemaIsolated;
 
         console.log('🔄 Database Sync Tool initialized');
         console.log('📊 Production DB:', prodUrl.substring(0, 50) + '...');
@@ -66,9 +75,16 @@ class DatabaseSyncTool {
         console.log(`\n📋 Comparing table: ${tableName}`);
         
         try {
-            // Get records from both databases
-            const prodResult = await this.prodPool.query(`SELECT * FROM ${tableName} ORDER BY ${primaryKey}`);
-            const devResult = await this.devPool.query(`SELECT * FROM ${tableName} ORDER BY ${primaryKey}`);
+            // Get records from production (public schema)
+            const prodResult = await this.prodPool.query(`SELECT * FROM public.${tableName} ORDER BY ${primaryKey}`);
+            
+            // Get records from development (with schema awareness)
+            let devResult;
+            if (this.useSchemaIsolation) {
+                devResult = await this.devPool.query(`SELECT * FROM vantix_dev.${tableName} ORDER BY ${primaryKey}`);
+            } else {
+                devResult = await this.devPool.query(`SELECT * FROM ${tableName} ORDER BY ${primaryKey}`);
+            }
 
             const prodRecords = prodResult.rows;
             const devRecords = devResult.rows;

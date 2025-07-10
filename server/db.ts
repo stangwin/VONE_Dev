@@ -10,7 +10,7 @@ const isDevelopment = process.env.ENVIRONMENT === 'development';
 let databaseUrl;
 
 if (isDevelopment) {
-  // Development mode - ONLY use development database
+  // Development mode - Use development database/schema
   databaseUrl = process.env.DATABASE_URL_DEV;
   if (!databaseUrl) {
     console.error("❌ CONFIGURATION ERROR: DATABASE_URL_DEV is required in development mode");
@@ -20,16 +20,25 @@ if (isDevelopment) {
       "DATABASE_URL_DEV must be set in development mode. See DEV_DATABASE_SETUP.md for instructions."
     );
   }
-  // Verify dev database is not accidentally pointing to production
-  if (databaseUrl === process.env.DATABASE_URL) {
+  
+  // Check for schema-based isolation
+  const hasSchemaIsolation = databaseUrl.includes('schema=vantix_dev');
+  const baseUrlsSame = databaseUrl.split('?')[0] === process.env.DATABASE_URL?.split('?')[0];
+  
+  if (baseUrlsSame && !hasSchemaIsolation) {
     throw new Error(
-      "🚨 SAFETY VIOLATION: DATABASE_URL_DEV cannot be the same as DATABASE_URL (production)"
+      "🚨 SAFETY VIOLATION: DATABASE_URL_DEV must use either separate database or vantix_dev schema"
     );
   }
+  
   console.log('🔒 Drizzle using DEVELOPMENT database (isolated from production)');
-  console.log(`📍 Dev DB: ${databaseUrl.split('@')[1]?.split('?')[0]}`);
+  if (hasSchemaIsolation) {
+    console.log('📍 Dev DB: Same host, using vantix_dev schema isolation');
+  } else {
+    console.log(`📍 Dev DB: ${databaseUrl.split('@')[1]?.split('?')[0]}`);
+  }
 } else {
-  // Production mode - ONLY use production database
+  // Production mode - ONLY use production database (public schema)
   databaseUrl = process.env.DATABASE_URL_PROD || process.env.DATABASE_URL;
   if (!databaseUrl) {
     throw new Error(
@@ -37,7 +46,7 @@ if (isDevelopment) {
     );
   }
   console.log('🔒 Drizzle using PRODUCTION database');
-  console.log(`📍 Prod DB: ${databaseUrl.split('@')[1]?.split('?')[0]}`);
+  console.log(`📍 Prod DB: ${databaseUrl.split('@')[1]?.split('?')[0]} (public schema)`);
 }
 
 // Additional safety check to prevent cross-environment contamination
@@ -48,5 +57,31 @@ if (isDevelopment && databaseUrl.includes('prod')) {
   );
 }
 
+// Create connection pool 
 export const pool = new Pool({ connectionString: databaseUrl });
-export const db = drizzle({ client: pool, schema });
+
+// Handle schema-based isolation for development
+let dbInstance;
+if (isDevelopment && databaseUrl.includes('schema=vantix_dev')) {
+  console.log('🔧 Setting search_path to vantix_dev schema for development isolation');
+  
+  // Create wrapper that sets search_path before each query
+  const wrappedPool = {
+    query: async (text: string, params?: any[]) => {
+      const client = await pool.connect();
+      try {
+        await client.query('SET search_path TO vantix_dev');
+        const result = await client.query(text, params);
+        return result;
+      } finally {
+        client.release();
+      }
+    }
+  };
+  
+  dbInstance = drizzle({ client: wrappedPool as any, schema });
+} else {
+  dbInstance = drizzle({ client: pool, schema });
+}
+
+export const db = dbInstance;

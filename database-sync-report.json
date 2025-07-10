@@ -1,5 +1,5 @@
 {
-  "timestamp": "2025-07-10T02:10:35.745Z",
+  "timestamp": "2025-07-10T02:34:58.160Z",
   "missingInProd": {
     "customers": [],
     "customer_files": [],
@@ -7,14 +7,1117 @@
     "users": []
   },
   "missingInDev": {
-    "customers": [],
-    "customer_files": [],
-    "customer_notes": [],
-    "users": []
+    "customers": [
+      {
+        "id": 2,
+        "customer_id": "customer_002",
+        "company_name": "Berea Drug",
+        "status": "Onboarding",
+        "affiliate_partner": "VOXO",
+        "next_step": "Perform Install",
+        "physical_address": "402 Richmond Road North, Berea, KY, 40403",
+        "billing_address": "402 Richmond Road North, Berea, KY, 40403",
+        "primary_contact": {
+          "name": "Robert Little",
+          "email": "bereadrug@yahoo.com",
+          "phone": "859-986-4521"
+        },
+        "authorized_signer": {
+          "name": "Robert Little",
+          "email": "bereadrug@yahoo.com",
+          "phone": ""
+        },
+        "billing_contact": {
+          "name": "Robert Little",
+          "email": "bereadrug@yahoo.com",
+          "phone": "859-986-4521"
+        },
+        "notes": [
+          {
+            "content": "Installation Date: June 11, 2025",
+            "timestamp": "2025-06-23T21:00:00.000Z"
+          },
+          {
+            "content": "Per call with Sally on 6/5/2025 -- Hardware is on site.",
+            "timestamp": "2025-06-23T21:00:00.000Z"
+          }
+        ],
+        "created_at": "2025-06-24T13:47:15.119Z",
+        "updated_at": "2025-06-24T13:47:15.119Z",
+        "created_by": null,
+        "updated_by": null
+      },
+      {
+        "id": 3,
+        "customer_id": "customer_003",
+        "company_name": "Southeast Pharmacy",
+        "status": "Onboarding",
+        "affiliate_partner": "VOXO",
+        "next_step": "Schedule Install",
+        "physical_address": "400 Parker Avenue North, STE 500A, Brooklet, GA, 30415",
+        "billing_address": "400 Parker Avenue North, STE 500A, Brooklet, GA, 30415",
+        "primary_contact": {
+          "name": "Shelby Hook",
+          "email": "hookrx@gmail.com",
+          "phone": "912-842-2040"
+        },
+        "authorized_signer": {
+          "name": "Shelby Hook",
+          "email": "hookrx@gmail.com",
+          "phone": ""
+        },
+        "billing_contact": {
+          "name": "Shelby Hook",
+          "email": "hookrx@gmail.com",
+          "phone": "912-842-2040"
+        },
+        "notes": [
+          {
+            "content": "Z3 is ordered from Network Tigers and shipped directly to the site.",
+            "timestamp": "2025-06-23T21:00:00.000Z"
+          }
+        ],
+        "created_at": "2025-06-24T13:47:15.119Z",
+        "updated_at": "2025-06-24T13:47:15.119Z",
+        "created_by": null,
+        "updated_by": null
+      },
+      {
+        "id": 4,
+        "customer_id": "customer_004",
+        "company_name": "Rancho Pueblo Pharmacy",
+        "status": "Quoted",
+        "affiliate_partner": "VOXO",
+        "next_step": "Follow with VOXO AE",
+        "physical_address": "",
+        "billing_address": "",
+        "primary_contact": {
+          "name": "Yash Patel",
+          "email": "yashpatel031998@gmail.com",
+          "phone": "951-972-8822"
+        },
+        "authorized_signer": {
+          "name": "Yash Patel",
+          "email": "yashpatel031998@gmail.com",
+          "phone": ""
+        },
+        "billing_contact": {
+          "name": "",
+          "email": "",
+          "phone": ""
+        },
+        "notes": [
+          {
+            "content": "Spoke with Yash. He had an issue with price. Rusty needs to go back and explain to him the whole story instead of just the voice portion",
+            "timestamp": "2025-06-23T21:00:00.000Z"
+          }
+        ],
+        "created_at": "2025-06-24T13:47:15.119Z",
+        "updated_at": "2025-06-24T13:47:15.119Z",
+        "created_by": null,
+        "updated_by": null
+      },
+      {
+        "id": 5,
+        "customer_id": "customer_005",
+        "company_name": "CR Care Pharmacy",
+        "status": "Lead",
+        "affiliate_partner": "VOXO",
+        "next_step": "Follow with VOXO AE",
+        "physical_address": "3100 E Avenue NW, Suite 102, Cedar Rapids, IA, 52405",
+        "billing_address": "3100 E Avenue NW, Suite 102, Cedar Rapids, IA, 52405",
+        "primary_contact": {
+          "name": "Jackie Fitzgerald",
+          "email": "crcarerx@gmail.com",
+          "phone": "319-200-1188"
+        },
+        "authorized_signer": {
+          "name": "Jackie Fitzgerald",
+          "email": "crcarerx@gmail.com",
+          "phone": ""
+        },
+        "billing_contact": {
+          "name": "",
+          "email": "",
+          "phone": ""
+        },
+        "notes": [
+          {
+            "content": "Neal is reaching out to Jackie -- From Connect 2025. Saw her there. She is purposely waiting a few months to move forward with Voxo until she gets some folks back in the office.",
+            "timestamp": "2025-06-23T21:00:00.000Z"
+          }
+        ],
+        "created_at": "2025-06-24T13:47:15.119Z",
+        "updated_at": "2025-06-24T13:47:15.119Z",
+        "created_by": null,
+        "updated_by": null
+      },
+      {
+        "id": 6,
+        "customer_id": "customer_006",
+        "company_name": "McCoy Tygart Drug",
+        "status": "Lead",
+        "affiliate_partner": "VOXO",
+        "next_step": "",
+        "physical_address": "",
+        "billing_address": "",
+        "primary_contact": {
+          "name": "Casey Hedden",
+          "email": "casey@mccoytygartdrug.com",
+          "phone": ""
+        },
+        "authorized_signer": {
+          "name": "",
+          "email": "",
+          "phone": ""
+        },
+        "billing_contact": {
+          "name": "",
+          "email": "",
+          "phone": ""
+        },
+        "notes": [
+          {
+            "content": "We have 4 stores in a 30 mile radius that we need to get VPN connected with each other. A not-so-distant goal is to get a centralized data entry location for these stores setup, with central fill a secondary goal.",
+            "timestamp": "2025-06-23T21:00:00.000Z"
+          }
+        ],
+        "created_at": "2025-06-24T13:47:15.119Z",
+        "updated_at": "2025-06-24T13:47:15.119Z",
+        "created_by": null,
+        "updated_by": null
+      },
+      {
+        "id": 8,
+        "customer_id": "customer_008",
+        "company_name": "Blanco Pharmacy and Wellness",
+        "status": "Lead",
+        "affiliate_partner": "VOXO",
+        "next_step": "",
+        "physical_address": "",
+        "billing_address": "",
+        "primary_contact": {
+          "name": "Blakelee Speer",
+          "email": "blakelee2006@msn.com",
+          "phone": "830-833-4815"
+        },
+        "authorized_signer": {
+          "name": "",
+          "email": "",
+          "phone": ""
+        },
+        "billing_contact": {
+          "name": "",
+          "email": "",
+          "phone": ""
+        },
+        "notes": [
+          {
+            "content": "AT Connect 2025 -- moving to VOXO. One location. VPN has been too slow. Told her we'd troubleshoot before we start changing firewall.",
+            "timestamp": "2025-06-23T21:00:00.000Z"
+          }
+        ],
+        "created_at": "2025-06-24T13:47:15.119Z",
+        "updated_at": "2025-06-24T13:47:15.119Z",
+        "created_by": null,
+        "updated_by": null
+      },
+      {
+        "id": 9,
+        "customer_id": "customer_009",
+        "company_name": "Vital Care Infusion Services",
+        "status": "Lead",
+        "affiliate_partner": "",
+        "next_step": "",
+        "physical_address": "",
+        "billing_address": "",
+        "primary_contact": {
+          "name": "Jonathan Sims",
+          "email": "",
+          "phone": "601-596-2800"
+        },
+        "authorized_signer": {
+          "name": "Jonathan Sims",
+          "email": "",
+          "phone": ""
+        },
+        "billing_contact": {
+          "name": "",
+          "email": "",
+          "phone": ""
+        },
+        "notes": [
+          {
+            "content": "Per Levi at Voxo I called Blake Tubbs to discuss needs for both of these businesses. He has a vital care pharmacy and the compounder here in Hattiesburg. Vital care is a franchise and he also has another one in Baton Rouge.",
+            "timestamp": "2025-06-23T21:00:00.000Z"
+          }
+        ],
+        "created_at": "2025-06-24T13:47:15.119Z",
+        "updated_at": "2025-06-24T13:47:15.119Z",
+        "created_by": null,
+        "updated_by": null
+      },
+      {
+        "id": 10,
+        "customer_id": "customer_010",
+        "company_name": "The Compounder",
+        "status": "Lead",
+        "affiliate_partner": "",
+        "next_step": "",
+        "physical_address": "",
+        "billing_address": "",
+        "primary_contact": {
+          "name": "Jonathan Sims",
+          "email": "",
+          "phone": "601-596-2800"
+        },
+        "authorized_signer": {
+          "name": "Jonathan Sims",
+          "email": "",
+          "phone": ""
+        },
+        "billing_contact": {
+          "name": "",
+          "email": "",
+          "phone": ""
+        },
+        "notes": [],
+        "created_at": "2025-06-24T13:47:15.119Z",
+        "updated_at": "2025-06-24T13:47:15.119Z",
+        "created_by": null,
+        "updated_by": null
+      },
+      {
+        "id": 11,
+        "customer_id": "customer_011",
+        "company_name": "Delta Pharmacy",
+        "status": "Lead",
+        "affiliate_partner": "VOXO",
+        "next_step": "",
+        "physical_address": "",
+        "billing_address": "",
+        "primary_contact": {
+          "name": "Willis High",
+          "email": "WHigh@delta-rx.com",
+          "phone": "843-813-7874"
+        },
+        "authorized_signer": {
+          "name": "",
+          "email": "",
+          "phone": ""
+        },
+        "billing_contact": {
+          "name": "",
+          "email": "",
+          "phone": ""
+        },
+        "notes": [
+          {
+            "content": "This is eight locations. They can handle doing the installations themselves although they did ask about Turkey. Each location is going to be a firewall and they need Wi-Fi turned up.",
+            "timestamp": "2025-06-23T21:00:00.000Z"
+          }
+        ],
+        "created_at": "2025-06-24T13:47:15.119Z",
+        "updated_at": "2025-06-24T13:47:15.119Z",
+        "created_by": null,
+        "updated_by": null
+      },
+      {
+        "id": 12,
+        "customer_id": "customer_012",
+        "company_name": "Mac Pharmacy",
+        "status": "Lead",
+        "affiliate_partner": "VOXO",
+        "next_step": "",
+        "physical_address": "",
+        "billing_address": "",
+        "primary_contact": {
+          "name": "Sherif Mankaryous",
+          "email": "",
+          "phone": ""
+        },
+        "authorized_signer": {
+          "name": "",
+          "email": "",
+          "phone": ""
+        },
+        "billing_contact": {
+          "name": "",
+          "email": "",
+          "phone": ""
+        },
+        "notes": [],
+        "created_at": "2025-06-24T13:47:15.119Z",
+        "updated_at": "2025-06-24T13:47:15.119Z",
+        "created_by": null,
+        "updated_by": null
+      },
+      {
+        "id": 14,
+        "customer_id": "customer_007",
+        "company_name": "Sadler Hughes Apothecary",
+        "status": "Onboarding",
+        "affiliate_partner": "VOXO",
+        "next_step": null,
+        "physical_address": "102 Jacobs Hwy, Clinton, SC, 29325",
+        "billing_address": "102 Jacobs Hwy, Clinton, SC, 29325",
+        "primary_contact": {
+          "name": "Walter Hughes",
+          "email": "",
+          "phone": ""
+        },
+        "authorized_signer": {
+          "name": "Walter Hughes",
+          "email": "whughes@sadlerhughes.com"
+        },
+        "billing_contact": {
+          "name": "",
+          "email": "",
+          "phone": ""
+        },
+        "notes": [
+          {
+            "content": "6/10/2025 -- Sent email to Walter requesting information for SA",
+            "timestamp": "2025-06-23T21:00:00.000Z"
+          }
+        ],
+        "created_at": "2025-06-24T13:47:15.119Z",
+        "updated_at": "2025-06-26T12:39:54.894Z",
+        "created_by": null,
+        "updated_by": null
+      }
+    ],
+    "customer_files": [
+      {
+        "id": 3,
+        "customer_id": "customer_007",
+        "file_name": "1750940896829-31541104.jpeg",
+        "original_name": "IMG_2305.jpeg",
+        "file_url": "/uploads/customer_007/1750940896829-31541104.jpeg",
+        "file_type": "image/jpeg",
+        "file_size": 2699976,
+        "upload_date": "2025-06-26T12:28:16.860Z",
+        "created_at": "2025-06-26T12:28:16.860Z"
+      },
+      {
+        "id": 4,
+        "customer_id": "customer_007",
+        "file_name": "1750945682566-513018478.jpeg",
+        "original_name": "IMG_2485.jpeg",
+        "file_url": "/uploads/customer_007/1750945682566-513018478.jpeg",
+        "file_type": "image/jpeg",
+        "file_size": 3804114,
+        "upload_date": "2025-06-26T13:48:02.597Z",
+        "created_at": "2025-06-26T13:48:02.597Z"
+      },
+      {
+        "id": 5,
+        "customer_id": "customer_007",
+        "file_name": "1750945682636-514275282.jpeg",
+        "original_name": "IMG_2486.jpeg",
+        "file_url": "/uploads/customer_007/1750945682636-514275282.jpeg",
+        "file_type": "image/jpeg",
+        "file_size": 2768195,
+        "upload_date": "2025-06-26T13:48:02.669Z",
+        "created_at": "2025-06-26T13:48:02.669Z"
+      },
+      {
+        "id": 6,
+        "customer_id": "customer_007",
+        "file_name": "1750945682699-141247766.jpeg",
+        "original_name": "IMG_2487.jpeg",
+        "file_url": "/uploads/customer_007/1750945682699-141247766.jpeg",
+        "file_type": "image/jpeg",
+        "file_size": 4009693,
+        "upload_date": "2025-06-26T13:48:02.730Z",
+        "created_at": "2025-06-26T13:48:02.730Z"
+      },
+      {
+        "id": 7,
+        "customer_id": "customer_007",
+        "file_name": "1750945682757-266068565.jpeg",
+        "original_name": "IMG_2489.jpeg",
+        "file_url": "/uploads/customer_007/1750945682757-266068565.jpeg",
+        "file_type": "image/jpeg",
+        "file_size": 2278624,
+        "upload_date": "2025-06-26T13:48:02.788Z",
+        "created_at": "2025-06-26T13:48:02.788Z"
+      },
+      {
+        "id": 8,
+        "customer_id": "customer_007",
+        "file_name": "1750945682815-821496808.jpeg",
+        "original_name": "IMG_2490.jpeg",
+        "file_url": "/uploads/customer_007/1750945682815-821496808.jpeg",
+        "file_type": "image/jpeg",
+        "file_size": 2987575,
+        "upload_date": "2025-06-26T13:48:02.846Z",
+        "created_at": "2025-06-26T13:48:02.846Z"
+      },
+      {
+        "id": 19,
+        "customer_id": "customer_001",
+        "file_name": "1750966850644-826257314.jpeg",
+        "original_name": "WhatsApp Image 2025-06-26 at 12.09.13.jpeg",
+        "file_url": "/uploads/customer_001/1750966850644-826257314.jpeg",
+        "file_type": "image/jpeg",
+        "file_size": 366622,
+        "upload_date": "2025-06-26T19:40:50.675Z",
+        "created_at": "2025-06-26T19:40:50.675Z"
+      },
+      {
+        "id": 20,
+        "customer_id": "customer_001",
+        "file_name": "1750966850712-618852874.jpeg",
+        "original_name": "WhatsApp Image 2025-06-26 at 12.09.25.jpeg",
+        "file_url": "/uploads/customer_001/1750966850712-618852874.jpeg",
+        "file_type": "image/jpeg",
+        "file_size": 255165,
+        "upload_date": "2025-06-26T19:40:50.743Z",
+        "created_at": "2025-06-26T19:40:50.743Z"
+      },
+      {
+        "id": 21,
+        "customer_id": "customer_001",
+        "file_name": "1750966850770-723408098.jpeg",
+        "original_name": "WhatsApp Image 2025-06-26 at 12.09.38.jpeg",
+        "file_url": "/uploads/customer_001/1750966850770-723408098.jpeg",
+        "file_type": "image/jpeg",
+        "file_size": 442263,
+        "upload_date": "2025-06-26T19:40:50.802Z",
+        "created_at": "2025-06-26T19:40:50.802Z"
+      },
+      {
+        "id": 22,
+        "customer_id": "customer_001",
+        "file_name": "1750966850829-477287932.jpeg",
+        "original_name": "WhatsApp Image 2025-06-26 at 12.25.37.jpeg",
+        "file_url": "/uploads/customer_001/1750966850829-477287932.jpeg",
+        "file_type": "image/jpeg",
+        "file_size": 420546,
+        "upload_date": "2025-06-26T19:40:50.860Z",
+        "created_at": "2025-06-26T19:40:50.860Z"
+      },
+      {
+        "id": 23,
+        "customer_id": "customer_001",
+        "file_name": "1750966850887-108559233.jpeg",
+        "original_name": "WhatsApp Image 2025-06-26 at 12.25.56.jpeg",
+        "file_url": "/uploads/customer_001/1750966850887-108559233.jpeg",
+        "file_type": "image/jpeg",
+        "file_size": 395777,
+        "upload_date": "2025-06-26T19:40:50.918Z",
+        "created_at": "2025-06-26T19:40:50.918Z"
+      },
+      {
+        "id": 24,
+        "customer_id": "customer_001",
+        "file_name": "1750966850945-116203485.jpeg",
+        "original_name": "WhatsApp Image 2025-06-26 at 12.26.21.jpeg",
+        "file_url": "/uploads/customer_001/1750966850945-116203485.jpeg",
+        "file_type": "image/jpeg",
+        "file_size": 448863,
+        "upload_date": "2025-06-26T19:40:50.977Z",
+        "created_at": "2025-06-26T19:40:50.977Z"
+      },
+      {
+        "id": 25,
+        "customer_id": "customer_001",
+        "file_name": "1750966851004-714896404.jpeg",
+        "original_name": "WhatsApp Image 2025-06-26 at 12.27.04.jpeg",
+        "file_url": "/uploads/customer_001/1750966851004-714896404.jpeg",
+        "file_type": "image/jpeg",
+        "file_size": 448434,
+        "upload_date": "2025-06-26T19:40:51.035Z",
+        "created_at": "2025-06-26T19:40:51.035Z"
+      },
+      {
+        "id": 26,
+        "customer_id": "customer_001",
+        "file_name": "1750966851062-850917512.jpeg",
+        "original_name": "WhatsApp Image 2025-06-26 at 12.28.15.jpeg",
+        "file_url": "/uploads/customer_001/1750966851062-850917512.jpeg",
+        "file_type": "image/jpeg",
+        "file_size": 322620,
+        "upload_date": "2025-06-26T19:40:51.093Z",
+        "created_at": "2025-06-26T19:40:51.093Z"
+      },
+      {
+        "id": 27,
+        "customer_id": "customer_001",
+        "file_name": "1750966851119-24308850.jpeg",
+        "original_name": "WhatsApp Image 2025-06-26 at 12.28.19.jpeg",
+        "file_url": "/uploads/customer_001/1750966851119-24308850.jpeg",
+        "file_type": "image/jpeg",
+        "file_size": 350903,
+        "upload_date": "2025-06-26T19:40:51.151Z",
+        "created_at": "2025-06-26T19:40:51.151Z"
+      },
+      {
+        "id": 28,
+        "customer_id": "customer_001",
+        "file_name": "1750966851178-554449477.jpeg",
+        "original_name": "WhatsApp Image 2025-06-26 at 12.28.28.jpeg",
+        "file_url": "/uploads/customer_001/1750966851178-554449477.jpeg",
+        "file_type": "image/jpeg",
+        "file_size": 368858,
+        "upload_date": "2025-06-26T19:40:51.210Z",
+        "created_at": "2025-06-26T19:40:51.210Z"
+      },
+      {
+        "id": 30,
+        "customer_id": "customer_007",
+        "file_name": "1751043778665-970629041.jpeg",
+        "original_name": "IMG_2505[1].jpeg",
+        "file_url": "/uploads/customer_007/1751043778665-970629041.jpeg",
+        "file_type": "image/jpeg",
+        "file_size": 1968466,
+        "upload_date": "2025-06-27T17:02:58.696Z",
+        "created_at": "2025-06-27T17:02:58.696Z"
+      },
+      {
+        "id": 31,
+        "customer_id": "customer_007",
+        "file_name": "1751043778724-465331262.jpeg",
+        "original_name": "IMG_2506.jpeg",
+        "file_url": "/uploads/customer_007/1751043778724-465331262.jpeg",
+        "file_type": "image/jpeg",
+        "file_size": 1522712,
+        "upload_date": "2025-06-27T17:02:58.755Z",
+        "created_at": "2025-06-27T17:02:58.755Z"
+      },
+      {
+        "id": 33,
+        "customer_id": "customer_007",
+        "file_name": "1751043778842-315733259.jpeg",
+        "original_name": "IMG_2507.jpeg",
+        "file_url": "/uploads/customer_007/1751043778842-315733259.jpeg",
+        "file_type": "image/jpeg",
+        "file_size": 1905545,
+        "upload_date": "2025-06-27T17:02:58.873Z",
+        "created_at": "2025-06-27T17:02:58.873Z"
+      },
+      {
+        "id": 35,
+        "customer_id": "customer_007",
+        "file_name": "1751053003777-57846402.jpeg",
+        "original_name": "IMG_2505[1].jpeg",
+        "file_url": "/uploads/customer_007/1751053003777-57846402.jpeg",
+        "file_type": "image/jpeg",
+        "file_size": 1968466,
+        "upload_date": "2025-06-27T19:36:43.808Z",
+        "created_at": "2025-06-27T19:36:43.808Z"
+      },
+      {
+        "id": 36,
+        "customer_id": "customer_001",
+        "file_name": "1751734138817-539245551.jpeg",
+        "original_name": "1750966850644-826257314.jpeg",
+        "file_url": "/uploads/customer_001/1751734138817-539245551.jpeg",
+        "file_type": "image/jpeg",
+        "file_size": 366622,
+        "upload_date": "2025-07-05T16:48:58.849Z",
+        "created_at": "2025-07-05T16:48:58.849Z"
+      },
+      {
+        "id": 37,
+        "customer_id": "customer_011",
+        "file_name": "1751734203137-34748836.HEIC",
+        "original_name": "Charleston 1.HEIC",
+        "file_url": "/uploads/customer_011/1751734203137-34748836.HEIC",
+        "file_type": "image/heic",
+        "file_size": 345555,
+        "upload_date": "2025-07-05T16:50:03.167Z",
+        "created_at": "2025-07-05T16:50:03.167Z"
+      },
+      {
+        "id": 38,
+        "customer_id": "customer_011",
+        "file_name": "1751734203206-848582119.HEIC",
+        "original_name": "Charleston 2.HEIC",
+        "file_url": "/uploads/customer_011/1751734203206-848582119.HEIC",
+        "file_type": "image/heic",
+        "file_size": 233674,
+        "upload_date": "2025-07-05T16:50:03.236Z",
+        "created_at": "2025-07-05T16:50:03.236Z"
+      },
+      {
+        "id": 39,
+        "customer_id": "customer_011",
+        "file_name": "1751734203262-758611808.HEIC",
+        "original_name": "Daniel Island 1.HEIC",
+        "file_url": "/uploads/customer_011/1751734203262-758611808.HEIC",
+        "file_type": "image/heic",
+        "file_size": 1562972,
+        "upload_date": "2025-07-05T16:50:03.293Z",
+        "created_at": "2025-07-05T16:50:03.293Z"
+      },
+      {
+        "id": 40,
+        "customer_id": "customer_011",
+        "file_name": "1751734203319-132621197.HEIC",
+        "original_name": "Daniel Island 2.HEIC",
+        "file_url": "/uploads/customer_011/1751734203319-132621197.HEIC",
+        "file_type": "image/heic",
+        "file_size": 1840787,
+        "upload_date": "2025-07-05T16:50:03.351Z",
+        "created_at": "2025-07-05T16:50:03.351Z"
+      },
+      {
+        "id": 41,
+        "customer_id": "customer_011",
+        "file_name": "1751734203378-703670185.HEIC",
+        "original_name": "Ellorie 1.HEIC",
+        "file_url": "/uploads/customer_011/1751734203378-703670185.HEIC",
+        "file_type": "image/heic",
+        "file_size": 1788190,
+        "upload_date": "2025-07-05T16:50:03.409Z",
+        "created_at": "2025-07-05T16:50:03.409Z"
+      },
+      {
+        "id": 42,
+        "customer_id": "customer_011",
+        "file_name": "1751734203435-399885053.HEIC",
+        "original_name": "Ellorie 2.HEIC",
+        "file_url": "/uploads/customer_011/1751734203435-399885053.HEIC",
+        "file_type": "image/heic",
+        "file_size": 939051,
+        "upload_date": "2025-07-05T16:50:03.465Z",
+        "created_at": "2025-07-05T16:50:03.465Z"
+      },
+      {
+        "id": 43,
+        "customer_id": "customer_011",
+        "file_name": "1751734203492-705052066.HEIC",
+        "original_name": "Eutawville 1.HEIC",
+        "file_url": "/uploads/customer_011/1751734203492-705052066.HEIC",
+        "file_type": "image/heic",
+        "file_size": 2108046,
+        "upload_date": "2025-07-05T16:50:03.522Z",
+        "created_at": "2025-07-05T16:50:03.522Z"
+      },
+      {
+        "id": 44,
+        "customer_id": "customer_011",
+        "file_name": "1751734203548-91254088.HEIC",
+        "original_name": "Hollywood 2.HEIC",
+        "file_url": "/uploads/customer_011/1751734203548-91254088.HEIC",
+        "file_type": "image/heic",
+        "file_size": 2219229,
+        "upload_date": "2025-07-05T16:50:03.578Z",
+        "created_at": "2025-07-05T16:50:03.578Z"
+      },
+      {
+        "id": 45,
+        "customer_id": "customer_011",
+        "file_name": "1751734203612-810056260.HEIC",
+        "original_name": "Isle of Palms 1.HEIC",
+        "file_url": "/uploads/customer_011/1751734203612-810056260.HEIC",
+        "file_type": "image/heic",
+        "file_size": 2568867,
+        "upload_date": "2025-07-05T16:50:03.642Z",
+        "created_at": "2025-07-05T16:50:03.642Z"
+      },
+      {
+        "id": 46,
+        "customer_id": "customer_011",
+        "file_name": "1751734203669-162151807.HEIC",
+        "original_name": "Isle of Palms 2.HEIC",
+        "file_url": "/uploads/customer_011/1751734203669-162151807.HEIC",
+        "file_type": "image/heic",
+        "file_size": 2360944,
+        "upload_date": "2025-07-05T16:50:03.699Z",
+        "created_at": "2025-07-05T16:50:03.699Z"
+      },
+      {
+        "id": 47,
+        "customer_id": "customer_011",
+        "file_name": "1751734203726-87594264.HEIC",
+        "original_name": "Moncks Corner 1.HEIC",
+        "file_url": "/uploads/customer_011/1751734203726-87594264.HEIC",
+        "file_type": "image/heic",
+        "file_size": 1840787,
+        "upload_date": "2025-07-05T16:50:03.758Z",
+        "created_at": "2025-07-05T16:50:03.758Z"
+      },
+      {
+        "id": 48,
+        "customer_id": "customer_011",
+        "file_name": "1751734203785-487541468.HEIC",
+        "original_name": "Moncks Corner 2.HEIC",
+        "file_url": "/uploads/customer_011/1751734203785-487541468.HEIC",
+        "file_type": "image/heic",
+        "file_size": 1562972,
+        "upload_date": "2025-07-05T16:50:03.815Z",
+        "created_at": "2025-07-05T16:50:03.815Z"
+      },
+      {
+        "id": 49,
+        "customer_id": "customer_011",
+        "file_name": "1751734203844-383738045.HEIC",
+        "original_name": "North Litchfield 1.HEIC",
+        "file_url": "/uploads/customer_011/1751734203844-383738045.HEIC",
+        "file_type": "image/heic",
+        "file_size": 2127267,
+        "upload_date": "2025-07-05T16:50:03.874Z",
+        "created_at": "2025-07-05T16:50:03.874Z"
+      },
+      {
+        "id": 50,
+        "customer_id": "customer_011",
+        "file_name": "1751734203912-60700305.HEIC",
+        "original_name": "North Litchfield 2.HEIC",
+        "file_url": "/uploads/customer_011/1751734203912-60700305.HEIC",
+        "file_type": "image/heic",
+        "file_size": 1528734,
+        "upload_date": "2025-07-05T16:50:03.942Z",
+        "created_at": "2025-07-05T16:50:03.942Z"
+      },
+      {
+        "id": 51,
+        "customer_id": "customer_011",
+        "file_name": "1751734203969-378105885.HEIC",
+        "original_name": "Eutawville 2.HEIC",
+        "file_url": "/uploads/customer_011/1751734203969-378105885.HEIC",
+        "file_type": "image/heic",
+        "file_size": 1795156,
+        "upload_date": "2025-07-05T16:50:03.999Z",
+        "created_at": "2025-07-05T16:50:03.999Z"
+      },
+      {
+        "id": 52,
+        "customer_id": "customer_011",
+        "file_name": "1751734204026-875256844.HEIC",
+        "original_name": "Hollywood 1.HEIC",
+        "file_url": "/uploads/customer_011/1751734204026-875256844.HEIC",
+        "file_type": "image/heic",
+        "file_size": 1899620,
+        "upload_date": "2025-07-05T16:50:04.057Z",
+        "created_at": "2025-07-05T16:50:04.057Z"
+      },
+      {
+        "id": 53,
+        "customer_id": "customer_011",
+        "file_name": "1751734251523-346596411.HEIC",
+        "original_name": "Charleston 1.HEIC",
+        "file_url": "/uploads/customer_011/1751734251523-346596411.HEIC",
+        "file_type": "image/heic",
+        "file_size": 345555,
+        "upload_date": "2025-07-05T16:50:51.553Z",
+        "created_at": "2025-07-05T16:50:51.553Z"
+      },
+      {
+        "id": 54,
+        "customer_id": "customer_011",
+        "file_name": "1751734251580-235482086.HEIC",
+        "original_name": "Charleston 2.HEIC",
+        "file_url": "/uploads/customer_011/1751734251580-235482086.HEIC",
+        "file_type": "image/heic",
+        "file_size": 233674,
+        "upload_date": "2025-07-05T16:50:51.611Z",
+        "created_at": "2025-07-05T16:50:51.611Z"
+      },
+      {
+        "id": 55,
+        "customer_id": "customer_011",
+        "file_name": "1751734251637-581711285.HEIC",
+        "original_name": "Daniel Island 1.HEIC",
+        "file_url": "/uploads/customer_011/1751734251637-581711285.HEIC",
+        "file_type": "image/heic",
+        "file_size": 1562972,
+        "upload_date": "2025-07-05T16:50:51.668Z",
+        "created_at": "2025-07-05T16:50:51.668Z"
+      },
+      {
+        "id": 56,
+        "customer_id": "customer_011",
+        "file_name": "1751734251694-531960264.HEIC",
+        "original_name": "Daniel Island 2.HEIC",
+        "file_url": "/uploads/customer_011/1751734251694-531960264.HEIC",
+        "file_type": "image/heic",
+        "file_size": 1840787,
+        "upload_date": "2025-07-05T16:50:51.725Z",
+        "created_at": "2025-07-05T16:50:51.725Z"
+      },
+      {
+        "id": 57,
+        "customer_id": "customer_011",
+        "file_name": "1751734251751-359230790.HEIC",
+        "original_name": "Ellorie 1.HEIC",
+        "file_url": "/uploads/customer_011/1751734251751-359230790.HEIC",
+        "file_type": "image/heic",
+        "file_size": 1788190,
+        "upload_date": "2025-07-05T16:50:51.781Z",
+        "created_at": "2025-07-05T16:50:51.781Z"
+      },
+      {
+        "id": 58,
+        "customer_id": "customer_011",
+        "file_name": "1751734251808-512122073.HEIC",
+        "original_name": "Ellorie 2.HEIC",
+        "file_url": "/uploads/customer_011/1751734251808-512122073.HEIC",
+        "file_type": "image/heic",
+        "file_size": 939051,
+        "upload_date": "2025-07-05T16:50:51.838Z",
+        "created_at": "2025-07-05T16:50:51.838Z"
+      },
+      {
+        "id": 59,
+        "customer_id": "customer_011",
+        "file_name": "1751734251865-374653998.HEIC",
+        "original_name": "Eutawville 1.HEIC",
+        "file_url": "/uploads/customer_011/1751734251865-374653998.HEIC",
+        "file_type": "image/heic",
+        "file_size": 2108046,
+        "upload_date": "2025-07-05T16:50:51.896Z",
+        "created_at": "2025-07-05T16:50:51.896Z"
+      },
+      {
+        "id": 60,
+        "customer_id": "customer_011",
+        "file_name": "1751734251922-276627732.HEIC",
+        "original_name": "Eutawville 2.HEIC",
+        "file_url": "/uploads/customer_011/1751734251922-276627732.HEIC",
+        "file_type": "image/heic",
+        "file_size": 1795156,
+        "upload_date": "2025-07-05T16:50:51.953Z",
+        "created_at": "2025-07-05T16:50:51.953Z"
+      },
+      {
+        "id": 61,
+        "customer_id": "customer_011",
+        "file_name": "1751734251979-294164577.HEIC",
+        "original_name": "Hollywood 2.HEIC",
+        "file_url": "/uploads/customer_011/1751734251979-294164577.HEIC",
+        "file_type": "image/heic",
+        "file_size": 2219229,
+        "upload_date": "2025-07-05T16:50:52.020Z",
+        "created_at": "2025-07-05T16:50:52.020Z"
+      },
+      {
+        "id": 62,
+        "customer_id": "customer_011",
+        "file_name": "1751734252049-537971558.HEIC",
+        "original_name": "Isle of Palms 1.HEIC",
+        "file_url": "/uploads/customer_011/1751734252049-537971558.HEIC",
+        "file_type": "image/heic",
+        "file_size": 2568867,
+        "upload_date": "2025-07-05T16:50:52.079Z",
+        "created_at": "2025-07-05T16:50:52.079Z"
+      },
+      {
+        "id": 63,
+        "customer_id": "customer_011",
+        "file_name": "1751734252105-194187874.HEIC",
+        "original_name": "Isle of Palms 2.HEIC",
+        "file_url": "/uploads/customer_011/1751734252105-194187874.HEIC",
+        "file_type": "image/heic",
+        "file_size": 2360944,
+        "upload_date": "2025-07-05T16:50:52.136Z",
+        "created_at": "2025-07-05T16:50:52.136Z"
+      },
+      {
+        "id": 64,
+        "customer_id": "customer_011",
+        "file_name": "1751734252162-385743720.HEIC",
+        "original_name": "Moncks Corner 1.HEIC",
+        "file_url": "/uploads/customer_011/1751734252162-385743720.HEIC",
+        "file_type": "image/heic",
+        "file_size": 1840787,
+        "upload_date": "2025-07-05T16:50:52.192Z",
+        "created_at": "2025-07-05T16:50:52.192Z"
+      },
+      {
+        "id": 65,
+        "customer_id": "customer_011",
+        "file_name": "1751734252219-15460886.HEIC",
+        "original_name": "Moncks Corner 2.HEIC",
+        "file_url": "/uploads/customer_011/1751734252219-15460886.HEIC",
+        "file_type": "image/heic",
+        "file_size": 1562972,
+        "upload_date": "2025-07-05T16:50:52.249Z",
+        "created_at": "2025-07-05T16:50:52.249Z"
+      },
+      {
+        "id": 66,
+        "customer_id": "customer_011",
+        "file_name": "1751734252276-118262802.HEIC",
+        "original_name": "North Litchfield 1.HEIC",
+        "file_url": "/uploads/customer_011/1751734252276-118262802.HEIC",
+        "file_type": "image/heic",
+        "file_size": 2127267,
+        "upload_date": "2025-07-05T16:50:52.306Z",
+        "created_at": "2025-07-05T16:50:52.306Z"
+      },
+      {
+        "id": 67,
+        "customer_id": "customer_011",
+        "file_name": "1751734252332-366035564.HEIC",
+        "original_name": "North Litchfield 2.HEIC",
+        "file_url": "/uploads/customer_011/1751734252332-366035564.HEIC",
+        "file_type": "image/heic",
+        "file_size": 1528734,
+        "upload_date": "2025-07-05T16:50:52.363Z",
+        "created_at": "2025-07-05T16:50:52.363Z"
+      },
+      {
+        "id": 68,
+        "customer_id": "customer_011",
+        "file_name": "1751734252389-623156769.HEIC",
+        "original_name": "Hollywood 1.HEIC",
+        "file_url": "/uploads/customer_011/1751734252389-623156769.HEIC",
+        "file_type": "image/heic",
+        "file_size": 1899620,
+        "upload_date": "2025-07-05T16:50:52.420Z",
+        "created_at": "2025-07-05T16:50:52.420Z"
+      }
+    ],
+    "customer_notes": [
+      {
+        "id": 1,
+        "customer_id": "customer_001",
+        "author_id": 6,
+        "author_name": "Stan Gwin",
+        "content": "I spoke with Asher a few minutes ago. He's going to get me a person to work with so that we can do the initial prep work and then the cut over. I also spoke with Voxo. Harley and Cameron are the ones working this phone cut. They seem to be ready to go. Need to wait for Asher to call me back. He's going to try to get some name Jose to work with me or he's going to work with me himself.",
+        "timestamp": "2025-06-26T20:27:33.435Z",
+        "type": "manual",
+        "created_at": "2025-06-26T20:27:33.435Z",
+        "updated_at": "2025-06-26T20:27:33.435Z"
+      },
+      {
+        "id": 2,
+        "customer_id": "customer_001",
+        "author_id": 6,
+        "author_name": "Stan Gwin",
+        "content": "I spoke with Asher a few minutes ago. He's going to get me a person to work with so that we can do the initial prep work and then the cut over. I also spoke with Voxo. Harley and Cameron are the ones working this phone cut. They seem to be ready to go. Need to wait for Asher to call me back. He's going to try to get some name Jose to work with me or he's going to work with me himself.",
+        "timestamp": "2025-06-26T20:34:36.870Z",
+        "type": "manual",
+        "created_at": "2025-06-26T20:34:36.870Z",
+        "updated_at": "2025-06-26T20:34:36.870Z"
+      },
+      {
+        "id": 3,
+        "customer_id": "customer_003",
+        "author_id": 6,
+        "author_name": "Stan Gwin",
+        "content": "Talked to Shelby this morning. She does not have Wi-Fi working. Figured out the Wi-Fi was being run on her old Draytek router from Lumistry. I've checked her Z3 and it has Wi-Fi capability. I've asked her if she'd like me to turn it on for her to test and see if she likes the service before she decides if she wants to keep it. We also discussed her phone bill. She has a phone bill from Bullock solutions that is the company that provides her Internet service for her. They are also charging her $38 a month for a phone line that she doesn't think she's using. She said she would check with Voxo and see if they had the number and if they don't have the number then she'll call and tell Bullock to disconnect it if they do have the number then she's going to call Bullock and tell them that they just stop the billing and give her a credit for all the money they've been spending they shouldn't have with them.",
+        "timestamp": "2025-06-27T16:53:53.607Z",
+        "type": "manual",
+        "created_at": "2025-06-27T16:53:53.607Z",
+        "updated_at": "2025-06-27T16:53:53.607Z"
+      },
+      {
+        "id": 4,
+        "customer_id": "customer_003",
+        "author_id": 6,
+        "author_name": "Stan Gwin",
+        "content": "Talked to Shelby this morning. She does not have Wi-Fi working. Figured out the Wi-Fi was being run on her old Draytek router from Lumistry. I've checked her Z3 and it has Wi-Fi capability. I've asked her if she'd like me to turn it on for her to test and see if she likes the service before she decides if she wants to keep it. We also discussed her phone bill. She has a phone bill from Bullock solutions that is the company that provides her Internet service for her. They are also charging her $38 a month for a phone line that she doesn't think she's using. She said she would check with Voxo and see if they had the number and if they don't have the number then she'll call and tell Bullock to disconnect it if they do have the number then she's going to call Bullock and tell them that they just stop the billing and give her a credit for all the money they've been spending they shouldn't have with them.",
+        "timestamp": "2025-06-27T16:53:54.967Z",
+        "type": "manual",
+        "created_at": "2025-06-27T16:53:54.967Z",
+        "updated_at": "2025-06-27T16:53:54.967Z"
+      },
+      {
+        "id": 5,
+        "customer_id": "customer_007",
+        "author_id": 6,
+        "author_name": "Stan Gwin",
+        "content": "Have been talking to Voxo this morning about Walter and this location. They're having problems getting phones to pick up on the network. Can't get the firewall to get an IP address and pick up on the network either. We have no access to anything that they're plugging in. There's something wrong with their existing firewall/router. It may be running off IP addresses or it may have some other issue. Voxo is looking into it now and they're waiting on credentials to come from Lumistry for the existing Dray Tech firewall..",
+        "timestamp": "2025-06-27T17:06:37.371Z",
+        "type": "manual",
+        "created_at": "2025-06-27T17:06:37.371Z",
+        "updated_at": "2025-06-27T17:06:37.371Z"
+      },
+      {
+        "id": 6,
+        "customer_id": "customer_001",
+        "author_id": 6,
+        "author_name": "Stan Gwin",
+        "content": "From Harley Moorman at Voxo regarding new phone service there --I am installing My Pharmacist on Call right now. Going very well with Manual. He mentioned to me about the firewall and said he will look into setting it up after the phone install.",
+        "timestamp": "2025-06-27T17:07:33.935Z",
+        "type": "manual",
+        "created_at": "2025-06-27T17:07:33.935Z",
+        "updated_at": "2025-06-27T17:07:33.935Z"
+      },
+      {
+        "id": 7,
+        "customer_id": "customer_007",
+        "author_id": 6,
+        "author_name": "System",
+        "content": "Files uploaded: File uploaded: \"IMG_2505[1].jpeg\"",
+        "timestamp": "2025-06-27T19:36:44.152Z",
+        "type": "system",
+        "created_at": "2025-06-27T19:36:44.152Z",
+        "updated_at": "2025-06-27T19:36:44.152Z"
+      },
+      {
+        "id": 8,
+        "customer_id": "customer_003",
+        "author_id": 4,
+        "author_name": "Test User",
+        "content": "Turned on WiFi for Shelby. Need to follow in a week and see how it’s working for her.",
+        "timestamp": "2025-06-28T22:09:16.455Z",
+        "type": "manual",
+        "created_at": "2025-06-28T22:09:16.455Z",
+        "updated_at": "2025-06-28T22:09:16.455Z"
+      },
+      {
+        "id": 9,
+        "customer_id": "customer_011",
+        "author_id": 4,
+        "author_name": "System",
+        "content": "16 photos were uploaded to this customer record but were accidentally deleted during file management system improvements on June 26, 2025. The files were properly uploaded after PostgreSQL database was established, but were removed during file deletion system debugging (commits 3fbab5b and 2162c96). Database records show missing IDs 1,2,9-18,29,32,34 which correspond to the 16 deleted files. Please re-upload the missing photos for this customer.",
+        "timestamp": "2025-07-01T22:58:19.463Z",
+        "type": "system",
+        "created_at": "2025-07-01T22:58:19.463Z",
+        "updated_at": "2025-07-01T23:01:21.938Z"
+      }
+    ],
+    "users": [
+      {
+        "id": 4,
+        "name": "Test User",
+        "email": "test@test.com",
+        "password_hash": "$2b$12$MS2Guoiy6A9TUDJw90yzxOzuSdNbsBn05RAVdSIrClXd/aF7mIaOa",
+        "auth_provider": "local",
+        "created_at": "2025-06-26T13:43:36.504Z",
+        "role": "admin",
+        "two_factor_secret": null,
+        "two_factor_enabled": null
+      },
+      {
+        "id": 5,
+        "name": "Demo User",
+        "email": "demo@demo.com",
+        "password_hash": "$2b$12$MS2Guoiy6A9TUDJw90yzxOzuSdNbsBn05RAVdSIrClXd/aF7mIaOa",
+        "auth_provider": "local",
+        "created_at": "2025-06-26T13:45:32.923Z",
+        "role": "user",
+        "two_factor_secret": null,
+        "two_factor_enabled": null
+      },
+      {
+        "id": 6,
+        "name": "Stan Gwin",
+        "email": "Stan@vantix.tech",
+        "password_hash": "$2b$12$BwsFLxjez3a7ksQacUEuOOc0u3K8Xr5dtq5e.MWAIU3JMQd6.Hkou",
+        "auth_provider": "local",
+        "created_at": "2025-06-26T15:36:04.499Z",
+        "role": "admin",
+        "two_factor_secret": null,
+        "two_factor_enabled": null
+      }
+    ]
   },
   "summary": {
     "totalMissingInProd": 0,
-    "totalMissingInDev": 0
+    "totalMissingInDev": 76
   },
-  "recommendations": []
+  "recommendations": [
+    {
+      "priority": "INFO",
+      "type": "PROD_NEWER_DATA",
+      "message": "Production has 76 records not in Dev. This is expected since Prod is the source of truth."
+    }
+  ]
 }
