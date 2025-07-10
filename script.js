@@ -480,17 +480,37 @@ class CRMApp {
                 if (this.isDevelopment) {
                     console.log('Development environment detected');
                     this.setupDevelopmentUI();
+                    // Show test mode section in development
+                    const testModeSection = document.getElementById('test-mode-section');
+                    if (testModeSection) {
+                        testModeSection.style.display = 'block';
+                    }
                 } else {
                     console.log('Production environment detected');
+                    // Ensure test mode is disabled in production
+                    const testModeToggle = document.getElementById('test-mode-toggle');
+                    if (testModeToggle) {
+                        testModeToggle.checked = false;
+                    }
                 }
             } else {
                 console.log('Environment API not available, defaulting to production');
                 this.isDevelopment = false;
+                // Default to production behavior - disable test mode
+                const testModeToggle = document.getElementById('test-mode-toggle');
+                if (testModeToggle) {
+                    testModeToggle.checked = false;
+                }
             }
         } catch (error) {
             console.error('Failed to check environment:', error);
             // Default to production if check fails
             this.isDevelopment = false;
+            // Default to production behavior - disable test mode
+            const testModeToggle = document.getElementById('test-mode-toggle');
+            if (testModeToggle) {
+                testModeToggle.checked = false;
+            }
         }
     }
 

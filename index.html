@@ -439,10 +439,10 @@
                         <div class="form-section">
                             <h3>AI-Powered Text Parser</h3>
                             
-                            <!-- Test Mode Toggle -->
-                            <div class="form-group">
+                            <!-- Test Mode Toggle - Hidden in Production -->
+                            <div class="form-group" id="test-mode-section" style="display: none;">
                                 <label class="checkbox-label">
-                                    <input type="checkbox" id="test-mode-toggle" checked>
+                                    <input type="checkbox" id="test-mode-toggle">
                                     Test Mode (preview only - won't save to database)
                                 </label>
                             </div>
