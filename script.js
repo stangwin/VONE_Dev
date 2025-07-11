@@ -2861,28 +2861,51 @@ class CRMApp {
                 }
             }
 
-            const newCustomer = await this.api.createCustomer(customerData);
-            console.log('Customer created:', newCustomer);
+            const response = await fetch('/api/customers', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify(customerData)
+            });
             
-            // Create system note for customer creation
-            await this.createSystemNote(newCustomer.customer_id, `Customer record created`);
+            console.log('Response status:', response.status);
+            console.log('Response ok:', response.ok);
             
-            this.customers.push(newCustomer);
-            this.applyFilters();
-            this.showView('dashboard');
-            
-            // Show success message
-            this.showMessage('Customer saved successfully!', 'success');
-            
-            // Reset form
-            e.target.reset();
+            if (response.ok) {
+                const newCustomer = await response.json();
+                console.log('Customer created:', newCustomer);
+                
+                this.customers.push(newCustomer);
+                this.applyFilters();
+                this.showView('dashboard');
+                
+                // Show success toast
+                this.showToast('Customer saved successfully.', 'success');
+                
+                // Reset form
+                e.target.reset();
+            } else {
+                // Parse error response
+                let errorData;
+                try {
+                    errorData = await response.json();
+                } catch (parseError) {
+                    errorData = { error: response.statusText };
+                }
+                
+                console.log('Error response:', response.status, errorData);
+                
+                // Handle "already exists" gracefully
+                if (errorData.error && errorData.error.toLowerCase().includes('already exists')) {
+                    this.showToast('Customer already exists — info updated or duplicate skipped.', 'info');
+                } else {
+                    this.showToast(`Failed to save customer: ${errorData.error || response.statusText}`, 'error');
+                }
+            }
             
         } catch (error) {
             console.error('Error saving customer:', error);
-            this.showMessage('Failed to save customer: ' + error.message, 'error');
-            
-            // Scroll to top to show error message
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            this.showToast('Failed to save customer: ' + error.message, 'error');
         }
     }
 
@@ -3171,6 +3194,56 @@ class CRMApp {
         const div = document.createElement('div');
         div.textContent = text;
         return div.innerHTML;
+    }
+
+    // Toast notification system
+    showToast(message, type) {
+        const toast = document.createElement("div");
+        toast.className = `toast ${type}`;
+        toast.innerText = message;
+        
+        // Style the toast
+        toast.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            border-radius: 4px;
+            color: white;
+            font-weight: 500;
+            z-index: 10000;
+            max-width: 350px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.3s ease;
+        `;
+        
+        // Set background color based on type
+        if (type === 'success') {
+            toast.style.backgroundColor = '#28a745';
+        } else if (type === 'error') {
+            toast.style.backgroundColor = '#dc3545';
+        } else if (type === 'info') {
+            toast.style.backgroundColor = '#17a2b8';
+        } else {
+            toast.style.backgroundColor = '#6c757d';
+        }
+        
+        document.body.appendChild(toast);
+        
+        // Animate in
+        setTimeout(() => {
+            toast.style.opacity = '1';
+            toast.style.transform = 'translateX(0)';
+        }, 10);
+        
+        // Animate out and remove
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateX(100%)';
+            setTimeout(() => toast.remove(), 300);
+        }, 4000);
     }
 
     // Add new utility methods for Version 1.1

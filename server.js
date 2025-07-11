@@ -723,7 +723,12 @@ const server = http.createServer(async (req, res) => {
           // Create system note for customer creation
           try {
             const user = await authService.getUserById(req.session.userId);
-            await createSystemNote(finalCustomerId, `Customer record created by ${user.name}`, req.session.userId);
+            const noteQuery = `
+              INSERT INTO customer_notes (customer_id, content, note_type, created_by, created_at)
+              VALUES ($1, $2, $3, $4, NOW()) RETURNING *
+            `;
+            await pool.query(noteQuery, [finalCustomerId, `Customer record created by ${user.name}`, 'system', req.session.userId]);
+            console.log('System note created successfully');
           } catch (noteError) {
             console.error('Failed to create system note:', noteError);
           }
