@@ -1822,7 +1822,7 @@ class CRMApp {
                             ${this.editingSections.has('files') ? `
                                 <div class="file-upload-section">
                                     <div class="upload-dropzone" id="upload-dropzone">
-                                        <input type="file" id="file-input" multiple accept="image/*,.pdf,video/*" style="display: none;">
+                                        <input type="file" id="file-input" multiple accept="image/*,.heic,.heif,.pdf,video/*" style="display: none;">
                                         <div class="upload-text">
                                             <p>Drop files here or click to upload</p>
                                             <p class="upload-hint">Images, PDFs, and videos only, max 50MB per file</p>
@@ -2137,15 +2137,14 @@ class CRMApp {
 
         const validFiles = Array.from(files).filter(file => {
             const isValidType = file.type.startsWith('image/') || file.type === 'application/pdf' || file.type.startsWith('video/');
-            const maxSize = file.type.startsWith('video/') ? 50 * 1024 * 1024 : 5 * 1024 * 1024; // 50MB for videos, 5MB for others
+            const maxSize = 50 * 1024 * 1024; // 50MB for all file types
 
             if (!isValidType) {
                 alert(`${file.name}: Only images, PDFs, and videos are allowed.`);
                 return false;
             }
             if (file.size > maxSize) {
-                const limit = file.type.startsWith('video/') ? '50MB' : '5MB';
-                alert(`${file.name}: File size must be less than ${limit}.`);
+                alert(`${file.name}: File must be less than 50MB.`);
                 return false;
             }
             return true;

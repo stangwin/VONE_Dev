@@ -210,6 +210,12 @@ UI preferences: Minimal, compact interfaces - avoid large/obtrusive action butto
 ## Changelog
 
 Changelog:
+- July 11, 2025: **COMPLETED** - Fixed file size limit mismatch between frontend (50MB) and backend (5MB)
+- July 11, 2025: Updated backend file validation to enforce 50MB limit consistently with frontend UI display
+- July 11, 2025: Added HEIC/HEIF image format support (.heic, .heif) to allowed file extensions
+- July 11, 2025: Fixed formidable maxFileSize configuration from 100MB to 50MB to match user expectations
+- July 11, 2025: Standardized error message to "File must be less than 50MB" across frontend and backend
+- July 11, 2025: Updated file input accept attribute to include .heic,.heif for Apple device compatibility
 - July 10, 2025: **COMPLETED** - Fixed critical customer form submission bug preventing Save Customer functionality
 - July 10, 2025: Identified missing event listener in bindEvents() method - customer form submit was never bound to handleSaveCustomer()
 - July 10, 2025: Added proper form submission event binding with console logging for debugging customer creation flow

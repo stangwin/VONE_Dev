@@ -957,8 +957,8 @@ const server = http.createServer(async (req, res) => {
         const form = new IncomingForm({
           uploadDir: `./public/uploads/${customerId}`,
           keepExtensions: true,
-          maxFileSize: 100 * 1024 * 1024, // 100MB per file for videos
-          maxTotalFileSize: 200 * 1024 * 1024, // 200MB total to accommodate videos
+          maxFileSize: 50 * 1024 * 1024, // 50MB per file - consistent with frontend
+          maxTotalFileSize: 200 * 1024 * 1024, // 200MB total to accommodate multiple files
           filter: ({ mimetype }) => {
             return mimetype && (
               mimetype.startsWith('image/') || 
@@ -1019,7 +1019,7 @@ const server = http.createServer(async (req, res) => {
               console.log('File size:', file.size);
 
               // Validate file extension
-              const allowedExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp', '.pdf', '.mp4', '.mov', '.avi', '.webm'];
+              const allowedExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp', '.heic', '.heif', '.pdf', '.mp4', '.mov', '.avi', '.webm'];
               const ext = path.extname(file.originalFilename).toLowerCase();
               
               if (!allowedExtensions.includes(ext)) {
@@ -1027,6 +1027,14 @@ const server = http.createServer(async (req, res) => {
                 console.error('Allowed extensions:', allowedExtensions);
                 res.writeHead(400, { 'Content-Type': 'application/json' });
                 res.end(JSON.stringify({ error: `File extension ${ext} not allowed. Allowed: ${allowedExtensions.join(', ')}` }));
+                return;
+              }
+
+              // Validate file size (50MB limit to match frontend)
+              if (file.size > 50 * 1024 * 1024) {
+                console.error('File too large:', file.size, 'bytes (max: 50MB)');
+                res.writeHead(400, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ error: 'File must be less than 50MB' }));
                 return;
               }
 
