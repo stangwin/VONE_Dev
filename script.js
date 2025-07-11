@@ -1,7 +1,7 @@
 // Database API client
 class DatabaseAPI {
     constructor() {
-        this.baseURL = '/api';
+        this.baseURL = '';
         this.currentUser = null;
     }
 
@@ -38,8 +38,8 @@ class DatabaseAPI {
     async makeRequest(method, endpoint, body = null) {
         try {
             // Fix URL construction to avoid double /api/
-            const url = endpoint.startsWith('/api/') ? `${this.baseURL}${endpoint}` : `${this.baseURL}/api${endpoint}`;
-            console.log('makeRequest URL:', url); // Debug logging
+            const url = endpoint.startsWith('/api/') ? endpoint : `/api${endpoint}`;
+            console.log('DatabaseAPI: Making fetch request to', url);
             const response = await fetch(url, this.getFetchOptions(method, body));
             
             if (response.status === 401) {
@@ -61,7 +61,7 @@ class DatabaseAPI {
 
     async checkAuth() {
         try {
-            const response = await fetch(`${this.baseURL}/auth/me`, this.getFetchOptions('GET'));
+            const response = await fetch('/api/auth/me', this.getFetchOptions('GET'));
             
             if (response.ok) {
                 const result = await response.json();
@@ -82,7 +82,7 @@ class DatabaseAPI {
 
     async logout() {
         try {
-            await fetch(`${this.baseURL}/auth/logout`, this.getFetchOptions('POST'));
+            await fetch('/api/auth/logout', this.getFetchOptions('POST'));
             this.currentUser = null;
             window.location.href = '/auth.html';
         } catch (error) {
@@ -92,10 +92,10 @@ class DatabaseAPI {
 
     async getCustomers() {
         try {
-            console.log('DatabaseAPI: Making fetch request to', `${this.baseURL}/customers`);
+            console.log('DatabaseAPI: Making fetch request to', '/api/customers');
             console.log('Current window location:', window.location.href);
             
-            const response = await fetch(`${this.baseURL}/customers`, this.getFetchOptions('GET'));
+            const response = await fetch('/api/customers', this.getFetchOptions('GET'));
             
             console.log('DatabaseAPI: Response status:', response.status);
             console.log('DatabaseAPI: Response ok:', response.ok);
@@ -124,7 +124,7 @@ class DatabaseAPI {
 
     async getCustomer(customerId) {
         try {
-            const response = await fetch(`${this.baseURL}/customers/${customerId}`);
+            const response = await fetch(`/api/customers/${customerId}`);
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
             return await response.json();
         } catch (error) {
@@ -142,7 +142,7 @@ class DatabaseAPI {
 
             console.log('Creating customer with data:', customerData);
             
-            const response = await fetch(`${this.baseURL}/customers`, {
+            const response = await fetch('/api/customers', {
                 ...this.getFetchOptions('POST', customerData)
             });
             
@@ -161,7 +161,7 @@ class DatabaseAPI {
 
     async updateCustomer(customerId, updates) {
         try {
-            const response = await fetch(`${this.baseURL}/customers/${customerId}`, {
+            const response = await fetch(`/api/customers/${customerId}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(updates)
@@ -176,7 +176,7 @@ class DatabaseAPI {
 
     async deleteCustomer(customerId) {
         try {
-            const response = await fetch(`${this.baseURL}/customers/${customerId}`, {
+            const response = await fetch(`/api/customers/${customerId}`, {
                 method: 'DELETE'
             });
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -198,8 +198,8 @@ class DatabaseAPI {
                 formData.append('files', files[i]);
             }
 
-            console.log('Sending upload request to:', `${this.baseURL}/customers/${customerId}/files`);
-            const response = await fetch(`${this.baseURL}/customers/${customerId}/files`, {
+            console.log('Sending upload request to:', `/api/customers/${customerId}/files`);
+            const response = await fetch(`/api/customers/${customerId}/files`, {
                 method: 'POST',
                 body: formData,
                 credentials: 'include'
@@ -230,8 +230,8 @@ class DatabaseAPI {
 
     async getCustomerFiles(customerId) {
         try {
-            console.log('Fetching files from:', `${this.baseURL}/customers/${customerId}/files`);
-            const response = await fetch(`${this.baseURL}/customers/${customerId}/files`);
+            console.log('Fetching files from:', `/api/customers/${customerId}/files`);
+            const response = await fetch(`/api/customers/${customerId}/files`);
             
             console.log('Files response status:', response.status);
             
@@ -279,7 +279,7 @@ class DatabaseAPI {
     async deleteFile(customerId, fileId) {
         try {
             console.log('Deleting file:', fileId, 'for customer:', customerId);
-            const response = await fetch(`${this.baseURL}/customers/${customerId}/files/${fileId}`, {
+            const response = await fetch(`/api/customers/${customerId}/files/${fileId}`, {
                 method: 'DELETE'
             });
 

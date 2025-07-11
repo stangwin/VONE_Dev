@@ -210,7 +210,11 @@ UI preferences: Minimal, compact interfaces - avoid large/obtrusive action butto
 ## Changelog
 
 Changelog:
-- July 11, 2025: **COMPLETED** - Fixed file size limit mismatch between frontend (50MB) and backend (5MB)
+- July 11, 2025: **COMPLETED** - Fixed critical "String did not match the expected pattern" file upload error
+- July 11, 2025: Resolved double /api/ URL prefix issue in DatabaseAPI class causing system note creation failures
+- July 11, 2025: Simplified baseURL construction from '/api' to '' and fixed all endpoint URL building logic 
+- July 11, 2025: Updated all fetch calls to use consistent '/api/...' pattern throughout DatabaseAPI methods
+- July 11, 2025: Fixed file size limit mismatch between frontend (50MB) and backend (5MB)
 - July 11, 2025: Updated backend file validation to enforce 50MB limit consistently with frontend UI display
 - July 11, 2025: Added HEIC/HEIF image format support (.heic, .heif) to allowed file extensions
 - July 11, 2025: Fixed formidable maxFileSize configuration from 100MB to 50MB to match user expectations
