@@ -1217,8 +1217,9 @@ const server = http.createServer(async (req, res) => {
       console.log('Parse text request received');
       
       if (!isAuthenticated(req)) {
+        console.log('Parse text failed: Authentication required');
         res.writeHead(401, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: 'Authentication required' }));
+        res.end(JSON.stringify({ error: 'Authentication required - please log in first' }));
         return;
       }
 
@@ -1280,8 +1281,22 @@ ${text}`;
           res.end(JSON.stringify(parsedData));
         } catch (error) {
           console.error('Error parsing text with OpenAI:', error);
+          console.error('Error details:', error.stack);
+          console.error('OpenAI API Key present:', !!process.env.OPENAI_API_KEY);
+          
+          let errorMessage = 'Failed to parse text';
+          if (error.message.includes('API key')) {
+            errorMessage = 'OpenAI API key not configured properly';
+          } else if (error.message.includes('rate limit')) {
+            errorMessage = 'OpenAI API rate limit exceeded';
+          } else if (error.message.includes('timeout')) {
+            errorMessage = 'OpenAI API request timed out';
+          } else {
+            errorMessage = 'OpenAI API error: ' + error.message;
+          }
+          
           res.writeHead(500, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ error: 'Failed to parse text: ' + error.message }));
+          res.end(JSON.stringify({ error: errorMessage }));
         }
       });
       return;
