@@ -842,18 +842,35 @@ class CRMApp {
                                 <option value="Quoted" ${customer.status === 'Quoted' ? 'selected' : ''}>Quoted</option>
                                 <option value="Signed" ${customer.status === 'Signed' ? 'selected' : ''}>Signed</option>
                                 <option value="Onboarding" ${customer.status === 'Onboarding' ? 'selected' : ''}>Onboarding</option>
+                                <option value="Hypercare" ${customer.status === 'Hypercare' ? 'selected' : ''}>Hypercare</option>
+                                <option value="Active" ${customer.status === 'Active' ? 'selected' : ''}>Active</option>
+                                <option value="Closed" ${customer.status === 'Closed' ? 'selected' : ''}>Closed</option>
                             </select>
+                        </td>
+                        <td>
+                            <select class="next-step-dropdown" 
+                                    data-customer-id="${customer.customer_id}" 
+                                    data-original-value="${customer.next_step || ''}" 
+                                    onchange="app.updateCustomerNextStepFromDropdown(this)">
+                                <option value="">Select Next Step</option>
+                                ${this.getNextStepOptionsForStatus(customer.status).map(option => 
+                                    `<option value="${option}" ${customer.next_step === option ? 'selected' : ''}>${option}</option>`
+                                ).join('')}
+                                <option value="Other" ${customer.next_step && !this.getNextStepOptionsForStatus(customer.status).includes(customer.next_step) ? 'selected' : ''}>Other (Custom)</option>
+                            </select>
+                            ${customer.next_step && !this.getNextStepOptionsForStatus(customer.status).includes(customer.next_step) ? 
+                                `<input type="text" class="custom-next-step-input" 
+                                       value="${this.escapeHtml(customer.next_step)}" 
+                                       data-customer-id="${customer.customer_id}"
+                                       onblur="app.updateCustomerNextStep(this)"
+                                       onkeypress="if(event.key==='Enter') this.blur()"
+                                       placeholder="Enter custom next step">` : 
+                                ''
+                            }
                         </td>
                         <td>${this.escapeHtml(customer.affiliate_partner || '')}</td>
                         <td>${this.escapeHtml(primaryContactName)}</td>
                         <td>${this.escapeHtml(primaryContactPhone)}</td>
-                        <td>
-                            <input type="text" class="next-step-input" 
-                                   value="${this.escapeHtml(customer.next_step || '')}" 
-                                   data-customer-id="${customer.customer_id}"
-                                   onblur="app.updateCustomerNextStep(this)"
-                                   onkeypress="if(event.key==='Enter') this.blur()">
-                        </td>
                         <td class="files-cell">
                             ${this.renderFileAttachmentIndicator(customer)}
                         </td>
@@ -1571,9 +1588,22 @@ class CRMApp {
                                         <option value="Quoted" ${customer.status === 'Quoted' ? 'selected' : ''}>Quoted</option>
                                         <option value="Signed" ${customer.status === 'Signed' ? 'selected' : ''}>Signed</option>
                                         <option value="Onboarding" ${customer.status === 'Onboarding' ? 'selected' : ''}>Onboarding</option>
+                                        <option value="Hypercare" ${customer.status === 'Hypercare' ? 'selected' : ''}>Hypercare</option>
                                         <option value="Active" ${customer.status === 'Active' ? 'selected' : ''}>Active</option>
+                                        <option value="Closed" ${customer.status === 'Closed' ? 'selected' : ''}>Closed</option>
                                     </select>` :
                                     `<span class="field-value status-badge ${customer.status?.toLowerCase()}">${this.escapeHtml(customer.status)}</span>`
+                                }
+                            </div>
+                            <div class="detail-field">
+                                <label>Next Step</label>
+                                ${this.editingSections.has('general') ? 
+                                    `<select id="edit-next-step">
+                                        <option value="">Select Next Step</option>
+                                        ${nextStepOptionsHtml}
+                                        <option value="Other">Other (Custom)</option>
+                                    </select>` :
+                                    `<span class="field-value">${this.escapeHtml(customer.next_step) || 'None'}</span>`
                                 }
                             </div>
                             <div class="detail-field">
@@ -1584,16 +1614,6 @@ class CRMApp {
                                         <option value="VOXO" ${customer.affiliate_partner === 'VOXO' ? 'selected' : ''}>VOXO</option>
                                     </select>` :
                                     `<span class="field-value">${this.escapeHtml(customer.affiliate_partner) || 'None'}</span>`
-                                }
-                            </div>
-                            <div class="detail-field">
-                                <label>Next Step</label>
-                                ${this.editingSections.has('general') ? 
-                                    `<select id="edit-next-step">
-                                        <option value="">Select Next Step</option>
-                                        ${nextStepOptionsHtml}
-                                    </select>` :
-                                    `<span class="field-value">${this.escapeHtml(customer.next_step) || 'None'}</span>`
                                 }
                             </div>
                         </div>
@@ -2578,13 +2598,19 @@ class CRMApp {
 
     getNextStepOptions(status) {
         const statusNextStepMapping = {
-            "Lead": ["Initial Contact", "Send Info", "Schedule Demo"],
-            "Quoted": ["Follow Up", "Send Contract", "Schedule Meeting"],
-            "Signed": ["Order Hardware and License", "Schedule Install"],
-            "Onboarding": ["Schedule Install", "Perform Install", "Verify Network"],
-            "Active": ["Support", "Renewal", "Follow-up"]
+            "Lead": ["Schedule Call", "Send Quote"],
+            "Quoted": ["Follow Up", "Send Contract"],
+            "Signed": ["Order Hardware", "Configure in Dashboard", "Schedule Install"],
+            "Onboarding": ["Perform Install and Test", "Place in Billing"],
+            "Hypercare": ["Confirm Success", "Initial Support Check-in", "Transition to Active"],
+            "Active": ["Support", "Expansion Opportunity"],
+            "Closed": ["Exit Survey", "Engage", "None"]
         };
         return statusNextStepMapping[status] || [];
+    }
+
+    getNextStepOptionsForStatus(status) {
+        return this.getNextStepOptions(status);
     }
 
     toggleEditMode(editing) {
@@ -2617,12 +2643,137 @@ class CRMApp {
             nextStepSelect.appendChild(optionElement);
         });
         
+        // Add "Other" option for custom next steps
+        const otherOption = document.createElement('option');
+        otherOption.value = 'Other';
+        otherOption.textContent = 'Other (Custom)';
+        nextStepSelect.appendChild(otherOption);
+        
+        // If current selection is not in new options, set to Other and show custom input
+        if (currentNextStep && !nextStepOptions.includes(currentNextStep) && currentNextStep !== '') {
+            nextStepSelect.value = 'Other';
+            this.showCustomNextStepInput(true, currentNextStep);
+        } else if (currentNextStep === 'Other') {
+            nextStepSelect.value = 'Other';
+            this.showCustomNextStepInput(true);
+        } else {
+            this.showCustomNextStepInput(false);
+        }
+        
         // If current selection is not in new options, try to keep the current customer's next_step
         if (currentNextStep && !nextStepOptions.includes(currentNextStep) && this.currentCustomer) {
             const customerNextStep = this.currentCustomer.next_step;
             if (customerNextStep && nextStepOptions.includes(customerNextStep)) {
                 nextStepSelect.value = customerNextStep;
             }
+        }
+    }
+
+    showCustomNextStepInput(show, value = '') {
+        const container = document.getElementById('edit-next-step').parentNode;
+        let customInput = container.querySelector('.custom-next-step-input');
+        
+        if (show) {
+            if (!customInput) {
+                customInput = document.createElement('input');
+                customInput.type = 'text';
+                customInput.className = 'custom-next-step-input';
+                customInput.placeholder = 'Enter custom next step';
+                customInput.style.marginTop = '5px';
+                customInput.style.width = '100%';
+                container.appendChild(customInput);
+            }
+            customInput.value = value;
+            customInput.style.display = 'block';
+        } else {
+            if (customInput) {
+                customInput.style.display = 'none';
+            }
+        }
+    }
+
+    async updateCustomerNextStepFromDropdown(selectElement) {
+        const customerId = selectElement.dataset.customerId;
+        const selectedValue = selectElement.value;
+        const originalValue = selectElement.dataset.originalValue || '';
+
+        try {
+            let nextStepValue = selectedValue;
+            
+            if (selectedValue === 'Other') {
+                // Look for custom input in the same row
+                const row = selectElement.closest('tr');
+                const customInput = row.querySelector('.custom-next-step-input');
+                
+                if (!customInput) {
+                    // Create custom input
+                    const customInputHtml = `<input type="text" class="custom-next-step-input" 
+                                                   value="${this.escapeHtml(originalValue)}" 
+                                                   data-customer-id="${customerId}"
+                                                   onblur="app.updateCustomerNextStep(this)"
+                                                   onkeypress="if(event.key==='Enter') this.blur()"
+                                                   placeholder="Enter custom next step"
+                                                   style="margin-left: 5px; width: 120px;">`;
+                    selectElement.insertAdjacentHTML('afterend', customInputHtml);
+                    return; // Don't update yet, wait for custom input
+                }
+                
+                nextStepValue = customInput.value.trim();
+            } else {
+                // Remove any custom input if it exists
+                const row = selectElement.closest('tr');
+                const customInput = row.querySelector('.custom-next-step-input');
+                if (customInput) {
+                    customInput.remove();
+                }
+            }
+
+            // Validate: Next Step is required unless status is "Closed"
+            const customer = this.customers.find(c => c.customer_id === customerId);
+            if (customer && customer.status !== 'Closed' && (!nextStepValue || nextStepValue.trim() === '')) {
+                alert('Next Step is required unless status is "Closed"');
+                selectElement.value = originalValue;
+                return;
+            }
+
+            console.log(`Updating customer ${customerId} next step to "${nextStepValue}"`);
+            
+            const updateData = { next_step: nextStepValue };
+            await this.api.updateCustomer(customerId, updateData);
+            
+            // Create system note for next step change
+            if (originalValue !== nextStepValue) {
+                const content = originalValue ? 
+                    `Next step updated from "${originalValue}" to "${nextStepValue}"` : 
+                    `Next step set to "${nextStepValue}"`;
+                await this.api.createSystemNote(customerId, content);
+            }
+            
+            // Update local data
+            if (customer) {
+                customer.next_step = nextStepValue;
+            }
+
+            // Update filtered customers as well
+            const filteredCustomer = this.filteredCustomers.find(c => c.customer_id === customerId);
+            if (filteredCustomer) {
+                filteredCustomer.next_step = nextStepValue;
+            }
+
+            // Update original value
+            selectElement.dataset.originalValue = nextStepValue;
+
+            // Re-render next actions section
+            this.renderNextActions();
+            
+        } catch (error) {
+            console.error('Failed to update customer next step:', error);
+            
+            // Revert the dropdown to original value
+            selectElement.value = originalValue;
+            
+            const errorMsg = error.message || 'Failed to update next step. Please try again.';
+            alert(errorMsg);
         }
     }
 
@@ -3099,6 +3250,12 @@ class CRMApp {
             optionElement.textContent = option;
             nextStepSelect.appendChild(optionElement);
         });
+        
+        // Add "Other" option for custom next steps
+        const otherOption = document.createElement('option');
+        otherOption.value = 'Other';
+        otherOption.textContent = 'Other (Custom)';
+        nextStepSelect.appendChild(otherOption);
     }
 
     saveSectionChanges(sectionName) {

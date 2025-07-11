@@ -1886,7 +1886,7 @@ nav {
     text-decoration: underline;
 }
 
-.status-dropdown {
+.status-dropdown, .next-step-dropdown {
     border: none;
     background: transparent;
     padding: 0.25rem 0.5rem;
@@ -1897,7 +1897,7 @@ nav {
     color: #33475b;
 }
 
-.status-dropdown:hover {
+.status-dropdown:hover, .next-step-dropdown:hover {
     background: #f5f8fa;
 }
 
@@ -2086,4 +2086,25 @@ nav {
     font-size: 0.75rem;
     color: #495057;
     line-height: 1;
+}
+
+/* Custom Next Step Input Styling */
+.custom-next-step-input {
+    border: 1px solid #d1d7e0;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    background: white;
+    font-family: system-ui, "Segoe UI", "Helvetica Neue", sans-serif;
+    color: #33475b;
+    transition: all 0.2s ease;
+    margin-left: 8px;
+    width: 150px;
+    display: inline-block;
+}
+
+.custom-next-step-input:focus {
+    outline: none;
+    border-color: #0073e6;
+    box-shadow: 0 0 0 2px rgba(0, 115, 230, 0.2);
 }
