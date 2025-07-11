@@ -556,7 +556,7 @@ const server = http.createServer(async (req, res) => {
       }
 
       // Get notes for customer (must come before general customer GET)
-      if (req.method === 'GET' && pathname.match(/^\/api\/customers\/[^\/]+\/notes$/)) {
+      if (req.method === 'GET' && pathname.match(/^\/api\/customers\/[a-zA-Z0-9_-]+\/notes$/)) {
         console.log('=== NOTES GET REQUEST MATCHED ===');
         console.log('Notes GET request received for:', pathname);
         console.log('Request method:', req.method);
@@ -633,7 +633,7 @@ const server = http.createServer(async (req, res) => {
       }
 
       // Get files for customer (must come before general customer GET)
-      if (req.method === 'GET' && pathname.match(/^\/api\/customers\/[^\/]+\/files$/)) {
+      if (req.method === 'GET' && pathname.match(/^\/api\/customers\/[a-zA-Z0-9_-]+\/files$/)) {
         if (!isAuthenticated(req)) {
           res.writeHead(401, { 'Content-Type': 'application/json' });
           res.end(JSON.stringify({ error: 'Authentication required' }));
@@ -870,7 +870,7 @@ const server = http.createServer(async (req, res) => {
       }
 
       // Delete file (must come before general customer DELETE)
-      if (req.method === 'DELETE' && pathname.match(/^\/api\/customers\/[^\/]+\/files\/\d+$/)) {
+      if (req.method === 'DELETE' && pathname.match(/^\/api\/customers\/[a-zA-Z0-9_-]+\/files\/\d+$/)) {
         if (!isAuthenticated(req)) {
           res.writeHead(401, { 'Content-Type': 'application/json' });
           res.end(JSON.stringify({ error: 'Authentication required' }));
@@ -914,7 +914,7 @@ const server = http.createServer(async (req, res) => {
       }
 
       // Customer deletion (exact path only, not file paths)
-      if (pathname.match(/^\/api\/customers\/[^\/]+$/) && req.method === 'DELETE') {
+      if (pathname.match(/^\/api\/customers\/[a-zA-Z0-9_-]+$/) && req.method === 'DELETE') {
         if (!isAuthenticated(req)) {
           res.writeHead(401, { 'Content-Type': 'application/json' });
           res.end(JSON.stringify({ error: 'Authentication required' }));
@@ -935,14 +935,24 @@ const server = http.createServer(async (req, res) => {
         return;
       }
 
-      // File upload endpoint
-      if (req.method === 'POST' && pathname.match(/^\/api\/customers\/[^\/]+\/files$/)) {
+      // File upload endpoint - more permissive regex for customer IDs
+      if (req.method === 'POST' && pathname.match(/^\/api\/customers\/[a-zA-Z0-9_-]+\/files$/)) {
         if (!isAuthenticated(req)) {
           res.writeHead(401, { 'Content-Type': 'application/json' });
           res.end(JSON.stringify({ error: 'Authentication required' }));
           return;
         }
         const customerId = pathname.split('/')[3];
+        console.log('File upload request for customer:', customerId);
+        console.log('Full pathname:', pathname);
+        
+        // Validate customer ID format
+        if (!/^[a-zA-Z0-9_-]+$/.test(customerId)) {
+          console.error('Invalid customer ID format:', customerId);
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Invalid customer ID format' }));
+          return;
+        }
         
         const form = new IncomingForm({
           uploadDir: `./public/uploads/${customerId}`,
@@ -967,12 +977,17 @@ const server = http.createServer(async (req, res) => {
         form.parse(req, async (err, fields, files) => {
           if (err) {
             console.error('Form parse error:', err);
+            console.error('Error details:', err.stack);
+            console.error('Customer ID:', customerId);
+            console.error('Upload directory:', uploadDir);
             res.writeHead(400, { 'Content-Type': 'application/json' });
             res.end(JSON.stringify({ error: 'Upload failed: ' + err.message }));
             return;
           }
 
           console.log('Files received:', files);
+          console.log('Fields received:', fields);
+          console.log('Customer ID from route:', customerId);
           
           try {
             // Handle both single file and multiple files
@@ -1000,13 +1015,29 @@ const server = http.createServer(async (req, res) => {
               }
 
               console.log('Processing file:', file.originalFilename);
+              console.log('File mimetype:', file.mimetype);
+              console.log('File size:', file.size);
 
-              // Generate unique filename
+              // Validate file extension
+              const allowedExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp', '.pdf', '.mp4', '.mov', '.avi', '.webm'];
+              const ext = path.extname(file.originalFilename).toLowerCase();
+              
+              if (!allowedExtensions.includes(ext)) {
+                console.error('Invalid file extension:', ext);
+                console.error('Allowed extensions:', allowedExtensions);
+                res.writeHead(400, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ error: `File extension ${ext} not allowed. Allowed: ${allowedExtensions.join(', ')}` }));
+                return;
+              }
+
+              // Generate unique filename - sanitize original name
               const timestamp = Date.now();
               const randomSuffix = Math.round(Math.random() * 1E9);
-              const ext = path.extname(file.originalFilename);
               const fileName = `${timestamp}-${randomSuffix}${ext}`;
               const newPath = path.join(uploadDir, fileName);
+              
+              console.log('Generated filename:', fileName);
+              console.log('Target path:', newPath);
 
               // Move file to final location
               console.log('Moving file from', file.filepath, 'to', newPath);
@@ -1110,7 +1141,7 @@ const server = http.createServer(async (req, res) => {
     }
 
     // Create system note endpoint
-    if (pathname.match(/^\/api\/customers\/[^\/]+\/system-notes$/) && req.method === 'POST') {
+    if (pathname.match(/^\/api\/customers\/[a-zA-Z0-9_-]+\/system-notes$/) && req.method === 'POST') {
       if (!isAuthenticated(req)) {
         res.writeHead(401, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: 'Authentication required' }));
@@ -1160,7 +1191,7 @@ const server = http.createServer(async (req, res) => {
     }
 
     // Delete note for customer
-    if (pathname.match(/^\/api\/customers\/[^\/]+\/notes\/\d+$/) && req.method === 'DELETE') {
+    if (pathname.match(/^\/api\/customers\/[a-zA-Z0-9_-]+\/notes\/\d+$/) && req.method === 'DELETE') {
       console.log('Delete note request received for:', pathname);
       
       if (!isAuthenticated(req)) {
@@ -1521,10 +1552,10 @@ ${text}`;
             }
 
             // Note: In a real implementation, you would copy data from production to development
-            // For now, return a meaningful error about pattern matching
+            // For now, return a meaningful error about database sync configuration
             res.writeHead(400, { 'Content-Type': 'application/json' });
             res.end(JSON.stringify({ 
-              error: 'The string did not match the expected pattern. Database sync requires additional configuration for cross-environment data transfer.' 
+              error: 'Database sync requires additional configuration for cross-environment data transfer. This feature is not available in production mode.' 
             }));
           } catch (error) {
             console.error('Sync error:', error);
