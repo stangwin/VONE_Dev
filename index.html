@@ -212,22 +212,13 @@
                                 <label for="next-step">Next Step</label>
                                 <select id="next-step" name="nextStep">
                                     <option value="">Select Next Step</option>
-                                    <option value="Follow with VOXO AE">Follow with VOXO AE</option>
-                                    <option value="Schedule Install">Schedule Install</option>
-                                    <option value="Perform Install">Perform Install</option>
-                                    <option value="Order Hardware and License">Order Hardware and License</option>
-                                    <option value="Send Quote">Send Quote</option>
-                                    <option value="Follow Up Call">Follow Up Call</option>
-                                    <option value="Send Agreement">Send Agreement</option>
-                                    <option value="Training Scheduled">Training Scheduled</option>
-                                    <option value="Go Live">Go Live</option>
-                                    <option value="No Action Needed">No Action Needed</option>
+                                    <!-- Options will be populated dynamically based on status -->
                                 </select>
                             </div>
 
                             <div class="form-group">
                                 <label for="status">Status</label>
-                                <select id="status" name="status">
+                                <select id="status" name="status" onchange="app.updateFormNextStepOptions()">
                                     <option value="Lead">Lead</option>
                                     <option value="Quoted">Quoted</option>
                                     <option value="Signed">Signed</option>

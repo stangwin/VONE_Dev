@@ -886,7 +886,7 @@ class CRMApp {
         const nextActionsBody = document.getElementById("next-actions-table-body");
         if (!nextActionsBody) return;
 
-        const customersWithNextSteps = this.customers.filter(c => c.next_step && c.next_step.trim());
+        const customersWithNextSteps = this.customers.filter(c => c.next_step && c.next_step.trim() !== '');
         
         if (customersWithNextSteps.length === 0) {
             nextActionsBody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: var(--text-secondary);">No pending next steps</td></tr>';
@@ -1072,8 +1072,8 @@ class CRMApp {
         }
 
         try {
-            // Only send the next_step field
-            const updateData = { next_step: newNextStep || null };
+            // Only send the next_step field, ensuring empty strings are stored as empty strings
+            const updateData = { next_step: newNextStep === '' ? '' : (newNextStep || null) };
             
             await this.api.updateCustomer(customerId, updateData);
             console.log(`Updated customer ${customerId} next step to "${newNextStep}"`);
@@ -1408,6 +1408,9 @@ class CRMApp {
         }
         
         console.log('=== BINDING EVENTS COMPLETE ===');
+        
+        // Initialize form next step options on page load
+        this.updateFormNextStepOptions();
     }
 
     setupUserDropdown() {
@@ -2597,6 +2600,7 @@ class CRMApp {
         if (!statusSelect || !nextStepSelect) return;
         
         const selectedStatus = statusSelect.value;
+        const currentNextStep = nextStepSelect.value; // Preserve current selection
         const nextStepOptions = this.getNextStepOptions(selectedStatus);
         
         // Clear current options
@@ -2607,8 +2611,20 @@ class CRMApp {
             const optionElement = document.createElement('option');
             optionElement.value = option;
             optionElement.textContent = option;
+            // Restore selection if the option is still available
+            if (option === currentNextStep) {
+                optionElement.selected = true;
+            }
             nextStepSelect.appendChild(optionElement);
         });
+        
+        // If current selection is not in new options, try to keep the current customer's next_step
+        if (currentNextStep && !nextStepOptions.includes(currentNextStep) && this.currentCustomer) {
+            const customerNextStep = this.currentCustomer.next_step;
+            if (customerNextStep && nextStepOptions.includes(customerNextStep)) {
+                nextStepSelect.value = customerNextStep;
+            }
+        }
     }
 
     clearNewNote() {
@@ -2923,6 +2939,167 @@ class CRMApp {
         if (sectionName === 'notes') {
             this.loadCustomerNotes();
         }
+    }
+
+    async saveSectionChanges(sectionName) {
+        if (!this.currentCustomer) return;
+
+        try {
+            let updatedData = {};
+            let changes = [];
+
+            if (sectionName === 'general') {
+                // Collect general section updates
+                const companyName = document.getElementById('edit-company-name')?.value?.trim();
+                const status = document.getElementById('edit-status')?.value;
+                const affiliatePartner = document.getElementById('edit-affiliate-partner')?.value;
+                const nextStep = document.getElementById('edit-next-step')?.value?.trim();
+
+                if (!companyName) {
+                    this.showToast('Company name is required.', 'error');
+                    return;
+                }
+
+                updatedData = {
+                    company_name: companyName,
+                    status: status || this.currentCustomer.status,
+                    affiliate_partner: affiliatePartner || null,
+                    next_step: nextStep || null
+                };
+
+                // Track changes for system notes
+                if (this.currentCustomer.company_name !== companyName) {
+                    changes.push({ field: 'Company Name', oldValue: this.currentCustomer.company_name, newValue: companyName });
+                }
+                if (this.currentCustomer.status !== status) {
+                    changes.push({ field: 'Status', oldValue: this.currentCustomer.status, newValue: status });
+                }
+                if (this.currentCustomer.affiliate_partner !== affiliatePartner) {
+                    changes.push({ field: 'Affiliate Partner', oldValue: this.currentCustomer.affiliate_partner || 'None', newValue: affiliatePartner || 'None' });
+                }
+                if (this.currentCustomer.next_step !== nextStep) {
+                    changes.push({ field: 'Next Step', oldValue: this.currentCustomer.next_step || 'None', newValue: nextStep || 'None' });
+                }
+
+            } else if (sectionName === 'contact') {
+                // Collect contact section updates
+                const physicalAddress = document.getElementById('edit-physical-address')?.value?.trim();
+                const billingAddress = document.getElementById('edit-billing-address')?.value?.trim();
+
+                updatedData = {
+                    physical_address: physicalAddress || null,
+                    billing_address: billingAddress || null
+                };
+
+                // Track changes
+                if (this.currentCustomer.physical_address !== physicalAddress) {
+                    changes.push({ field: 'Physical Address', oldValue: this.currentCustomer.physical_address || 'None', newValue: physicalAddress || 'None' });
+                }
+                if (this.currentCustomer.billing_address !== billingAddress) {
+                    changes.push({ field: 'Billing Address', oldValue: this.currentCustomer.billing_address || 'None', newValue: billingAddress || 'None' });
+                }
+
+            } else if (sectionName === 'primary-contact') {
+                // Collect primary contact updates
+                const primaryName = document.getElementById('edit-primary-name')?.value?.trim();
+                const primaryEmail = document.getElementById('edit-primary-email')?.value?.trim();
+                const primaryPhone = document.getElementById('edit-primary-phone')?.value?.trim();
+
+                updatedData = {
+                    primary_contact: {
+                        name: primaryName || null,
+                        email: primaryEmail || null,
+                        phone: primaryPhone || null
+                    }
+                };
+
+                // Track changes for primary contact
+                const currentPrimary = this.currentCustomer.primary_contact || {};
+                if (currentPrimary.name !== primaryName) {
+                    changes.push({ field: 'Primary Contact Name', oldValue: currentPrimary.name || 'None', newValue: primaryName || 'None' });
+                }
+                if (currentPrimary.email !== primaryEmail) {
+                    changes.push({ field: 'Primary Contact Email', oldValue: currentPrimary.email || 'None', newValue: primaryEmail || 'None' });
+                }
+                if (currentPrimary.phone !== primaryPhone) {
+                    changes.push({ field: 'Primary Contact Phone', oldValue: currentPrimary.phone || 'None', newValue: primaryPhone || 'None' });
+                }
+            }
+
+            console.log('Saving section changes:', sectionName, updatedData);
+
+            // Save to API
+            await this.api.updateCustomer(this.currentCustomerId, updatedData);
+
+            // Update local data
+            Object.assign(this.currentCustomer, updatedData);
+
+            // Update customers list
+            const customerIndex = this.customers.findIndex(c => c.customer_id === this.currentCustomerId);
+            if (customerIndex >= 0) {
+                Object.assign(this.customers[customerIndex], updatedData);
+            }
+
+            // Update filtered customers as well
+            const filteredIndex = this.filteredCustomers.findIndex(c => c.customer_id === this.currentCustomerId);
+            if (filteredIndex >= 0) {
+                Object.assign(this.filteredCustomers[filteredIndex], updatedData);
+            }
+
+            // Create system notes for field changes
+            if (changes.length > 0) {
+                const changesSummary = changes.map(change => `${change.field}: "${change.oldValue}" → "${change.newValue}"`).join('; ');
+                await this.api.createSystemNote(this.currentCustomerId, `${sectionName.charAt(0).toUpperCase() + sectionName.slice(1)} section updated: ${changesSummary}`);
+            }
+
+            // Exit edit mode for this section
+            this.editingSections.delete(sectionName);
+            
+            // Re-render to show updated data
+            this.renderCustomerDetail();
+            
+            // Show success message
+            this.showToast(`${sectionName.charAt(0).toUpperCase() + sectionName.slice(1)} section updated successfully.`, 'success');
+
+            // Update dashboard if needed
+            if (sectionName === 'general') {
+                this.renderCustomerList();
+                this.renderNextActions();
+            }
+
+        } catch (error) {
+            console.error(`Failed to save ${sectionName} changes:`, error);
+            this.showToast(`Failed to save ${sectionName} changes. Please try again.`, 'error');
+        }
+    }
+
+    cancelSectionEdit(sectionName) {
+        // Exit edit mode without saving
+        this.editingSections.delete(sectionName);
+        
+        // Re-render to restore original data
+        this.renderCustomerDetail();
+    }
+
+    updateFormNextStepOptions() {
+        const statusSelect = document.getElementById('status');
+        const nextStepSelect = document.getElementById('next-step');
+        
+        if (!statusSelect || !nextStepSelect) return;
+        
+        const selectedStatus = statusSelect.value;
+        const nextStepOptions = this.getNextStepOptions(selectedStatus);
+        
+        // Clear current options
+        nextStepSelect.innerHTML = '<option value="">Select Next Step</option>';
+        
+        // Add new options
+        nextStepOptions.forEach(option => {
+            const optionElement = document.createElement('option');
+            optionElement.value = option;
+            optionElement.textContent = option;
+            nextStepSelect.appendChild(optionElement);
+        });
     }
 
     saveSectionChanges(sectionName) {
