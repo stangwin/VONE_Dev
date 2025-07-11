@@ -3164,15 +3164,6 @@ class CRMApp {
                 }
             }, 5000);
         }
-        } else {
-            messageDiv.style.cssText = 'background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; padding: 10px; border-radius: 4px; margin: 10px 0;';
-        }
-        
-        const pasteSection = document.querySelector('.paste-section') || document.querySelector('.form-section');
-        if (pasteSection) {
-            pasteSection.insertBefore(messageDiv, pasteSection.firstChild);
-            setTimeout(() => messageDiv.remove(), type === 'success' ? 5000 : 8000);
-        }
     }
 
     escapeHtml(text) {
