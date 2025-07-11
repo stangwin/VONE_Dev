@@ -678,29 +678,64 @@ const server = http.createServer(async (req, res) => {
           return;
         }
         const body = await parseJsonBody(req);
+        console.log('=== POST CUSTOMER DEBUG ===');
+        console.log('Request body:', JSON.stringify(body, null, 2));
+        
         const {
-          customerId, companyName, status, affiliatePartner, nextStep,
-          physicalAddress, billingAddress, primaryContact, authorizedSigner, billingContact, notes
+          customerId, customer_id, company_name, companyName, status, affiliate_partner, affiliatePartner, next_step, nextStep,
+          physical_address, physicalAddress, billing_address, billingAddress, primary_contact, primaryContact, 
+          authorized_signer, authorizedSigner, billing_contact, billingContact, notes
         } = body;
         
-        const result = await pool.query(
-          `INSERT INTO customers (customer_id, company_name, status, affiliate_partner, next_step, 
-           physical_address, billing_address, primary_contact, authorized_signer, billing_contact, notes, created_at, updated_at)
-           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, NOW(), NOW()) RETURNING *`,
-          [customerId, companyName, status, affiliatePartner, nextStep, physicalAddress, billingAddress, 
-           JSON.stringify(primaryContact), JSON.stringify(authorizedSigner), JSON.stringify(billingContact), JSON.stringify(notes)]
-        );
+        // Use flexible field mapping to handle both naming conventions
+        const finalCompanyName = company_name || companyName;
+        const finalCustomerId = customer_id || customerId || `customer_${Date.now()}`;
+        const finalStatus = status || 'Lead';
+        const finalAffiliatePartner = affiliate_partner || affiliatePartner;
+        const finalNextStep = next_step || nextStep;
+        const finalPhysicalAddress = physical_address || physicalAddress;
+        const finalBillingAddress = billing_address || billingAddress;
+        const finalPrimaryContact = primary_contact || primaryContact;
+        const finalAuthorizedSigner = authorized_signer || authorizedSigner;
+        const finalBillingContact = billing_contact || billingContact;
         
-        // Create system note for customer creation
-        try {
-          const user = await authService.getUserById(req.session.userId);
-          await createSystemNote(customerId, `Customer record created by ${user.name}`, req.session.userId);
-        } catch (noteError) {
-          console.error('Failed to create system note:', noteError);
+        console.log('Final mapped values:');
+        console.log('  company_name:', finalCompanyName);
+        console.log('  customer_id:', finalCustomerId);
+        console.log('  status:', finalStatus);
+        
+        if (!finalCompanyName) {
+          console.error('ERROR: company_name is null or undefined');
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Company name is required' }));
+          return;
         }
         
-        res.writeHead(201, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify(result.rows[0]));
+        try {
+          const result = await pool.query(
+            `INSERT INTO customers (customer_id, company_name, status, affiliate_partner, next_step, 
+             physical_address, billing_address, primary_contact, authorized_signer, billing_contact, notes, created_at, updated_at)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, NOW(), NOW()) RETURNING *`,
+            [finalCustomerId, finalCompanyName, finalStatus, finalAffiliatePartner, finalNextStep, finalPhysicalAddress, finalBillingAddress, 
+             JSON.stringify(finalPrimaryContact), JSON.stringify(finalAuthorizedSigner), JSON.stringify(finalBillingContact), JSON.stringify(notes)]
+          );
+          
+          // Create system note for customer creation
+          try {
+            const user = await authService.getUserById(req.session.userId);
+            await createSystemNote(finalCustomerId, `Customer record created by ${user.name}`, req.session.userId);
+          } catch (noteError) {
+            console.error('Failed to create system note:', noteError);
+          }
+          
+          res.writeHead(201, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify(result.rows[0]));
+        } catch (error) {
+          console.error('Database error creating customer:', error);
+          console.error('Error stack:', error.stack);
+          res.writeHead(500, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Database error: ' + error.message }));
+        }
         return;
       }
 
