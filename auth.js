@@ -41,6 +41,12 @@ class AuthManager {
             document.body.style.paddingTop = '40px';
         }
         
+        // Show demo login info in development
+        const demoInfo = document.getElementById('demo-login-info');
+        if (demoInfo) {
+            demoInfo.style.display = 'block';
+        }
+        
         // Update page title
         const currentTitle = document.title;
         if (!currentTitle.includes('[DEV]')) {
