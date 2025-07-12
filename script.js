@@ -527,7 +527,7 @@ class CRMApp {
             document.body.style.paddingTop = '40px';
         }
         
-        // Update page title
+        // Update page title for development with Vantix One branding  
         const currentTitle = document.title;
         if (!currentTitle.includes('[DEV]')) {
             document.title = `[DEV] ${currentTitle}`;
