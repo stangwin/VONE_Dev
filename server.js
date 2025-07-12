@@ -1676,20 +1676,24 @@ ${text}`;
               
               await syncTool.close();
               
-              res.writeHead(200, { 'Content-Type': 'application/json' });
-              res.end(JSON.stringify({
-                successful,
-                failed,
-                total: selectedItems.length,
-                results
-              }));
+              if (!res.headersSent) {
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({
+                  successful,
+                  failed,
+                  total: selectedItems.length,
+                  results
+                }));
+              }
               
             } catch (error) {
               console.error('Sync to production error:', error);
-              res.writeHead(500, { 'Content-Type': 'application/json' });
-              res.end(JSON.stringify({ 
-                error: 'Failed to sync to production: ' + error.message 
-              }));
+              if (!res.headersSent) {
+                res.writeHead(500, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ 
+                  error: 'Failed to sync to production: ' + error.message 
+                }));
+              }
             }
           });
           return;
