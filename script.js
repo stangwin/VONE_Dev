@@ -454,7 +454,10 @@ class CRMApp {
             console.log('Step 5: Binding events...');
             this.bindEvents();
             
-            console.log('Step 6: Showing dashboard view...');
+            console.log('Step 6: Initializing sidebar...');
+            this.initializeSidebar();
+            
+            console.log('Step 7: Showing dashboard view...');
             this.showView("dashboard");
             
             console.log("=== CRM INIT SUCCESSFUL ===");
@@ -891,6 +894,9 @@ class CRMApp {
             
             // Render next actions
             this.renderNextActions();
+            
+            // Update sidebar stats
+            this.updateSidebarStats();
             
         } catch (error) {
             console.error('ERROR in renderCustomerList:', error);
@@ -2611,6 +2617,381 @@ class CRMApp {
 
     getNextStepOptionsForStatus(status) {
         return this.getNextStepOptions(status);
+    }
+
+    // Sidebar functionality
+    initializeSidebar() {
+        console.log('Initializing quick action sidebar...');
+        
+        // Bind sidebar toggle
+        const sidebarToggle = document.getElementById('sidebar-toggle');
+        if (sidebarToggle) {
+            sidebarToggle.addEventListener('click', () => this.toggleSidebar());
+        }
+
+        // Bind quick action buttons
+        this.bindQuickActionButtons();
+        
+        // Update sidebar stats
+        this.updateSidebarStats();
+        
+        console.log('Sidebar initialized successfully');
+    }
+
+    toggleSidebar() {
+        const sidebar = document.getElementById('quick-action-sidebar');
+        const toggleIcon = document.querySelector('.toggle-icon');
+        
+        if (sidebar) {
+            sidebar.classList.toggle('collapsed');
+            
+            // Update toggle icon
+            if (toggleIcon) {
+                if (sidebar.classList.contains('collapsed')) {
+                    toggleIcon.textContent = '→';
+                } else {
+                    toggleIcon.textContent = '←';
+                }
+            }
+        }
+    }
+
+    bindQuickActionButtons() {
+        // Customer Management Actions
+        const quickAddCustomer = document.getElementById('quick-add-customer');
+        if (quickAddCustomer) {
+            quickAddCustomer.addEventListener('click', () => {
+                this.showAddCustomerForm();
+            });
+        }
+
+        const quickImportCustomers = document.getElementById('quick-import-customers');
+        if (quickImportCustomers) {
+            quickImportCustomers.addEventListener('click', () => {
+                this.showImportView();
+            });
+        }
+
+        const quickExportCustomers = document.getElementById('quick-export-customers');
+        if (quickExportCustomers) {
+            quickExportCustomers.addEventListener('click', () => {
+                this.exportCustomerData();
+            });
+        }
+
+        // Bulk Operations
+        const bulkStatusUpdate = document.getElementById('bulk-status-update');
+        if (bulkStatusUpdate) {
+            bulkStatusUpdate.addEventListener('click', () => {
+                this.showBulkStatusDialog();
+            });
+        }
+
+        const bulkNextStep = document.getElementById('bulk-next-step');
+        if (bulkNextStep) {
+            bulkNextStep.addEventListener('click', () => {
+                this.showBulkNextStepDialog();
+            });
+        }
+
+        const bulkAssignAffiliate = document.getElementById('bulk-assign-affiliate');
+        if (bulkAssignAffiliate) {
+            bulkAssignAffiliate.addEventListener('click', () => {
+                this.showBulkAffiliateDialog();
+            });
+        }
+
+        // Quick Navigation
+        const filterLeads = document.getElementById('filter-leads');
+        if (filterLeads) {
+            filterLeads.addEventListener('click', () => {
+                this.applyQuickFilter('status', 'Lead');
+            });
+        }
+
+        const filterActive = document.getElementById('filter-active');
+        if (filterActive) {
+            filterActive.addEventListener('click', () => {
+                this.applyQuickFilter('status', 'Active');
+            });
+        }
+
+        const filterPending = document.getElementById('filter-pending');
+        if (filterPending) {
+            filterPending.addEventListener('click', () => {
+                this.filterPendingActions();
+            });
+        }
+
+        const clearFilters = document.getElementById('clear-filters');
+        if (clearFilters) {
+            clearFilters.addEventListener('click', () => {
+                this.clearAllFilters();
+            });
+        }
+    }
+
+    updateSidebarStats() {
+        if (!this.customers) return;
+
+        const totalCustomers = this.customers.length;
+        const activeCustomers = this.customers.filter(c => c.status === 'Active').length;
+        const leadsCount = this.customers.filter(c => c.status === 'Lead').length;
+        const pendingActions = this.customers.filter(c => c.next_step && c.next_step.trim() !== '').length;
+
+        // Update stat elements
+        this.updateStatElement('total-customers', totalCustomers);
+        this.updateStatElement('active-customers', activeCustomers);
+        this.updateStatElement('leads-count', leadsCount);
+        this.updateStatElement('pending-actions', pendingActions);
+    }
+
+    updateStatElement(elementId, value) {
+        const element = document.getElementById(elementId);
+        if (element) {
+            element.textContent = value;
+        }
+    }
+
+    applyQuickFilter(filterType, value) {
+        const filterElement = document.getElementById(`${filterType}-filter`);
+        if (filterElement) {
+            filterElement.value = value;
+            this.filters[filterType] = value;
+            this.applyFilters();
+            this.showView('dashboard');
+        }
+    }
+
+    filterPendingActions() {
+        // Filter customers with next steps
+        this.filteredCustomers = this.customers.filter(customer => 
+            customer.next_step && customer.next_step.trim() !== ''
+        );
+        this.renderCustomerList();
+        this.showView('dashboard');
+    }
+
+    clearAllFilters() {
+        // Reset all filter inputs
+        const statusFilter = document.getElementById('status-filter');
+        const affiliateFilter = document.getElementById('affiliate-filter');
+        const searchFilter = document.getElementById('search-filter');
+
+        if (statusFilter) statusFilter.value = '';
+        if (affiliateFilter) affiliateFilter.value = '';
+        if (searchFilter) searchFilter.value = '';
+
+        // Reset filters object
+        this.filters = { status: '', affiliate: '', search: '' };
+        
+        // Apply filters to show all customers
+        this.applyFilters();
+    }
+
+    exportCustomerData() {
+        try {
+            const dataToExport = this.customers.map(customer => ({
+                customer_id: customer.customer_id,
+                company_name: customer.company_name,
+                status: customer.status,
+                next_step: customer.next_step,
+                affiliate_partner: customer.affiliate_partner,
+                primary_contact_name: customer.primary_contact?.name || '',
+                primary_contact_email: customer.primary_contact?.email || '',
+                primary_contact_phone: customer.primary_contact?.phone || '',
+                physical_address: `${customer.phys_street1 || ''} ${customer.phys_street2 || ''} ${customer.phys_city || ''} ${customer.phys_state || ''} ${customer.phys_zip || ''}`.trim(),
+                billing_address: `${customer.bill_street1 || ''} ${customer.bill_street2 || ''} ${customer.bill_city || ''} ${customer.bill_state || ''} ${customer.bill_zip || ''}`.trim(),
+                created_at: customer.created_at,
+                updated_at: customer.updated_at
+            }));
+
+            // Convert to CSV
+            const headers = Object.keys(dataToExport[0] || {});
+            const csvContent = [
+                headers.join(','),
+                ...dataToExport.map(row => 
+                    headers.map(header => {
+                        const value = row[header] || '';
+                        // Escape commas and quotes in CSV
+                        return `"${value.toString().replace(/"/g, '""')}"`;
+                    }).join(',')
+                )
+            ].join('\n');
+
+            // Download file
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `vantix-customers-${new Date().toISOString().split('T')[0]}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+
+            this.showToast('Customer data exported successfully', 'success');
+        } catch (error) {
+            console.error('Failed to export customer data:', error);
+            this.showToast('Failed to export customer data', 'error');
+        }
+    }
+
+    showBulkStatusDialog() {
+        // Create modal for bulk status update
+        const modal = this.createBulkActionModal('Update Status', [
+            { label: 'New Status:', type: 'select', id: 'bulk-status', options: [
+                'Lead', 'Quoted', 'Signed', 'Onboarding', 'Hypercare', 'Active', 'Closed'
+            ]}
+        ], (formData) => this.executeBulkStatusUpdate(formData.status));
+        
+        document.body.appendChild(modal);
+    }
+
+    showBulkNextStepDialog() {
+        const modal = this.createBulkActionModal('Set Next Steps', [
+            { label: 'Status Filter:', type: 'select', id: 'filter-status', options: [
+                '', 'Lead', 'Quoted', 'Signed', 'Onboarding', 'Hypercare', 'Active', 'Closed'
+            ]},
+            { label: 'Next Step:', type: 'text', id: 'bulk-next-step', placeholder: 'Enter next step...' }
+        ], (formData) => this.executeBulkNextStepUpdate(formData));
+        
+        document.body.appendChild(modal);
+    }
+
+    showBulkAffiliateDialog() {
+        const modal = this.createBulkActionModal('Assign Affiliate', [
+            { label: 'Affiliate Partner:', type: 'select', id: 'bulk-affiliate', options: [
+                '', 'VOXO', 'Network Tigers', 'Rhino Networks', 'Direct', 'Other'
+            ]}
+        ], (formData) => this.executeBulkAffiliateUpdate(formData.affiliate));
+        
+        document.body.appendChild(modal);
+    }
+
+    createBulkActionModal(title, fields, onSubmit) {
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.style.display = 'block';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>${title}</h3>
+                    <button class="modal-close" onclick="this.closest('.modal').remove()">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <p>This will update all customers currently visible in the table.</p>
+                    <form id="bulk-action-form">
+                        ${fields.map(field => {
+                            if (field.type === 'select') {
+                                return `
+                                    <div class="form-group">
+                                        <label for="${field.id}">${field.label}</label>
+                                        <select id="${field.id}" name="${field.id.replace('bulk-', '').replace('filter-', '')}">
+                                            ${field.options.map(option => 
+                                                `<option value="${option}">${option || 'All/None'}</option>`
+                                            ).join('')}
+                                        </select>
+                                    </div>
+                                `;
+                            } else {
+                                return `
+                                    <div class="form-group">
+                                        <label for="${field.id}">${field.label}</label>
+                                        <input type="${field.type}" id="${field.id}" name="${field.id.replace('bulk-', '')}" placeholder="${field.placeholder || ''}">
+                                    </div>
+                                `;
+                            }
+                        }).join('')}
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">Update ${this.filteredCustomers.length} Customer(s)</button>
+                            <button type="button" class="btn btn-secondary" onclick="this.closest('.modal').remove()">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        `;
+
+        // Handle form submission
+        modal.querySelector('#bulk-action-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData.entries());
+            onSubmit(data);
+            modal.remove();
+        });
+
+        return modal;
+    }
+
+    async executeBulkStatusUpdate(newStatus) {
+        if (!newStatus) return;
+
+        try {
+            const updates = [];
+            for (const customer of this.filteredCustomers) {
+                updates.push(this.api.updateCustomer(customer.customer_id, { status: newStatus }));
+                // Update local data
+                customer.status = newStatus;
+            }
+
+            await Promise.all(updates);
+            this.renderCustomerList();
+            this.updateSidebarStats();
+            this.showToast(`Updated status to "${newStatus}" for ${this.filteredCustomers.length} customer(s)`, 'success');
+        } catch (error) {
+            console.error('Bulk status update failed:', error);
+            this.showToast('Bulk status update failed', 'error');
+        }
+    }
+
+    async executeBulkNextStepUpdate(data) {
+        if (!data.nextstep) return;
+
+        try {
+            let customersToUpdate = this.filteredCustomers;
+            
+            // Filter by status if specified
+            if (data.status) {
+                customersToUpdate = customersToUpdate.filter(c => c.status === data.status);
+            }
+
+            const updates = [];
+            for (const customer of customersToUpdate) {
+                updates.push(this.api.updateCustomer(customer.customer_id, { next_step: data.nextstep }));
+                // Update local data
+                customer.next_step = data.nextstep;
+            }
+
+            await Promise.all(updates);
+            this.renderCustomerList();
+            this.updateSidebarStats();
+            this.showToast(`Updated next step for ${customersToUpdate.length} customer(s)`, 'success');
+        } catch (error) {
+            console.error('Bulk next step update failed:', error);
+            this.showToast('Bulk next step update failed', 'error');
+        }
+    }
+
+    async executeBulkAffiliateUpdate(newAffiliate) {
+        if (!newAffiliate) return;
+
+        try {
+            const updates = [];
+            for (const customer of this.filteredCustomers) {
+                updates.push(this.api.updateCustomer(customer.customer_id, { affiliate_partner: newAffiliate }));
+                // Update local data
+                customer.affiliate_partner = newAffiliate;
+            }
+
+            await Promise.all(updates);
+            this.renderCustomerList();
+            this.updateSidebarStats();
+            this.showToast(`Updated affiliate to "${newAffiliate}" for ${this.filteredCustomers.length} customer(s)`, 'success');
+        } catch (error) {
+            console.error('Bulk affiliate update failed:', error);
+            this.showToast('Bulk affiliate update failed', 'error');
+        }
     }
 
     toggleEditMode(editing) {

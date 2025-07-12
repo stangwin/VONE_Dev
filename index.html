@@ -48,9 +48,101 @@
                 </div>
             </header>
 
-            <main>
-                <!-- Dashboard View -->
-                <div id="dashboard-view" class="view active">
+            <!-- Quick Action Sidebar -->
+            <div class="quick-action-sidebar" id="quick-action-sidebar">
+                <div class="sidebar-header">
+                    <h3>Quick Actions</h3>
+                    <button class="sidebar-toggle" id="sidebar-toggle" title="Toggle Sidebar">
+                        <span class="toggle-icon">←</span>
+                    </button>
+                </div>
+                
+                <div class="sidebar-content">
+                    <!-- Customer Actions -->
+                    <div class="action-section">
+                        <h4>Customer Management</h4>
+                        <button class="action-btn primary" id="quick-add-customer">
+                            <span class="action-icon">➕</span>
+                            Add Customer
+                        </button>
+                        <button class="action-btn" id="quick-import-customers">
+                            <span class="action-icon">📁</span>
+                            Import Customers
+                        </button>
+                        <button class="action-btn" id="quick-export-customers">
+                            <span class="action-icon">💾</span>
+                            Export Data
+                        </button>
+                    </div>
+
+                    <!-- Status Actions -->
+                    <div class="action-section">
+                        <h4>Bulk Operations</h4>
+                        <button class="action-btn" id="bulk-status-update">
+                            <span class="action-icon">🔄</span>
+                            Update Status
+                        </button>
+                        <button class="action-btn" id="bulk-next-step">
+                            <span class="action-icon">📋</span>
+                            Set Next Steps
+                        </button>
+                        <button class="action-btn" id="bulk-assign-affiliate">
+                            <span class="action-icon">🤝</span>
+                            Assign Affiliate
+                        </button>
+                    </div>
+
+                    <!-- Navigation -->
+                    <div class="action-section">
+                        <h4>Quick Navigation</h4>
+                        <button class="action-btn" id="filter-leads">
+                            <span class="action-icon">🎯</span>
+                            View Leads
+                        </button>
+                        <button class="action-btn" id="filter-active">
+                            <span class="action-icon">✅</span>
+                            Active Customers
+                        </button>
+                        <button class="action-btn" id="filter-pending">
+                            <span class="action-icon">⏳</span>
+                            Pending Actions
+                        </button>
+                        <button class="action-btn" id="clear-filters">
+                            <span class="action-icon">🔍</span>
+                            Clear Filters
+                        </button>
+                    </div>
+
+                    <!-- Analytics -->
+                    <div class="action-section">
+                        <h4>Quick Stats</h4>
+                        <div class="stats-grid">
+                            <div class="stat-item">
+                                <span class="stat-number" id="total-customers">-</span>
+                                <span class="stat-label">Total</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-number" id="active-customers">-</span>
+                                <span class="stat-label">Active</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-number" id="leads-count">-</span>
+                                <span class="stat-label">Leads</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-number" id="pending-actions">-</span>
+                                <span class="stat-label">Pending</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content Area -->
+            <div class="main-content" id="main-content">
+                <main>
+                    <!-- Dashboard View -->
+                    <div id="dashboard-view" class="view active">
                     <div class="dashboard-header">
                         <h2>Customers</h2>
                         <div class="loading" id="dashboard-loading" style="display: none;">
@@ -693,6 +785,7 @@
                     </div>
                 </div>
             </main>
+            </div> <!-- End Main Content -->
         </div>
 
         <script src="script.js"></script>
