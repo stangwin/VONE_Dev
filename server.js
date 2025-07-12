@@ -16,7 +16,8 @@ require('dotenv').config();
 const isDevelopment = process.env.ENVIRONMENT === 'development';
 console.log('Environment:', isDevelopment ? 'DEVELOPMENT' : 'PRODUCTION');
 
-const PORT = process.env.PORT || 5000;
+// Environment-based port configuration for dual environment support
+const PORT = isDevelopment ? (process.env.DEV_PORT || 3000) : (process.env.PORT || 5000);
 
 // Database URL selection with isolation safeguards
 let databaseUrl;
@@ -1556,21 +1557,23 @@ ${text}`;
           }
 
           try {
-            const prodUrl = process.env.DATABASE_URL_PROD || process.env.DATABASE_URL;
-            if (!prodUrl) {
-              throw new Error('Production database URL not configured');
+            const { DatabaseSyncTool } = require('./dev-database-sync.js');
+            const syncTool = new DatabaseSyncTool();
+            
+            await syncTool.init();
+            
+            // Clear development data and sync all production data
+            const syncResult = await syncTool.syncAllFromProdToDev();
+            
+            await syncTool.close();
+            
+            if (!res.headersSent) {
+              res.writeHead(200, { 'Content-Type': 'application/json' });
+              res.end(JSON.stringify({ 
+                message: 'Successfully synced all production data to development',
+                ...syncResult
+              }));
             }
-
-            if (prodUrl === process.env.DATABASE_URL_DEV) {
-              throw new Error('Production and development URLs are the same - sync not needed');
-            }
-
-            // Note: In a real implementation, you would copy data from production to development
-            // For now, return a meaningful error about database sync configuration
-            res.writeHead(400, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({ 
-              error: 'Database sync requires additional configuration for cross-environment data transfer. This feature is not available in production mode.' 
-            }));
           } catch (error) {
             console.error('Sync error:', error);
             if (!res.headersSent) {
@@ -1754,6 +1757,14 @@ ${text}`;
 });
 
 server.listen(PORT, '0.0.0.0', () => {
-  console.log(`CRM Server running on port ${PORT}`);
+  const envLabel = isDevelopment ? 'DEVELOPMENT' : 'PRODUCTION';
+  console.log(`${envLabel} CRM Server running on port ${PORT}`);
   console.log('Database connected and ready');
+  
+  if (isDevelopment) {
+    console.log(`🚀 Development server: http://localhost:${PORT}`);
+    console.log(`📊 Dev Console: http://localhost:${PORT}/dev-console`);
+  } else {
+    console.log(`🚀 Production server: http://localhost:${PORT}`);
+  }
 });

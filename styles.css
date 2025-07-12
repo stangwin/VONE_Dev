@@ -2397,6 +2397,30 @@ nav {
     box-shadow: 0 0 0 2px rgba(0, 115, 230, 0.2);
 }
 
+/* Account Executive Input - VONE v1.3 Enhancement */
+.account-exec-input {
+    width: 100%;
+    max-width: 120px;
+    padding: 0.25rem 0.5rem;
+    border: 1px solid #d1d7e0;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    background: white;
+    font-family: system-ui, "Segoe UI", "Helvetica Neue", sans-serif;
+    color: #33475b;
+    transition: all 0.2s ease;
+}
+
+.account-exec-input:focus {
+    outline: none;
+    border-color: #0073e6;
+    box-shadow: 0 0 0 2px rgba(0, 115, 230, 0.2);
+}
+
+.account-exec-input:hover {
+    border-color: #9ca3af;
+}
+
 /* Quick Action Sidebar */
 .quick-action-sidebar {
     position: fixed;

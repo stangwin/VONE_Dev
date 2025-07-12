@@ -14,19 +14,36 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "CRM Server"
+args = "CRM Dev Server"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "CRM Production Server"
 
 [[workflows.workflow]]
-name = "CRM Server"
+name = "CRM Dev Server"
 author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "NODE_ENV=development node server.js"
+args = "ENVIRONMENT=development DEV_PORT=3000 node server.js"
+waitForPort = 3000
+
+[[workflows.workflow]]
+name = "CRM Production Server"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "PORT=5000 node server.js"
 waitForPort = 5000
 
 [deployment]
 run = ["sh", "-c", "python -m http.server 5000"]
+
+[[ports]]
+localPort = 3000
+externalPort = 3000
 
 [[ports]]
 localPort = 5000

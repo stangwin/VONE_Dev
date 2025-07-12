@@ -872,6 +872,16 @@ class CRMApp {
                             }
                         </td>
                         <td>${this.escapeHtml(customer.affiliate_partner || '')}</td>
+                        <td>
+                            <input type="text" 
+                                class="account-exec-input" 
+                                data-customer-id="${customer.customer_id}" 
+                                data-original-value="${customer.affiliate_account_executive || ''}"
+                                value="${this.escapeHtml(customer.affiliate_account_executive || '')}" 
+                                placeholder="Account Executive"
+                                onchange="app.updateAccountExecutive(this)"
+                                onfocus="this.select()">
+                        </td>
                         <td>${this.escapeHtml(primaryContactName)}</td>
                         <td>${this.escapeHtml(primaryContactPhone)}</td>
                         <td class="files-cell">
@@ -901,7 +911,7 @@ class CRMApp {
         } catch (error) {
             console.error('ERROR in renderCustomerList:', error);
             console.error('Error details:', error.stack);
-            tableBody.innerHTML = '<tr><td colspan="8" style="color: red; padding: 20px;">Error loading customers. Check console for details.</td></tr>';
+            tableBody.innerHTML = '<tr><td colspan="10" style="color: red; padding: 20px;">Error loading customers. Check console for details.</td></tr>';
         }
     }
 
@@ -1164,6 +1174,47 @@ class CRMApp {
                 detailStatusSelect.value = newStatus;
                 this.updateNextStepOptions(); // This updates the detail view next step dropdown
             }
+        }
+    }
+
+    async updateAccountExecutive(inputElement) {
+        const customerId = inputElement.dataset.customerId;
+        const newAccountExec = inputElement.value.trim();
+        const originalValue = inputElement.dataset.originalValue;
+
+        // If unchanged, don't update
+        if (newAccountExec === originalValue) {
+            return;
+        }
+
+        try {
+            const updateData = { affiliate_account_executive: newAccountExec };
+            await this.api.updateCustomer(customerId, updateData);
+            
+            // Update local data
+            const customerIndex = this.customers.findIndex(c => c.customer_id === customerId);
+            if (customerIndex !== -1) {
+                this.customers[customerIndex].affiliate_account_executive = newAccountExec;
+                this.filteredCustomers = [...this.customers];
+            }
+            
+            // Update original value for future comparisons
+            inputElement.dataset.originalValue = newAccountExec;
+            
+            // Show brief success indicator
+            inputElement.style.backgroundColor = '#d4edda';
+            setTimeout(() => {
+                inputElement.style.backgroundColor = '';
+            }, 1000);
+            
+            console.log(`Updated account executive for ${customerId}: ${newAccountExec}`);
+        } catch (error) {
+            console.error('Failed to update account executive:', error);
+            inputElement.value = originalValue; // Revert on error
+            inputElement.style.backgroundColor = '#f8d7da';
+            setTimeout(() => {
+                inputElement.style.backgroundColor = '';
+            }, 2000);
         }
     }
 
@@ -3432,6 +3483,7 @@ class CRMApp {
             company_name: getField('companyName') || getField('company-name') || formData.get('company-name'),
             status: formData.get('status') || 'Lead',
             affiliate_partner: formData.get('affiliatePartner') || formData.get('affiliate-partner'),
+            affiliate_account_executive: formData.get('affiliateAccountExecutive') || formData.get('affiliate-account-executive'),
             next_step: getField('nextStep') || getField('next-step'),
             physical_address: physicalAddress,
             billing_address: billingAddress,

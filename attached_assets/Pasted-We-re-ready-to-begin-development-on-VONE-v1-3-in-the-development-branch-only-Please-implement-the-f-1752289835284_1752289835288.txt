@@ -1,0 +1,15 @@
+We’re ready to begin development on VONE v1.3 in the development branch only. Please implement the following features exactly as described. All changes will be reviewed and promoted separately as part of our change management and versioning schedule.
+
+VONE v1.3 — “Foundation & Flow”
+	1.	Move the “Next Step” field beside the “Status” field on the dashboard for improved usability.
+	2.	Finalize inline editing behavior so status and next step can be updated without needing a page refresh.
+	3.	Ensure the dashboard is full-width and responsive, adjusting dynamically to available screen space. Allow horizontal scrolling only when necessary.
+	4.	Display and allow editing of the “Affiliate Account Executive” field in both the dashboard and the customer detail view. Add filter/sort capabilities for this field.
+	5.	Support customers with multiple physical/premise locations. Keep the current billing address field as-is, and allow the user to add/edit/remove additional premise addresses per customer. This should be accessible from the customer detail view.
+	6.	Ensure all changes to status or next step are timestamped and logged automatically in the customer’s system notes.
+	7.	Standardize dropdown behavior so that when status changes, the next step options update immediately without requiring a page reload.
+	8.	Make all customer email addresses clickable “mailto:” links in both the dashboard and detail view. Clicking the email should launch the user’s default mail client (e.g., Outlook via M365).
+	9.	Integrate DocuSign for sending Service Agreements and Affiliate Agreements. This should allow sending a DocuSign request from the customer detail page, tracking status (sent/viewed/signed), storing the signed document in the customer’s file upload area, and logging activity in system notes.
+	10.	Add a visible placeholder (can be hidden for now) for a future AI Assistant interface on the main dashboard. This will eventually allow users to type natural-language commands that the assistant can use to update customer data or trigger workflows.
+
+Do not include proposal generation or product mix logic in this version; those items are deferred to v1.3.1. Ensure all changes are made in dev only and do not affect production. Let me know once each task is complete and ready for review.

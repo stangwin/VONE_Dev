@@ -1,29 +1,16 @@
 {
-  "versions": [
-    {
-      "version": "1.0",
-      "name": "MVP",
-      "releaseDate": "2025-06-20",
-      "features": "Basic CRM functionality, Customer management, File upload system, PostgreSQL database",
-      "branch": "main",
-      "startup": "server.js"
-    },
-    {
-      "version": "1.1",
-      "name": "System Notes + Test Mode",
-      "releaseDate": "2025-06-27",
-      "features": "System notes, Test mode toggle, Enhanced UI, Two-factor authentication, OpenAI integration",
-      "branch": "main",
-      "startup": "server.js"
-    },
-    {
-      "version": "1.2",
-      "name": "Environment Separation",
-      "releaseDate": "2025-07-02",
-      "features": "Dev/Prod environment isolation, Database separation, Development console, Startup selector",
-      "branch": "main",
-      "startup": "server.js"
-    }
+  "version": "v1.3.0-dev",
+  "name": "VONE Foundation & Flow",
+  "description": "Enhanced workflow foundation with Account Executive management and improved table layout",
+  "date": "2025-07-12",
+  "features": [
+    "Affiliate Account Executive field with inline editing capabilities",
+    "Enhanced table layout with Next Step positioned beside Status field",
+    "VONE v1.3 Foundation & Flow workflow improvements",
+    "Database schema synchronization with production compatibility", 
+    "Dual environment deployment (Development: port 3000, Production: port 5000)",
+    "Real-time inline editing for Account Executive assignments"
   ],
-  "current": "1.2"
+  "branch": "development",
+  "environment": "development"
 }

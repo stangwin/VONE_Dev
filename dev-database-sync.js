@@ -244,6 +244,60 @@ class DatabaseSyncTool {
         }
     }
 
+    async syncAllFromProdToDev() {
+        console.log('🔄 Starting full sync from Production to Development...');
+        
+        try {
+            const tablesToSync = ['users', 'customers', 'customer_files', 'customer_notes'];
+            const results = {};
+            
+            for (const tableName of tablesToSync) {
+                console.log(`📋 Syncing table: ${tableName}`);
+                
+                // Get all production data
+                const prodQuery = this.useSchemaIsolation ? 
+                    `SELECT * FROM public.${tableName}` : 
+                    `SELECT * FROM ${tableName}`;
+                const prodResult = await this.prodPool.query(prodQuery);
+                
+                // Clear development table
+                const devClearQuery = this.useSchemaIsolation ? 
+                    `TRUNCATE vantix_dev.${tableName} RESTART IDENTITY CASCADE` : 
+                    `TRUNCATE ${tableName} RESTART IDENTITY CASCADE`;
+                await this.devPool.query(devClearQuery);
+                
+                // Insert all production records into development
+                if (prodResult.rows.length > 0) {
+                    for (const record of prodResult.rows) {
+                        const columns = Object.keys(record);
+                        const values = Object.values(record);
+                        const placeholders = values.map((_, i) => `$${i + 1}`).join(', ');
+                        
+                        const devInsertQuery = this.useSchemaIsolation ? 
+                            `INSERT INTO vantix_dev.${tableName} (${columns.join(', ')}) VALUES (${placeholders})` :
+                            `INSERT INTO ${tableName} (${columns.join(', ')}) VALUES (${placeholders})`;
+                        
+                        await this.devPool.query(devInsertQuery, values);
+                    }
+                }
+                
+                results[tableName] = {
+                    synced: prodResult.rows.length,
+                    status: 'success'
+                };
+                
+                console.log(`✅ Synced ${prodResult.rows.length} records for ${tableName}`);
+            }
+            
+            console.log('🎉 Full sync completed successfully!');
+            return { results, totalTables: tablesToSync.length };
+            
+        } catch (error) {
+            console.error('❌ Full sync failed:', error);
+            throw error;
+        }
+    }
+
     async generateSyncScript() {
         const script = {
             timestamp: new Date().toISOString(),

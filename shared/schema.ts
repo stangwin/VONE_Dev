@@ -19,13 +19,16 @@ export const customers = pgTable('customers', {
     company_name: text('company_name').notNull(),
     status: text('status').notNull(),
     affiliate_partner: text('affiliate_partner'),
+    affiliate_account_executive: text('affiliate_account_executive'), // New field for v1.3
     next_step: text('next_step'),
     physical_address: text('physical_address'),
     billing_address: text('billing_address'),
+    premise_locations: jsonb('premise_locations'), // New field for multiple locations
     primary_contact: jsonb('primary_contact'),
     authorized_signer: jsonb('authorized_signer'),
     billing_contact: jsonb('billing_contact'),
     notes: jsonb('notes'),
+    docusign_status: jsonb('docusign_status'), // New field for DocuSign tracking
     created_by: integer('created_by'), // user id for future use
     updated_by: integer('updated_by'), // user id for future use
     created_at: timestamp('created_at').defaultNow(),
