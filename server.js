@@ -54,9 +54,12 @@ if (!isDevelopment && databaseUrl.includes('dev')) {
 // Initialize database with selected URL and schema handling
 let pool;
 if (isDevelopment && databaseUrl.includes('schema=vantix_dev')) {
-  // Development with schema isolation
-  const baseUrl = databaseUrl.split('?')[0];
-  pool = new Pool({ connectionString: baseUrl });
+  // Development with schema isolation - use base URL without schema parameter
+  const baseUrl = databaseUrl.split('?schema=')[0];
+  pool = new Pool({ 
+    connectionString: baseUrl,
+    ssl: { rejectUnauthorized: false }
+  });
   
   // Create wrapped pool that sets search_path for development
   const originalQuery = pool.query.bind(pool);
@@ -72,7 +75,10 @@ if (isDevelopment && databaseUrl.includes('schema=vantix_dev')) {
   };
 } else {
   // Production or separate development database - use as-is
-  pool = new Pool({ connectionString: databaseUrl });
+  pool = new Pool({ 
+    connectionString: databaseUrl,
+    ssl: { rejectUnauthorized: false }
+  });
 }
 
 // Initialize auth service
