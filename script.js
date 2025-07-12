@@ -527,7 +527,7 @@ class CRMApp {
             document.body.style.paddingTop = '40px';
         }
         
-        // Update page title for development with Vantix One branding  
+        // Update page title for development with VONE branding
         const currentTitle = document.title;
         if (!currentTitle.includes('[DEV]')) {
             document.title = `[DEV] ${currentTitle}`;
@@ -2959,7 +2959,7 @@ class CRMApp {
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `vantix-customers-${new Date().toISOString().split('T')[0]}.csv`;
+            a.download = `vone-customers-${new Date().toISOString().split('T')[0]}.csv`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
