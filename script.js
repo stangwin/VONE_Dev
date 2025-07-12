@@ -1070,6 +1070,9 @@ class CRMApp {
             // Update the original value
             selectElement.dataset.originalValue = newStatus;
             
+            // DYNAMIC UPDATE: Update the corresponding next step dropdown
+            this.updateNextStepDropdownForCustomer(customerId, newStatus);
+            
         } catch (error) {
             console.error('Failed to update customer status:', error);
             console.error('Error details:', error);
@@ -1080,6 +1083,87 @@ class CRMApp {
             // Show user-friendly error message
             const errorMsg = error.message || 'Failed to update status. Please try again.';
             alert(errorMsg);
+        }
+    }
+
+    updateNextStepDropdownForCustomer(customerId, newStatus) {
+        // Find the next step dropdown for this customer in the main table
+        const nextStepDropdown = document.querySelector(`select.next-step-dropdown[data-customer-id="${customerId}"]`);
+        
+        if (nextStepDropdown) {
+            const currentNextStep = nextStepDropdown.value;
+            const newOptions = this.getNextStepOptionsForStatus(newStatus);
+            
+            // Clear existing options
+            nextStepDropdown.innerHTML = '<option value="">Select Next Step</option>';
+            
+            // Add new options based on the new status
+            newOptions.forEach(option => {
+                const optionElement = document.createElement('option');
+                optionElement.value = option;
+                optionElement.textContent = option;
+                
+                // Keep current selection if it's still valid
+                if (option === currentNextStep) {
+                    optionElement.selected = true;
+                }
+                
+                nextStepDropdown.appendChild(optionElement);
+            });
+            
+            // Add "Other" option
+            const otherOption = document.createElement('option');
+            otherOption.value = 'Other';
+            otherOption.textContent = 'Other (Custom)';
+            nextStepDropdown.appendChild(otherOption);
+            
+            // Handle custom next steps that are no longer valid
+            if (currentNextStep && !newOptions.includes(currentNextStep) && currentNextStep !== '') {
+                // If current next step is not in new options, set to "Other" and show custom input
+                nextStepDropdown.value = 'Other';
+                
+                // Find and update/create custom input field
+                const row = nextStepDropdown.closest('tr');
+                const nextStepCell = nextStepDropdown.closest('td');
+                
+                // Remove existing custom input if present
+                const existingCustomInput = nextStepCell.querySelector('.custom-next-step-input');
+                if (existingCustomInput) {
+                    existingCustomInput.remove();
+                }
+                
+                // Add custom input with current value
+                const customInput = document.createElement('input');
+                customInput.type = 'text';
+                customInput.className = 'custom-next-step-input';
+                customInput.value = currentNextStep;
+                customInput.setAttribute('data-customer-id', customerId);
+                customInput.setAttribute('placeholder', 'Enter custom next step');
+                customInput.addEventListener('blur', (e) => this.updateCustomerNextStep(e.target));
+                customInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') e.target.blur();
+                });
+                
+                nextStepCell.appendChild(customInput);
+            } else {
+                // Remove custom input if it exists and not needed
+                const nextStepCell = nextStepDropdown.closest('td');
+                const existingCustomInput = nextStepCell.querySelector('.custom-next-step-input');
+                if (existingCustomInput) {
+                    existingCustomInput.remove();
+                }
+            }
+            
+            console.log(`Updated next step dropdown for customer ${customerId} based on new status: ${newStatus}`);
+        }
+        
+        // Also update customer detail view if it's currently open for this customer
+        if (this.currentCustomerId === customerId) {
+            const detailStatusSelect = document.getElementById('edit-status');
+            if (detailStatusSelect) {
+                detailStatusSelect.value = newStatus;
+                this.updateNextStepOptions(); // This updates the detail view next step dropdown
+            }
         }
     }
 
