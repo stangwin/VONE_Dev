@@ -38,9 +38,11 @@ body {
 }
 
 .container {
-    max-width: 1200px;
+    width: 100%;
     margin: 0 auto;
-    padding: 0 20px;
+    padding: 1rem 2rem;
+    /* Cap extreme widths on ultra-wide displays for readability */
+    max-width: 1600px;
 }
 
 header {
@@ -1809,45 +1811,84 @@ nav {
     border-collapse: collapse;
     font-size: 0.875rem;
     font-family: system-ui, "Segoe UI", "Helvetica Neue", sans-serif;
-    /* Prevent table from shrinking below content width */
-    min-width: max-content;
-    /* Ensure table takes minimum space needed for all columns */
+    /* Allow columns to flex naturally based on content */
     table-layout: auto;
 }
 
-/* Table header and cell styling for horizontal scroll */
+/* Table header and cell styling - responsive */
 .customers-table th,
 .customers-table td,
 .next-actions-table th,
 .next-actions-table td {
-    /* Prevent text wrapping to maintain column widths */
-    white-space: nowrap;
-    /* Set minimum column widths */
-    min-width: 120px;
     padding: 12px 16px;
     text-align: left;
     border-bottom: 1px solid hsl(var(--border));
+    /* Allow content to determine widths naturally */
+    word-wrap: break-word;
+    overflow-wrap: break-word;
 }
 
-/* Specific column width adjustments */
+/* Specific column width adjustments - responsive */
 .customers-table th:first-child,
 .customers-table td:first-child {
-    /* Company name column - wider */
-    min-width: 180px;
+    /* Company name column - flexible but prefer more space */
+    width: 20%;
+    min-width: 150px;
+}
+
+.customers-table th:nth-child(2),
+.customers-table td:nth-child(2) {
+    /* Status column */
+    width: 12%;
+    min-width: 120px;
+}
+
+.customers-table th:nth-child(3),
+.customers-table td:nth-child(3) {
+    /* Next Step column */
+    width: 15%;
+    min-width: 140px;
+}
+
+.customers-table th:nth-child(4),
+.customers-table td:nth-child(4) {
+    /* Affiliate column */
+    width: 10%;
+    min-width: 100px;
+}
+
+.customers-table th:nth-child(5),
+.customers-table td:nth-child(5) {
+    /* Contact column */
+    width: 15%;
+    min-width: 140px;
+}
+
+.customers-table th:nth-child(6),
+.customers-table td:nth-child(6) {
+    /* Phone column */
+    width: 12%;
+    min-width: 120px;
+}
+
+.customers-table th:nth-child(7),
+.customers-table td:nth-child(7) {
+    /* Files column */
+    width: 8%;
+    min-width: 80px;
 }
 
 .customers-table th:nth-child(8),
 .customers-table td:nth-child(8) {
-    /* Last note column - wider for better readability */
-    min-width: 200px;
-    max-width: 250px;
-    white-space: normal;
-    word-wrap: break-word;
+    /* Last note column - allow expansion */
+    width: auto;
+    min-width: 180px;
 }
 
 .customers-table th:last-child,
 .customers-table td:last-child {
-    /* Actions column - narrower */
+    /* Actions column - fixed narrow */
+    width: 100px;
     min-width: 100px;
 }
 
@@ -1869,6 +1910,198 @@ nav {
 
 .table-container::-webkit-scrollbar-thumb:hover {
     background: hsl(var(--text-secondary));
+}
+
+/* ===== RESPONSIVE DESIGN MEDIA QUERIES ===== */
+
+/* Ultra-wide displays (1600px+) */
+@media (min-width: 1600px) {
+    .container {
+        padding: 1rem 4rem;
+    }
+    
+    .customers-table,
+    .next-actions-table {
+        font-size: 0.9rem;
+    }
+    
+    .customers-table th,
+    .customers-table td,
+    .next-actions-table th,
+    .next-actions-table td {
+        padding: 14px 20px;
+    }
+}
+
+/* Large desktop (1200px - 1599px) */
+@media (min-width: 1200px) and (max-width: 1599px) {
+    .container {
+        padding: 1rem 3rem;
+    }
+}
+
+/* Standard desktop/laptop (992px - 1199px) */
+@media (min-width: 992px) and (max-width: 1199px) {
+    .container {
+        padding: 1rem 2rem;
+    }
+}
+
+/* Tablet (768px - 991px) */
+@media (min-width: 768px) and (max-width: 991px) {
+    .container {
+        padding: 0.75rem 1.5rem;
+    }
+    
+    .customers-table,
+    .next-actions-table {
+        font-size: 0.825rem;
+    }
+    
+    .customers-table th,
+    .customers-table td,
+    .next-actions-table th,
+    .next-actions-table td {
+        padding: 10px 12px;
+    }
+    
+    /* Adjust column widths for tablet */
+    .customers-table th:first-child,
+    .customers-table td:first-child {
+        width: 25%;
+        min-width: 140px;
+    }
+    
+    .customers-table th:nth-child(8),
+    .customers-table td:nth-child(8) {
+        min-width: 150px;
+    }
+}
+
+/* Mobile landscape and small tablet (576px - 767px) */
+@media (min-width: 576px) and (max-width: 767px) {
+    .container {
+        padding: 0.5rem 1rem;
+    }
+    
+    .customers-table,
+    .next-actions-table {
+        font-size: 0.8rem;
+    }
+    
+    .customers-table th,
+    .customers-table td,
+    .next-actions-table th,
+    .next-actions-table td {
+        padding: 8px 10px;
+    }
+    
+    /* Enable horizontal scroll on mobile */
+    .table-container {
+        overflow-x: auto;
+    }
+    
+    .customers-table,
+    .next-actions-table {
+        min-width: 800px; /* Force horizontal scroll */
+    }
+}
+
+/* Mobile portrait (up to 575px) */
+@media (max-width: 575px) {
+    .container {
+        padding: 0.5rem 0.75rem;
+    }
+    
+    .customers-table,
+    .next-actions-table {
+        font-size: 0.75rem;
+        min-width: 900px; /* Force horizontal scroll */
+    }
+    
+    .customers-table th,
+    .customers-table td,
+    .next-actions-table th,
+    .next-actions-table td {
+        padding: 6px 8px;
+    }
+    
+    /* Compact column widths for mobile */
+    .customers-table th:first-child,
+    .customers-table td:first-child {
+        min-width: 120px;
+    }
+    
+    .customers-table th:nth-child(2),
+    .customers-table td:nth-child(2) {
+        min-width: 100px;
+    }
+    
+    .customers-table th:nth-child(3),
+    .customers-table td:nth-child(3) {
+        min-width: 120px;
+    }
+    
+    .customers-table th:nth-child(8),
+    .customers-table td:nth-child(8) {
+        min-width: 140px;
+    }
+}
+
+/* ===== RESPONSIVE HEADER AND SIDEBAR ===== */
+
+/* Mobile header adjustments */
+@media (max-width: 767px) {
+    header {
+        padding: 0.75rem 0;
+        margin-bottom: 1rem;
+    }
+    
+    .header-content {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .left-header h1 {
+        font-size: 1.5rem;
+    }
+    
+    .nav-btn {
+        font-size: 0.8rem;
+        padding: 0.5rem 0.75rem;
+    }
+    
+    .user-dropdown {
+        align-self: flex-end;
+    }
+}
+
+/* Quick action sidebar responsive */
+@media (max-width: 991px) {
+    .quick-action-sidebar {
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+    }
+    
+    .quick-action-sidebar.open {
+        transform: translateX(0);
+    }
+}
+
+@media (max-width: 575px) {
+    .quick-action-sidebar {
+        width: 280px;
+        font-size: 0.85rem;
+    }
+    
+    .action-btn {
+        padding: 0.6rem 0.8rem;
+        font-size: 0.8rem;
+    }
+    
+    .sidebar-header h3 {
+        font-size: 1rem;
+    }
 }
 
 /* Additional table header styling */
