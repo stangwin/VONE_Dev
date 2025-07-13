@@ -1,0 +1,66 @@
+📦 VONE v1.3 — “Foundation & Flow” — Development Task List (Final Build)
+
+Please complete the following items in the `dev` environment for VONE v1.3. These changes are already partially implemented in dev and are part of the final build before promotion to production. All items below are to be finished, polished, or enhanced per current feature expectations.
+
+====================================
+1. ✅ Branding Enhancements
+====================================
+• Confirm “VONE” is used as the system name across all visible pages.
+• On the login page, ensure the tagline displays: “One team. One system. Zero disruptions.”
+• Add the **expanded name** (“Vantix Operating Neural Environment”) to either the login footer or app header — styled cleanly but subtly to reinforce branding.
+
+====================================
+2. ✅ UI / UX Enhancements
+====================================
+• Polish dashboard responsiveness — already full-width, but verify behavior on different screen sizes.
+• Ensure **no-refresh inline editing** works correctly for Status and Next Step fields.
+• Finalize layout improvements:
+    - Move “Next Step” field next to “Status” — already complete, just validate styling.
+    - Fix file upload modal: make scrollable and ensure all fields are visible regardless of screen size.
+    - On the **Customer Detail Page**, reduce vertical scrolling and space bloat (tighten spacing, group info visually).
+
+====================================
+3. ✅ Affiliate Enhancements
+====================================
+• Ensure the “Affiliate AE” field (Affiliate Account Executive) is:
+    - Fully visible in customer records
+    - Editable via inline interface
+    - Accessible in dashboard view or exportable report
+• Add tooltip: “Affiliate AE is the specific person who referred this customer.”
+
+====================================
+4. ✅ File Upload Enhancements
+====================================
+• Enforce 50MB unified file limit across all uploads (already complete).
+• Confirm .HEIC/.HEIF support functions as expected for uploaded mobile photos.
+• ✅ NEW: When a customer has multiple premises addresses (see Section 5), allow user to **tag uploaded files** with either:
+    - A dropdown that shows the list of known location names
+    - Or a freeform text field if the location isn't defined yet
+    - Required: the tagged location should display in the customer’s file list UI to clarify which site each file applies to.
+
+====================================
+5. ⏳ Multi-Location Support (Customers with Multiple Premises)
+====================================
+• Implement ability for a customer to have **one billing address (unchanged)** and **multiple premises locations**.
+• Add ability to:
+    - View and manage multiple premise addresses under one customer record
+    - Tag/store additional locations in a new `premise_locations` section (UI + backend)
+    - Show location names + basic contact info (street/city/state) in a collapsible or tabbed layout
+    - Required: easy way to add, edit, delete individual premises under the customer
+    - Make the system **smart enough** that when files or work is tagged to a location, it's obvious and consistent.
+
+====================================
+6. ⏳ Integration Enhancements
+====================================
+• Add **DocuSign integration**: from customer detail page, allow user to send:
+    - Service Agreement
+    - Affiliate Agreement
+    - Use DocuSign templates if possible or create from generated PDFs.
+• Make customer **email addresses clickable mailto links**:
+    - Anywhere an email address appears, it should launch default mail app (i.e., M365 Mail client).
+
+====================================
+Final Notes:
+- These changes are for v1.3 only. Do not begin v1.3.1 or AI Assistant roadmap items yet.
+- Once all above features are complete and functional in `dev`, we will begin structured testing and create a formal promotion plan into production.
+- Reminder: If database schema changes are required (e.g., for `premise_locations`), ensure both `dev` and `prod` are updated as part of change management with clear notes for schema sync.

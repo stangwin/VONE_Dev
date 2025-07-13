@@ -43,6 +43,7 @@ export const customer_files = pgTable('customer_files', {
     file_url: text('file_url').notNull(),
     file_type: text('file_type').notNull(),
     file_size: integer('file_size').notNull(),
+    location_tag: text('location_tag'), // New field for tagging files to specific premises
     upload_date: timestamp('upload_date').defaultNow(),
     created_at: timestamp('created_at').defaultNow(),
 });

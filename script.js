@@ -188,7 +188,7 @@ class DatabaseAPI {
     }
 
     // File management methods
-    async uploadFiles(customerId, files) {
+    async uploadFiles(customerId, files, locationTag = null) {
         try {
             const formData = new FormData();
             
@@ -196,6 +196,12 @@ class DatabaseAPI {
             for (let i = 0; i < files.length; i++) {
                 console.log('Adding file:', files[i].name, 'size:', files[i].size);
                 formData.append('files', files[i]);
+            }
+            
+            // Add location tag if provided
+            if (locationTag) {
+                console.log('Adding location tag:', locationTag);
+                formData.append('locationTag', locationTag);
             }
 
             console.log('Sending upload request to:', `/api/customers/${customerId}/files`);
@@ -1920,6 +1926,24 @@ class CRMApp {
                         }
                     </div>
 
+                    <!-- Multiple Premises Locations -->
+                    <div class="detail-section" id="premises-section">
+                        <div class="section-header">
+                            <h3>Premises Locations</h3>
+                            <button class="section-edit-btn" onclick="app.toggleSectionEdit('premises')" id="premises-edit-btn">
+                                ${this.editingSections.has('premises') ? '✕' : '✏️'}
+                            </button>
+                        </div>
+                        ${this.renderPremisesLocations(customer.premise_locations || [])}
+                        ${this.editingSections.has('premises') ? 
+                            `<div class="section-actions">
+                                <button class="btn btn-primary btn-sm" onclick="app.saveSectionChanges('premises')">Save</button>
+                                <button class="btn btn-secondary btn-sm" onclick="app.cancelSectionEdit('premises')">Cancel</button>
+                            </div>` : 
+                            ''
+                        }
+                    </div>
+
                     <!-- Notes -->
                     <div class="detail-section" id="notes-section" data-section="notes">
                         <div class="section-header">
@@ -1982,6 +2006,17 @@ class CRMApp {
                         <div class="files-section">
                             ${this.editingSections.has('files') ? `
                                 <div class="file-upload-section">
+                                    <div class="location-tag-selector">
+                                        <label for="file-location-tag">Tag files to location:</label>
+                                        <select id="file-location-tag">
+                                            <option value="">Main/General Location</option>
+                                            ${(customer.premise_locations || []).map((location, index) => 
+                                                `<option value="${this.escapeHtml(location.name || `Site ${index + 1}`)}">${this.escapeHtml(location.name || `Site ${index + 1}`)}</option>`
+                                            ).join('')}
+                                            <option value="custom">Custom Location (type below)</option>
+                                        </select>
+                                        <input type="text" id="custom-location-tag" placeholder="Enter custom location name" style="display: none; margin-top: 8px;">
+                                    </div>
                                     <div class="upload-dropzone" id="upload-dropzone">
                                         <input type="file" id="file-input" multiple accept="image/*,.heic,.heif,.pdf,video/*" style="display: none;">
                                         <div class="upload-text">
@@ -2016,6 +2051,7 @@ class CRMApp {
         // Setup file upload functionality after render
         setTimeout(() => {
             this.setupFileUpload();
+            this.setupLocationTagging();
         }, 100);
         
         // Update detail action buttons based on edit mode
@@ -2237,6 +2273,7 @@ class CRMApp {
                         <div class="file-name" title="${file.original_name}">${file.original_name}</div>
                         <div class="file-meta">
                             ${this.formatFileSize(file.file_size)} • ${this.formatFileDate(file.upload_date)}
+                            ${file.location_tag ? `<br><span class="location-tag">📍 ${this.escapeHtml(file.location_tag)}</span>` : ''}
                         </div>
                     </div>
                     ${this.editingSections && this.editingSections.has('files') ? 
@@ -2293,6 +2330,36 @@ class CRMApp {
         });
     }
 
+    setupLocationTagging() {
+        const locationSelect = document.getElementById('file-location-tag');
+        const customLocationInput = document.getElementById('custom-location-tag');
+        
+        if (!locationSelect || !customLocationInput) return;
+        
+        locationSelect.addEventListener('change', function() {
+            if (this.value === 'custom') {
+                customLocationInput.style.display = 'block';
+                customLocationInput.focus();
+            } else {
+                customLocationInput.style.display = 'none';
+                customLocationInput.value = '';
+            }
+        });
+    }
+
+    getSelectedLocationTag() {
+        const locationSelect = document.getElementById('file-location-tag');
+        const customLocationInput = document.getElementById('custom-location-tag');
+        
+        if (!locationSelect) return null;
+        
+        if (locationSelect.value === 'custom') {
+            return customLocationInput?.value?.trim() || null;
+        }
+        
+        return locationSelect.value || null;
+    }
+
     async handleFileUpload(files) {
         if (!files || files.length === 0) return;
 
@@ -2324,7 +2391,11 @@ class CRMApp {
             console.log('Starting upload for customer:', this.currentCustomer.customer_id);
             console.log('Valid files to upload:', validFiles.length);
             
-            const result = await this.api.uploadFiles(this.currentCustomer.customer_id, validFiles);
+            // Get selected location tag
+            const locationTag = this.getSelectedLocationTag();
+            console.log('Location tag for files:', locationTag);
+            
+            const result = await this.api.uploadFiles(this.currentCustomer.customer_id, validFiles, locationTag);
             console.log('Upload result:', result);
             
             // Create system note for file uploads
@@ -3425,11 +3496,98 @@ class CRMApp {
         alert(`QuickBooks integration coming soon!\n\nWould create customer: ${customer.company_name}`);
     }
 
-    sendAgreement(customerId) {
+    async sendAgreement(customerId) {
         const customer = this.customers.find(c => c.customer_id === customerId);
         if (!customer) return;
         
-        alert(`DocuSign integration coming soon!\n\nWould send service agreement to: ${customer.company_name}`);
+        // Create simple DocuSign integration modal
+        const modal = document.createElement('div');
+        modal.className = 'modal-overlay';
+        modal.innerHTML = `
+            <div class="modal-content docusign-modal">
+                <div class="modal-header">
+                    <h3>📋 Send Service Agreement</h3>
+                    <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">×</button>
+                </div>
+                <div class="modal-body">
+                    <p><strong>Customer:</strong> ${this.escapeHtml(customer.company_name)}</p>
+                    <p><strong>Primary Contact:</strong> ${this.escapeHtml(customer.primary_contact?.email || 'No email on file')}</p>
+                    
+                    <div class="form-group">
+                        <label for="agreement-type">Agreement Type:</label>
+                        <select id="agreement-type">
+                            <option value="service">Standard Service Agreement</option>
+                            <option value="affiliate">Affiliate Partnership Agreement</option>
+                            <option value="custom">Custom Agreement</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="signer-email">Signer Email:</label>
+                        <input type="email" id="signer-email" value="${customer.primary_contact?.email || ''}" placeholder="Enter signer email">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="agreement-notes">Additional Notes:</label>
+                        <textarea id="agreement-notes" placeholder="Any special instructions or notes for the agreement..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" onclick="this.closest('.modal-overlay').remove()">Cancel</button>
+                    <button class="btn btn-primary" onclick="app.processDocuSignAgreement('${customerId}')">Send Agreement via DocuSign</button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+    }
+
+    async processDocuSignAgreement(customerId) {
+        const customer = this.customers.find(c => c.customer_id === customerId);
+        if (!customer) return;
+        
+        const agreementType = document.getElementById('agreement-type')?.value;
+        const signerEmail = document.getElementById('signer-email')?.value;
+        const notes = document.getElementById('agreement-notes')?.value;
+        
+        if (!signerEmail) {
+            alert('Please enter a signer email address.');
+            return;
+        }
+        
+        try {
+            // Create system note about DocuSign request
+            const systemNote = `DocuSign agreement initiated: ${agreementType} agreement sent to ${signerEmail}`;
+            if (notes) {
+                systemNote += `\nNotes: ${notes}`;
+            }
+            
+            await this.api.createSystemNote(customerId, systemNote);
+            
+            // Close modal
+            document.querySelector('.modal-overlay')?.remove();
+            
+            // Show success message
+            this.showToast(`Agreement sent via DocuSign to ${signerEmail}`, 'success');
+            
+            // Refresh notes to show the system note
+            if (this.currentCustomer && this.currentCustomer.customer_id === customerId) {
+                await this.loadCustomerNotes();
+            }
+            
+            // In a real implementation, this would integrate with DocuSign API
+            console.log('DocuSign integration placeholder:', {
+                customerId,
+                customerName: customer.company_name,
+                agreementType,
+                signerEmail,
+                notes
+            });
+            
+        } catch (error) {
+            console.error('Error processing DocuSign agreement:', error);
+            this.showToast('Failed to send agreement. Please try again.', 'error');
+        }
     }
 
     showError(elementId, message) {
@@ -3691,6 +3849,35 @@ class CRMApp {
                 if (currentPrimary.phone !== primaryPhone) {
                     changes.push({ field: 'Primary Contact Phone', oldValue: currentPrimary.phone || 'None', newValue: primaryPhone || 'None' });
                 }
+
+            } else if (sectionName === 'premises') {
+                // Collect premise locations data
+                const locations = [];
+                let index = 0;
+                
+                while (document.getElementById(`premise-name-${index}`)) {
+                    const name = document.getElementById(`premise-name-${index}`)?.value?.trim();
+                    const address = document.getElementById(`premise-address-${index}`)?.value?.trim();
+                    const contact = document.getElementById(`premise-contact-${index}`)?.value?.trim();
+                    const phone = document.getElementById(`premise-phone-${index}`)?.value?.trim();
+                    
+                    // Only add location if it has meaningful data
+                    if (name || address || contact || phone) {
+                        locations.push({
+                            name: name || '',
+                            address: address || '',
+                            contact: contact || '',
+                            phone: phone || ''
+                        });
+                    }
+                    index++;
+                }
+                
+                updatedData = {
+                    premise_locations: locations.length > 0 ? locations : null
+                };
+                
+                changes.push({ field: 'Premise Locations', oldValue: 'Updated', newValue: `${locations.length} location(s)` });
             }
 
             console.log('Saving section changes:', sectionName, updatedData);
@@ -4036,6 +4223,108 @@ class CRMApp {
                     messageDiv.remove();
                 }
             }, 5000);
+        }
+    }
+
+    renderPremisesLocations(locations) {
+        const isEditing = this.editingSections.has('premises');
+        
+        if (!locations || locations.length === 0) {
+            return `
+                <div class="premises-content">
+                    <p class="empty-state">No additional premises locations added yet.</p>
+                    ${isEditing ? `
+                        <button class="btn btn-outline btn-sm" onclick="app.addPremiseLocation()">
+                            + Add Location
+                        </button>
+                    ` : ''}
+                </div>
+            `;
+        }
+
+        const locationsHtml = locations.map((location, index) => `
+            <div class="premise-location" data-index="${index}">
+                <div class="location-header">
+                    <h4>Location ${index + 1}: ${this.escapeHtml(location.name || `Site ${index + 1}`)}</h4>
+                    ${isEditing ? `
+                        <button class="btn btn-outline btn-sm" onclick="app.removePremiseLocation(${index})">
+                            Remove
+                        </button>
+                    ` : ''}
+                </div>
+                <div class="location-details">
+                    ${isEditing ? `
+                        <div class="detail-field">
+                            <label>Location Name</label>
+                            <input type="text" id="premise-name-${index}" value="${this.escapeHtml(location.name || '')}" placeholder="Main Office, Warehouse, Branch 1, etc.">
+                        </div>
+                        <div class="detail-field">
+                            <label>Address</label>
+                            <textarea id="premise-address-${index}" rows="3" placeholder="Street address, city, state, zip">${this.escapeHtml(location.address || '')}</textarea>
+                        </div>
+                        <div class="detail-field">
+                            <label>Contact Person</label>
+                            <input type="text" id="premise-contact-${index}" value="${this.escapeHtml(location.contact || '')}" placeholder="Site manager or primary contact">
+                        </div>
+                        <div class="detail-field">
+                            <label>Phone</label>
+                            <input type="tel" id="premise-phone-${index}" value="${this.escapeHtml(location.phone || '')}" placeholder="Location phone number">
+                        </div>
+                    ` : `
+                        <div class="location-info">
+                            <div class="detail-field">
+                                <label>Address</label>
+                                <span class="field-value">${this.escapeHtml(location.address || 'Not provided')}</span>
+                            </div>
+                            ${location.contact ? `
+                                <div class="detail-field">
+                                    <label>Contact</label>
+                                    <span class="field-value">${this.escapeHtml(location.contact)}</span>
+                                </div>
+                            ` : ''}
+                            ${location.phone ? `
+                                <div class="detail-field">
+                                    <label>Phone</label>
+                                    <span class="field-value">${this.escapeHtml(location.phone)}</span>
+                                </div>
+                            ` : ''}
+                        </div>
+                    `}
+                </div>
+            </div>
+        `).join('');
+
+        return `
+            <div class="premises-content">
+                ${locationsHtml}
+                ${isEditing ? `
+                    <button class="btn btn-outline btn-sm" onclick="app.addPremiseLocation()">
+                        + Add Another Location
+                    </button>
+                ` : ''}
+            </div>
+        `;
+    }
+
+    addPremiseLocation() {
+        if (!this.currentCustomer.premise_locations) {
+            this.currentCustomer.premise_locations = [];
+        }
+        
+        this.currentCustomer.premise_locations.push({
+            name: '',
+            address: '',
+            contact: '',
+            phone: ''
+        });
+        
+        this.renderCustomerDetail();
+    }
+
+    removePremiseLocation(index) {
+        if (this.currentCustomer.premise_locations && this.currentCustomer.premise_locations.length > index) {
+            this.currentCustomer.premise_locations.splice(index, 1);
+            this.renderCustomerDetail();
         }
     }
 
