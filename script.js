@@ -414,6 +414,7 @@ class DatabaseAPI {
     }
 
     // Affiliate management methods
+    // v1.3 Affiliate Management APIs
     async getAffiliates() {
         return await this.makeRequest('GET', '/api/affiliates');
     }
@@ -422,12 +423,20 @@ class DatabaseAPI {
         return await this.makeRequest('POST', '/api/affiliates', { name });
     }
 
-    async getAffiliateAEs(affiliateId) {
-        return await this.makeRequest('GET', `/api/affiliates/${affiliateId}/aes`);
+    async getAffiliateAEs(affiliateId = null) {
+        const params = affiliateId ? `?affiliate_id=${affiliateId}` : '';
+        return await this.makeRequest('GET', `/api/affiliate-aes${params}`);
     }
 
     async createAffiliateAE(affiliateId, name) {
-        return await this.makeRequest('POST', `/api/affiliates/${affiliateId}/aes`, { name });
+        return await this.makeRequest('POST', '/api/affiliate-aes', { affiliate_id: affiliateId, name });
+    }
+
+    async updateCustomerAffiliate(customerId, affiliateId, affiliateAeId) {
+        return await this.makeRequest('PUT', `/api/customers/${customerId}`, { 
+            affiliate_id: affiliateId, 
+            affiliate_ae_id: affiliateAeId 
+        });
     }
 }
 
@@ -609,6 +618,12 @@ class CRMApp {
 
             this.currentUser = await response.json();
             this.updateUserUI();
+            
+            // Show admin button for admin users
+            const adminBtn = document.getElementById('admin-btn');
+            if (adminBtn && this.currentUser.role === 'admin') {
+                adminBtn.style.display = 'block';
+            }
         } catch (error) {
             console.error('Failed to load user data:', error);
             // In iframe, show login instructions instead of redirecting
@@ -1465,6 +1480,10 @@ class CRMApp {
         if (viewName === "dashboard") {
             const dashboardBtn = document.getElementById("dashboard-btn");
             if (dashboardBtn) dashboardBtn.classList.add("active");
+        } else if (viewName === "admin") {
+            const adminBtn = document.getElementById("admin-btn");
+            if (adminBtn) adminBtn.classList.add("active");
+            this.loadAdminData();
         }
 
         // Clear any errors
@@ -1483,6 +1502,16 @@ class CRMApp {
         const addCustomerBtn = document.getElementById("add-customer-btn");
         if (addCustomerBtn) {
             addCustomerBtn.addEventListener("click", () => this.showAddCustomerForm());
+        }
+
+        const adminBtn = document.getElementById("admin-btn");
+        if (adminBtn) {
+            adminBtn.addEventListener("click", () => this.showView("admin"));
+        }
+
+        const adminBackBtn = document.getElementById("admin-back-btn");
+        if (adminBackBtn) {
+            adminBackBtn.addEventListener("click", () => this.showView("dashboard"));
         }
 
         const addFirstCustomer = document.getElementById("add-first-customer");
@@ -4699,6 +4728,113 @@ class CRMApp {
         } catch (error) {
             console.error('Failed to create system note:', error);
             throw error;
+        }
+    }
+
+    // v1.3 Admin Management Functions
+    async loadAdminData() {
+        try {
+            // Load affiliates and account executives
+            const [affiliates, allAEs] = await Promise.all([
+                this.api.getAffiliates(),
+                this.api.getAffiliateAEs()
+            ]);
+            
+            this.renderAdminAffiliates(affiliates);
+            this.renderAdminAEs(allAEs);
+        } catch (error) {
+            console.error('Failed to load admin data:', error);
+            this.showToast('Failed to load admin data', 'error');
+        }
+    }
+
+    renderAdminAffiliates(affiliates) {
+        const tbody = document.getElementById('admin-affiliates-table');
+        if (!tbody) return;
+        
+        tbody.innerHTML = '';
+        
+        affiliates.forEach(affiliate => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${this.escapeHtml(affiliate.name)}</td>
+                <td>${affiliate.customer_count || 0}</td>
+                <td>${affiliate.ae_count || 0}</td>
+                <td>
+                    <button class="btn btn-sm btn-secondary" onclick="app.editAffiliate('${affiliate.id}')">
+                        Edit
+                    </button>
+                    <button class="btn btn-sm btn-danger" onclick="app.deleteAffiliate('${affiliate.id}')">
+                        Delete
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(row);
+        });
+    }
+
+    renderAdminAEs(aes) {
+        const tbody = document.getElementById('admin-aes-table');
+        if (!tbody) return;
+        
+        tbody.innerHTML = '';
+        
+        aes.forEach(ae => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${this.escapeHtml(ae.name)}</td>
+                <td>${this.escapeHtml(ae.affiliate_name || 'N/A')}</td>
+                <td>${ae.customer_count || 0}</td>
+                <td>
+                    <button class="btn btn-sm btn-secondary" onclick="app.editAE('${ae.id}')">
+                        Edit
+                    </button>
+                    <button class="btn btn-sm btn-danger" onclick="app.deleteAE('${ae.id}')">
+                        Delete
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(row);
+        });
+    }
+
+    async editAffiliate(affiliateId) {
+        // Implementation for editing affiliate
+        console.log('Edit affiliate:', affiliateId);
+        this.showToast('Edit affiliate feature coming soon', 'info');
+    }
+
+    async deleteAffiliate(affiliateId) {
+        if (confirm('Are you sure you want to delete this affiliate? This action cannot be undone.')) {
+            try {
+                // Add delete API call when implemented
+                console.log('Delete affiliate:', affiliateId);
+                this.showToast('Delete affiliate feature coming soon', 'info');
+                // this.loadAdminData();
+            } catch (error) {
+                console.error('Failed to delete affiliate:', error);
+                this.showToast('Failed to delete affiliate', 'error');
+            }
+        }
+    }
+
+    async editAE(aeId) {
+        // Implementation for editing AE
+        console.log('Edit AE:', aeId);
+        this.showToast('Edit AE feature coming soon', 'info');
+    }
+
+    async deleteAE(aeId) {
+        if (confirm('Are you sure you want to delete this account executive? This action cannot be undone.')) {
+            try {
+                // Add delete API call when implemented
+                console.log('Delete AE:', aeId);
+                this.showToast('Delete AE feature coming soon', 'info');
+                // this.loadAdminData();
+            } catch (error) {
+                console.error('Failed to delete AE:', error);
+                this.showToast('Failed to delete AE', 'error');
+            }
         }
     }
 }

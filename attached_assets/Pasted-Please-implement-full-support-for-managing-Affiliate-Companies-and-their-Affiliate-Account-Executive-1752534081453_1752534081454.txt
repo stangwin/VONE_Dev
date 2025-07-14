@@ -1,0 +1,53 @@
+Please implement full support for managing Affiliate Companies and their Affiliate Account Executives (AEs) in VONE v1.3. This should work across the Customer Detail Page, Dashboard inline editing, and an Admin Management Panel.
+
+DATA STRUCTURE CHANGES:
+	1.	Add two new tables:
+
+	•	affiliates: id (PK), name (unique, required)
+	•	affiliate_aes: id (PK), affiliate_id (FK to affiliates), name (required)
+
+	2.	Modify customers table:
+
+	•	Add affiliate_id (nullable FK to affiliates)
+	•	Add affiliate_ae_id (nullable FK to affiliate_aes)
+Ensure all schema changes are properly versioned and replicated across BOTH dev and prod databases upon promotion.
+
+FEATURE REQUIREMENTS:
+	1.	CUSTOMER DETAIL PAGE:
+
+	•	Replace current freeform affiliate and affiliate_ae fields with dropdown selectors:
+• Affiliate dropdown: shows all affiliates from the affiliates table
+• Affiliate AE dropdown: dynamically filters to show only AEs tied to the selected affiliate
+	•	If no AE exists for the selected affiliate, show: “No AEs found for this affiliate.”
+	•	Add “➕ Add New Affiliate” and “➕ Add New AE” options at the bottom of their dropdowns
+• Clicking opens a small modal form to create a new entry (name required)
+• When adding a new AE, pre-fill the selected affiliate if one is chosen
+	•	If no AE is assigned, show text: “Not listed”, and allow assignment via inline action
+
+	2.	DASHBOARD INLINE EDITING:
+
+	•	Make these fields editable inline: Company Name, Status, Next Step, Affiliate (labeled Affiliate Company), Affiliate AE (labeled Affiliate AE), Contact (labeled Primary Contact), Phone (labeled Primary Contact Phone)
+	•	Phone field should accept any 10-digit number and auto-format it to (XXX) XXX-XXXX
+	•	When editing:
+• Changing the Affiliate AE should auto-filter based on selected affiliate
+• If no affiliate selected, disable AE dropdown with note: “Select affiliate first.”
+
+	3.	ADMIN MANAGEMENT PANEL:
+
+	•	Add new section: Admin > Affiliate Management
+• Subsection A: Affiliates
+	•	List affiliates
+	•	Add/rename/archive affiliates
+• Subsection B: Affiliate AEs
+	•	Nested under each affiliate
+	•	Add/edit/delete AEs
+	•	Display number of customers assigned to each AE
+	•	Optional: Bulk reassignment tool from one AE to another
+
+OTHER CONSIDERATIONS:
+	•	Prevent orphaned AEs (AE must belong to an affiliate)
+	•	If AE is removed, affected customers show “Unassigned”
+	•	Add optional audit trail to track changes to Affiliate/AE
+	•	On dashboard, update column headers: “Account Exec” → Affiliate AE and “Affiliate” → Affiliate Company
+
+Please complete this in VONE v1.3 in the dev environment using the vantix_dev schema, apply schema changes using proper migration scripts, and document promotion steps clearly for updating the public schema in production. Once complete, we will test everything in dev before promoting to prod.

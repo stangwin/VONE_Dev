@@ -576,9 +576,136 @@ const server = http.createServer(async (req, res) => {
           return;
         }
         
-        const result = await pool.query('SELECT * FROM customers ORDER BY company_name');
+        // Get customers with affiliate data joined
+        const result = await pool.query(`
+          SELECT 
+            c.*,
+            a.name as affiliate_name,
+            ae.name as affiliate_ae_name
+          FROM customers c
+          LEFT JOIN affiliates a ON c.affiliate_id = a.id
+          LEFT JOIN affiliate_aes ae ON c.affiliate_ae_id = ae.id
+          ORDER BY c.company_name
+        `);
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify(result.rows));
+        return;
+      }
+
+      // Affiliate Management API Endpoints
+      if (pathname === '/api/affiliates' && req.method === 'GET') {
+        if (!isAuthenticated(req)) {
+          res.writeHead(401, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Authentication required' }));
+          return;
+        }
+        
+        const result = await pool.query(`
+          SELECT 
+            a.*,
+            COUNT(c.id) as customer_count
+          FROM affiliates a
+          LEFT JOIN customers c ON a.id = c.affiliate_id
+          GROUP BY a.id, a.name, a.created_at
+          ORDER BY a.name
+        `);
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify(result.rows));
+        return;
+      }
+
+      if (pathname === '/api/affiliates' && req.method === 'POST') {
+        if (!isAuthenticated(req)) {
+          res.writeHead(401, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Authentication required' }));
+          return;
+        }
+
+        const { name } = await parseJsonBody(req);
+        if (!name || name.trim() === '') {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Affiliate name is required' }));
+          return;
+        }
+
+        try {
+          const result = await pool.query(
+            'INSERT INTO affiliates (name) VALUES ($1) RETURNING *',
+            [name.trim()]
+          );
+          res.writeHead(201, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify(result.rows[0]));
+        } catch (error) {
+          if (error.code === '23505') { // Unique constraint violation
+            res.writeHead(409, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'Affiliate name already exists' }));
+          } else {
+            res.writeHead(500, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'Failed to create affiliate' }));
+          }
+        }
+        return;
+      }
+
+      if (pathname === '/api/affiliate-aes' && req.method === 'GET') {
+        if (!isAuthenticated(req)) {
+          res.writeHead(401, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Authentication required' }));
+          return;
+        }
+        
+        const url_obj = new URL(req.url, `http://${req.headers.host}`);
+        const affiliate_id = url_obj.searchParams.get('affiliate_id');
+        
+        let query = `
+          SELECT 
+            ae.*,
+            a.name as affiliate_name,
+            COUNT(c.id) as customer_count
+          FROM affiliate_aes ae
+          LEFT JOIN affiliates a ON ae.affiliate_id = a.id
+          LEFT JOIN customers c ON ae.id = c.affiliate_ae_id
+        `;
+        let params = [];
+        
+        if (affiliate_id) {
+          query += ' WHERE ae.affiliate_id = $1';
+          params = [affiliate_id];
+        }
+        
+        query += ' GROUP BY ae.id, ae.name, ae.affiliate_id, ae.created_at, a.name ORDER BY a.name, ae.name';
+        
+        const result = await pool.query(query, params);
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify(result.rows));
+        return;
+      }
+
+      if (pathname === '/api/affiliate-aes' && req.method === 'POST') {
+        if (!isAuthenticated(req)) {
+          res.writeHead(401, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Authentication required' }));
+          return;
+        }
+
+        const { name, affiliate_id } = await parseJsonBody(req);
+        if (!name || name.trim() === '' || !affiliate_id) {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'AE name and affiliate_id are required' }));
+          return;
+        }
+
+        try {
+          const result = await pool.query(
+            'INSERT INTO affiliate_aes (name, affiliate_id) VALUES ($1, $2) RETURNING *',
+            [name.trim(), affiliate_id]
+          );
+          res.writeHead(201, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify(result.rows[0]));
+        } catch (error) {
+          res.writeHead(500, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Failed to create AE' }));
+        }
         return;
       }
 

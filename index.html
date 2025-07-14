@@ -30,6 +30,9 @@
                             <button id="import-btn" class="nav-btn">
                                 Import CSV
                             </button>
+                            <button id="admin-btn" class="nav-btn" style="display: none;">
+                                Admin
+                            </button>
                         </nav>
                     </div>
                     <div class="user-menu">
@@ -192,10 +195,10 @@
                                     <th data-sort="company_name">Company Name <span class="sort-indicator"></span></th>
                                     <th data-sort="status">Status <span class="sort-indicator"></span></th>
                                     <th data-sort="next_step">Next Step <span class="sort-indicator"></span></th>
-                                    <th data-sort="affiliate_partner">Affiliate <span class="sort-indicator"></span></th>
+                                    <th data-sort="affiliate_partner">Affiliate Company <span class="sort-indicator"></span></th>
                                     <th data-sort="affiliate_account_executive">Affiliate AE <span class="sort-indicator"></span></th>
-                                    <th data-sort="primary_contact">Contact <span class="sort-indicator"></span></th>
-                                    <th>Phone</th>
+                                    <th data-sort="primary_contact">Primary Contact <span class="sort-indicator"></span></th>
+                                    <th>Primary Contact Phone</th>
                                     <th>Files</th>
                                     <th>Last Note</th>
                                     <th>Actions</th>
@@ -236,6 +239,71 @@
                 <div id="customer-detail-view" class="view">
                     <div id="customer-detail-content">
                         <!-- Customer detail content will be populated here -->
+                    </div>
+                </div>
+
+                <!-- Admin Management View -->
+                <div id="admin-view" class="view">
+                    <div class="admin-header">
+                        <h2>Admin Management</h2>
+                        <button id="admin-back-btn" class="btn btn-secondary">
+                            ← Back to Dashboard
+                        </button>
+                    </div>
+
+                    <div class="admin-content">
+                        <!-- Affiliate Management Section -->
+                        <div class="admin-section">
+                            <h3>Affiliate Management</h3>
+                            
+                            <div class="admin-subsection">
+                                <div class="subsection-header">
+                                    <h4>Affiliates</h4>
+                                    <button class="btn btn-primary" onclick="app.showAddAffiliateModal()">
+                                        Add New Affiliate
+                                    </button>
+                                </div>
+                                <div class="admin-table-container">
+                                    <table class="admin-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Name</th>
+                                                <th>Customers</th>
+                                                <th>Account Executives</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="admin-affiliates-table">
+                                            <!-- Affiliates will be populated here -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <div class="admin-subsection">
+                                <div class="subsection-header">
+                                    <h4>Account Executives</h4>
+                                    <button class="btn btn-primary" onclick="app.showAddAffiliateAEModal()">
+                                        Add New Account Executive
+                                    </button>
+                                </div>
+                                <div class="admin-table-container">
+                                    <table class="admin-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Name</th>
+                                                <th>Affiliate</th>
+                                                <th>Assigned Customers</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="admin-aes-table">
+                                            <!-- Account Executives will be populated here -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
