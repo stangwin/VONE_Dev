@@ -277,7 +277,21 @@ class DatabaseSyncTool {
                             `INSERT INTO vantix_dev.${tableName} (${columns.join(', ')}) VALUES (${placeholders})` :
                             `INSERT INTO ${tableName} (${columns.join(', ')}) VALUES (${placeholders})`;
                         
-                        await this.devPool.query(devInsertQuery, values);
+                        // Fix JSON values that might have parsing issues
+                        const cleanedValues = values.map(value => {
+                            if (typeof value === 'string' && value.includes('"}"}')) {
+                                try {
+                                    // Try to parse and reformat JSON if it's malformed
+                                    const parsed = JSON.parse(value.replace(/"}"}$/, '"}'));
+                                    return JSON.stringify(parsed);
+                                } catch (e) {
+                                    return value; // Return original if can't parse
+                                }
+                            }
+                            return value;
+                        });
+                        
+                        await this.devPool.query(devInsertQuery, cleanedValues);
                     }
                 }
                 
