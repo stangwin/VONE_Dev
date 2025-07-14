@@ -1730,7 +1730,7 @@ class CRMApp {
                             <div class="detail-field">
                                 <label>Status</label>
                                 ${this.editingSections.has('general') ? 
-                                    `<select id="edit-status" onchange="app.updateNextStepOptions()">
+                                    `<select id="edit-status" onchange="app.handleStatusChange()">
                                         <option value="Lead" ${customer.status === 'Lead' ? 'selected' : ''}>Lead</option>
                                         <option value="Quoted" ${customer.status === 'Quoted' ? 'selected' : ''}>Quoted</option>
                                         <option value="Signed" ${customer.status === 'Signed' ? 'selected' : ''}>Signed</option>
@@ -1761,6 +1761,13 @@ class CRMApp {
                                         <option value="VOXO" ${customer.affiliate_partner === 'VOXO' ? 'selected' : ''}>VOXO</option>
                                     </select>` :
                                     `<span class="field-value">${this.escapeHtml(customer.affiliate_partner) || 'None'}</span>`
+                                }
+                            </div>
+                            <div class="detail-field">
+                                <label>Affiliate AE</label>
+                                ${this.editingSections.has('general') ? 
+                                    `<input type="text" id="edit-affiliate-account-executive" value="${this.escapeHtml(customer.affiliate_account_executive) || ''}">` :
+                                    `<span class="field-value">${this.escapeHtml(customer.affiliate_account_executive) || 'Not assigned'}</span>`
                                 }
                             </div>
                         </div>
@@ -2810,7 +2817,7 @@ class CRMApp {
 
     getNextStepOptions(status) {
         const statusNextStepMapping = {
-            "Lead": ["Schedule Call", "Send Quote"],
+            "Lead": ["Schedule Call", "Send Quote", "Follow with Affiliate AE"],
             "Quoted": ["Follow Up", "Send Contract"],
             "Signed": ["Order Hardware", "Configure in Dashboard", "Schedule Install"],
             "Onboarding": ["Perform Install and Test", "Place in Billing"],
@@ -3203,6 +3210,92 @@ class CRMApp {
     toggleEditMode(editing) {
         this.editMode = editing;
         this.renderCustomerDetail();
+    }
+
+    // NEW: Handle status changes with closure note enforcement
+    handleStatusChange() {
+        const statusSelect = document.getElementById('edit-status');
+        if (!statusSelect) return;
+        
+        const newStatus = statusSelect.value;
+        const oldStatus = this.currentCustomer?.status;
+        
+        // If changing to "Closed", require closure note
+        if (newStatus === 'Closed' && oldStatus !== 'Closed') {
+            // Store the intended status change
+            this.pendingStatusChange = {
+                newStatus: newStatus,
+                oldStatus: oldStatus
+            };
+            
+            // Reset the dropdown to old status temporarily
+            statusSelect.value = oldStatus;
+            
+            // Show the closure note modal
+            this.showClosureNoteModal();
+            return;
+        }
+        
+        // For other status changes, proceed normally
+        this.updateNextStepOptions();
+    }
+
+    showClosureNoteModal() {
+        document.getElementById('closure-note-modal').style.display = 'flex';
+        document.getElementById('closure-note-text').value = '';
+        document.getElementById('closure-note-text').focus();
+        
+        // Bind form submission if not already bound
+        const form = document.getElementById('closure-note-form');
+        if (form && !form.hasAttribute('data-bound')) {
+            form.setAttribute('data-bound', 'true');
+            form.addEventListener('submit', (e) => this.submitClosureNote(e));
+        }
+    }
+
+    async submitClosureNote(e) {
+        e.preventDefault();
+        const noteText = document.getElementById('closure-note-text').value.trim();
+        
+        if (!noteText) {
+            this.showToast('Closing note is required', 'error');
+            return;
+        }
+        
+        try {
+            // First, add the closing note
+            await this.api.createNote(this.currentCustomer.customer_id, {
+                content: `🔒 Closure: ${noteText}`,
+                type: 'closure'
+            });
+            
+            // Then update the status to Closed
+            const statusSelect = document.getElementById('edit-status');
+            if (statusSelect && this.pendingStatusChange) {
+                statusSelect.value = this.pendingStatusChange.newStatus;
+                this.updateNextStepOptions();
+            }
+            
+            // Close modal and clear pending change
+            this.cancelClosureNote();
+            
+            this.showToast('Closing note added and status updated', 'success');
+            
+        } catch (error) {
+            console.error('Failed to add closure note:', error);
+            this.showToast('Failed to add closure note', 'error');
+        }
+    }
+
+    cancelClosureNote() {
+        document.getElementById('closure-note-modal').style.display = 'none';
+        this.pendingStatusChange = null;
+        
+        // Reset status dropdown to original value if needed
+        const statusSelect = document.getElementById('edit-status');
+        if (statusSelect && this.currentCustomer) {
+            statusSelect.value = this.currentCustomer.status;
+        }
     }
 
     updateNextStepOptions() {
@@ -3785,10 +3878,13 @@ class CRMApp {
                     return;
                 }
 
+                const affiliateAccountExecutive = document.getElementById('edit-affiliate-account-executive')?.value?.trim();
+
                 updatedData = {
                     company_name: companyName,
                     status: status || this.currentCustomer.status,
                     affiliate_partner: affiliatePartner || null,
+                    affiliate_account_executive: affiliateAccountExecutive || null,
                     next_step: nextStep || null
                 };
 
@@ -3804,6 +3900,9 @@ class CRMApp {
                 }
                 if (this.currentCustomer.next_step !== nextStep) {
                     changes.push({ field: 'Next Step', oldValue: this.currentCustomer.next_step || 'None', newValue: nextStep || 'None' });
+                }
+                if (this.currentCustomer.affiliate_account_executive !== affiliateAccountExecutive) {
+                    changes.push({ field: 'Affiliate AE', oldValue: this.currentCustomer.affiliate_account_executive || 'None', newValue: affiliateAccountExecutive || 'None' });
                 }
 
             } else if (sectionName === 'contact') {

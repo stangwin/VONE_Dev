@@ -251,6 +251,13 @@ The quick action sidebar provides rapid access to common CRM operations and real
 ## Changelog
 
 Changelog:
+- July 14, 2025: **COMPLETED** - VONE v1.3 "Foundation & Flow" enhancements implemented in development environment
+- July 14, 2025: Changed dashboard table header from "Account Exec" to "Affiliate AE" for accurate labeling
+- July 14, 2025: Added Affiliate AE field to customer detail page with inline editing capability 
+- July 14, 2025: Added "Follow with Affiliate AE" next step option for Lead status customers
+- July 14, 2025: Implemented closure note enforcement modal requiring note before setting status to "Closed"
+- July 14, 2025: Enhanced saveSectionChanges to include affiliate_account_executive field updates
+- July 14, 2025: Added handleStatusChange function with modal popup for closure workflow
 - July 14, 2025: **COMPLETED** - Fixed critical notes migration issue and development environment sync problems
 - July 14, 2025: Migrated 11 legacy notes from old JSON format to proper customer_notes table in production
 - July 14, 2025: Removed obsolete notes column from customers table to prevent future confusion

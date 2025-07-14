@@ -193,7 +193,7 @@
                                     <th data-sort="status">Status <span class="sort-indicator"></span></th>
                                     <th data-sort="next_step">Next Step <span class="sort-indicator"></span></th>
                                     <th data-sort="affiliate_partner">Affiliate <span class="sort-indicator"></span></th>
-                                    <th data-sort="affiliate_account_executive">Account Exec <span class="sort-indicator"></span></th>
+                                    <th data-sort="affiliate_account_executive">Affiliate AE <span class="sort-indicator"></span></th>
                                     <th data-sort="primary_contact">Contact <span class="sort-indicator"></span></th>
                                     <th>Phone</th>
                                     <th>Files</th>
@@ -795,6 +795,33 @@
                 </div>
             </main>
             </div> <!-- End Main Content -->
+        </div>
+
+        <!-- Closure Note Modal -->
+        <div id="closure-note-modal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Closing Note Required</h3>
+                </div>
+                <div class="modal-body">
+                    <p>A closing note is required when setting status to "Closed". Please provide details about the closure:</p>
+                    <form id="closure-note-form">
+                        <div class="form-group">
+                            <label for="closure-note-text">Closing Note:</label>
+                            <textarea
+                                id="closure-note-text"
+                                placeholder="Enter closing details..."
+                                rows="4"
+                                required
+                            ></textarea>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">Save and Close Customer</button>
+                            <button type="button" class="btn btn-secondary" onclick="app.cancelClosureNote()">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </div>
 
         <script src="script.js"></script>
