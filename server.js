@@ -288,18 +288,24 @@ const server = http.createServer(async (req, res) => {
 
         let user;
         
-        // Development bypass for test credentials when authentication fails
-        if (isDevelopment && email === 'test@test.com' && password === 'test123') {
+        // Try normal authentication first
+        try {
+          user = await authService.authenticateUser(email, password);
+        } catch (error) {
+          console.log('Normal authentication failed:', error.message);
+          user = null;
+        }
+        
+        // Development bypass for test credentials when normal authentication fails
+        if (!user && isDevelopment && email === 'test@test.com' && password === 'test123') {
           user = { 
-            id: 4, 
-            name: 'Test User', 
+            id: 1, 
+            name: 'Development User', 
             email: 'test@test.com', 
             role: 'admin',
             two_factor_enabled: false
           };
           console.log('Development bypass: Using test credentials');
-        } else {
-          user = await authService.authenticateUser(email, password);
         }
         
         if (!user) {
