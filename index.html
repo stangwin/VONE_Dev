@@ -297,19 +297,24 @@
 
                             <div class="form-group">
                                 <label for="affiliate-partner">Affiliate Partner</label>
-                                <select id="affiliate-partner" name="affiliatePartner">
-                                    <option value="">Select Affiliate Partner</option>
-                                    <option value="VOXO">VOXO</option>
-                                    <option value="Network Tigers">Network Tigers</option>
-                                    <option value="Rhino Networks">Rhino Networks</option>
-                                    <option value="Direct">Direct</option>
-                                    <option value="Other">Other</option>
-                                </select>
+                                <div class="dropdown-with-add">
+                                    <select id="affiliate-partner" name="affiliatePartner" onchange="app.loadAffiliateAEs()">
+                                        <option value="">Select Affiliate Partner</option>
+                                        <!-- Options will be populated from database -->
+                                    </select>
+                                    <button type="button" class="btn-add-new" onclick="app.showAddAffiliateModal()" title="Add New Affiliate">+</button>
+                                </div>
                             </div>
 
                             <div class="form-group">
                                 <label for="affiliate-account-executive">Affiliate Account Executive</label>
-                                <input type="text" id="affiliate-account-executive" name="affiliateAccountExecutive" placeholder="Account Executive Name">
+                                <div class="dropdown-with-add">
+                                    <select id="affiliate-account-executive" name="affiliateAccountExecutive" disabled>
+                                        <option value="">Select Affiliate AE</option>
+                                        <!-- Options will be populated based on selected affiliate -->
+                                    </select>
+                                    <button type="button" class="btn-add-new" onclick="app.showAddAffiliateAEModal()" title="Add New Affiliate AE" disabled id="add-ae-btn">+</button>
+                                </div>
                             </div>
 
                             <div class="form-group">
@@ -818,6 +823,54 @@
                         <div class="form-actions">
                             <button type="submit" class="btn btn-primary">Save and Close Customer</button>
                             <button type="button" class="btn btn-secondary" onclick="app.cancelClosureNote()">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Affiliate Modal -->
+        <div id="add-affiliate-modal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Add New Affiliate</h3>
+                    <button class="modal-close" onclick="app.closeAddAffiliateModal()">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <form id="add-affiliate-form" onsubmit="app.handleAddAffiliate(event)">
+                        <div class="form-group">
+                            <label for="new-affiliate-name">Affiliate Name *</label>
+                            <input type="text" id="new-affiliate-name" required>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">Add Affiliate</button>
+                            <button type="button" class="btn btn-secondary" onclick="app.closeAddAffiliateModal()">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Affiliate AE Modal -->
+        <div id="add-affiliate-ae-modal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Add New Affiliate Account Executive</h3>
+                    <button class="modal-close" onclick="app.closeAddAffiliateAEModal()">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <form id="add-affiliate-ae-form" onsubmit="app.handleAddAffiliateAE(event)">
+                        <div class="form-group">
+                            <label for="selected-affiliate-display">Affiliate</label>
+                            <input type="text" id="selected-affiliate-display" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label for="new-affiliate-ae-name">Account Executive Name *</label>
+                            <input type="text" id="new-affiliate-ae-name" required>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">Add Account Executive</button>
+                            <button type="button" class="btn btn-secondary" onclick="app.closeAddAffiliateAEModal()">Cancel</button>
                         </div>
                     </form>
                 </div>

@@ -1,4 +1,4 @@
-import { pgTable, serial, text, timestamp, integer, jsonb } from 'drizzle-orm/pg-core';
+import { pgTable, serial, text, timestamp, integer, jsonb, uuid } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 
 export const users = pgTable('users', {
@@ -18,8 +18,10 @@ export const customers = pgTable('customers', {
     customer_id: text('customer_id').notNull().unique(),
     company_name: text('company_name').notNull(),
     status: text('status').notNull(),
-    affiliate_partner: text('affiliate_partner'),
-    affiliate_account_executive: text('affiliate_account_executive'), // New field for v1.3
+    affiliate_partner: text('affiliate_partner'), // Legacy field - to be migrated
+    affiliate_account_executive: text('affiliate_account_executive'), // Legacy field - to be migrated
+    affiliate_id: uuid('affiliate_id').references(() => affiliates.id), // New v1.3 field
+    affiliate_ae_id: uuid('affiliate_ae_id').references(() => affiliate_aes.id), // New v1.3 field
     next_step: text('next_step'),
     physical_address: text('physical_address'),
     billing_address: text('billing_address'),
@@ -60,6 +62,20 @@ export const customer_notes = pgTable('customer_notes', {
     updated_at: timestamp('updated_at').defaultNow().notNull()
 });
 
+// New affiliate management tables
+export const affiliates = pgTable('affiliates', {
+    id: uuid('id').primaryKey().defaultRandom(),
+    name: text('name').notNull().unique(),
+    created_at: timestamp('created_at').defaultNow(),
+});
+
+export const affiliate_aes = pgTable('affiliate_aes', {
+    id: uuid('id').primaryKey().defaultRandom(),
+    affiliate_id: uuid('affiliate_id').references(() => affiliates.id, { onDelete: 'cascade' }),
+    name: text('name').notNull(),
+    created_at: timestamp('created_at').defaultNow(),
+});
+
 // Relations
 export const usersRelations = relations(users, ({ many }) => ({
     customers_created: many(customers, { relationName: 'created_by' }),
@@ -69,6 +85,14 @@ export const usersRelations = relations(users, ({ many }) => ({
 export const customersRelations = relations(customers, ({ many, one }) => ({
     files: many(customer_files),
     notes: many(customer_notes),
+    affiliate: one(affiliates, {
+        fields: [customers.affiliate_id],
+        references: [affiliates.id],
+    }),
+    affiliate_ae: one(affiliate_aes, {
+        fields: [customers.affiliate_ae_id],
+        references: [affiliate_aes.id],
+    }),
     creator: one(users, {
         fields: [customers.created_by],
         references: [users.id],
@@ -78,6 +102,19 @@ export const customersRelations = relations(customers, ({ many, one }) => ({
         fields: [customers.updated_by],
         references: [users.id],
         relationName: 'updated_by',
+    }),
+}));
+
+export const affiliatesRelations = relations(affiliates, ({ many }) => ({
+    customers: many(customers),
+    affiliate_aes: many(affiliate_aes),
+}));
+
+export const affiliateAesRelations = relations(affiliate_aes, ({ many, one }) => ({
+    customers: many(customers),
+    affiliate: one(affiliates, {
+        fields: [affiliate_aes.affiliate_id],
+        references: [affiliates.id],
     }),
 }));
 
@@ -111,3 +148,9 @@ export type InsertCustomerFile = typeof customer_files.$inferInsert;
 
 export type CustomerNote = typeof customer_notes.$inferSelect;
 export type InsertCustomerNote = typeof customer_notes.$inferInsert;
+
+export type Affiliate = typeof affiliates.$inferSelect;
+export type InsertAffiliate = typeof affiliates.$inferInsert;
+
+export type AffiliateAE = typeof affiliate_aes.$inferSelect;
+export type InsertAffiliateAE = typeof affiliate_aes.$inferInsert;

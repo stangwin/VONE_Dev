@@ -412,6 +412,23 @@ class DatabaseAPI {
             throw error;
         }
     }
+
+    // Affiliate management methods
+    async getAffiliates() {
+        return await this.makeRequest('GET', '/api/affiliates');
+    }
+
+    async createAffiliate(name) {
+        return await this.makeRequest('POST', '/api/affiliates', { name });
+    }
+
+    async getAffiliateAEs(affiliateId) {
+        return await this.makeRequest('GET', `/api/affiliates/${affiliateId}/aes`);
+    }
+
+    async createAffiliateAE(affiliateId, name) {
+        return await this.makeRequest('POST', `/api/affiliates/${affiliateId}/aes`, { name });
+    }
 }
 
 // CRM Application
@@ -463,7 +480,10 @@ class CRMApp {
             console.log('Step 6: Initializing sidebar...');
             this.initializeSidebar();
             
-            console.log('Step 7: Showing dashboard view...');
+            console.log('Step 7: Loading affiliate data...');
+            await this.loadAffiliates();
+            
+            console.log('Step 8: Showing dashboard view...');
             this.showView("dashboard");
             
             console.log("=== CRM INIT SUCCESSFUL ===");
@@ -1628,6 +1648,126 @@ class CRMApp {
 
     showAddCustomerForm() {
         this.showView("customer-form");
+        // Load affiliates when showing form
+        this.loadAffiliates();
+    }
+
+    // Affiliate Management Methods
+    async loadAffiliates() {
+        try {
+            const affiliates = await this.api.getAffiliates();
+            this.populateAffiliateDropdown(affiliates);
+        } catch (error) {
+            console.error('Failed to load affiliates:', error);
+        }
+    }
+
+    populateAffiliateDropdown(affiliates) {
+        const dropdown = document.getElementById('affiliate-partner');
+        if (!dropdown) return;
+
+        // Clear existing options except the first one
+        dropdown.innerHTML = '<option value="">Select Affiliate Partner</option>';
+        
+        affiliates.forEach(affiliate => {
+            const option = document.createElement('option');
+            option.value = affiliate.id;
+            option.textContent = affiliate.name;
+            dropdown.appendChild(option);
+        });
+    }
+
+    async loadAffiliateAEs() {
+        const affiliateSelect = document.getElementById('affiliate-partner');
+        const aeSelect = document.getElementById('affiliate-account-executive');
+        const addAEBtn = document.getElementById('add-ae-btn');
+        
+        if (!affiliateSelect.value) {
+            aeSelect.innerHTML = '<option value="">Select Affiliate AE</option>';
+            aeSelect.disabled = true;
+            addAEBtn.disabled = true;
+            return;
+        }
+
+        try {
+            const aes = await this.api.getAffiliateAEs(affiliateSelect.value);
+            
+            aeSelect.innerHTML = '<option value="">Select Affiliate AE</option>';
+            aes.forEach(ae => {
+                const option = document.createElement('option');
+                option.value = ae.id;
+                option.textContent = ae.name;
+                aeSelect.appendChild(option);
+            });
+            
+            aeSelect.disabled = false;
+            addAEBtn.disabled = false;
+        } catch (error) {
+            console.error('Failed to load affiliate AEs:', error);
+            aeSelect.innerHTML = '<option value="">Error loading AEs</option>';
+        }
+    }
+
+    showAddAffiliateModal() {
+        document.getElementById('new-affiliate-name').value = '';
+        document.getElementById('add-affiliate-modal').style.display = 'flex';
+    }
+
+    closeAddAffiliateModal() {
+        document.getElementById('add-affiliate-modal').style.display = 'none';
+    }
+
+    async handleAddAffiliate(event) {
+        event.preventDefault();
+        const name = document.getElementById('new-affiliate-name').value.trim();
+        
+        if (!name) return;
+
+        try {
+            await this.api.createAffiliate(name);
+            this.closeAddAffiliateModal();
+            await this.loadAffiliates();
+            this.showToast('Affiliate added successfully', 'success');
+        } catch (error) {
+            console.error('Failed to add affiliate:', error);
+            this.showToast('Failed to add affiliate', 'error');
+        }
+    }
+
+    showAddAffiliateAEModal() {
+        const affiliateSelect = document.getElementById('affiliate-partner');
+        const selectedOption = affiliateSelect.options[affiliateSelect.selectedIndex];
+        
+        if (!selectedOption || !selectedOption.value) {
+            this.showToast('Please select an affiliate first', 'error');
+            return;
+        }
+
+        document.getElementById('selected-affiliate-display').value = selectedOption.text;
+        document.getElementById('new-affiliate-ae-name').value = '';
+        document.getElementById('add-affiliate-ae-modal').style.display = 'flex';
+    }
+
+    closeAddAffiliateAEModal() {
+        document.getElementById('add-affiliate-ae-modal').style.display = 'none';
+    }
+
+    async handleAddAffiliateAE(event) {
+        event.preventDefault();
+        const affiliateSelect = document.getElementById('affiliate-partner');
+        const name = document.getElementById('new-affiliate-ae-name').value.trim();
+        
+        if (!name || !affiliateSelect.value) return;
+
+        try {
+            await this.api.createAffiliateAE(affiliateSelect.value, name);
+            this.closeAddAffiliateAEModal();
+            await this.loadAffiliateAEs();
+            this.showToast('Account Executive added successfully', 'success');
+        } catch (error) {
+            console.error('Failed to add affiliate AE:', error);
+            this.showToast('Failed to add Account Executive', 'error');
+        }
     }
 
     async showCustomerDetail(customerId, scrollToSection = null) {
@@ -3733,8 +3873,8 @@ class CRMApp {
         return {
             company_name: getField('companyName') || getField('company-name') || formData.get('company-name'),
             status: formData.get('status') || 'Lead',
-            affiliate_partner: formData.get('affiliatePartner') || formData.get('affiliate-partner'),
-            affiliate_account_executive: formData.get('affiliateAccountExecutive') || formData.get('affiliate-account-executive'),
+            affiliate_id: formData.get('affiliatePartner') || formData.get('affiliate-partner') || null,
+            affiliate_ae_id: formData.get('affiliateAccountExecutive') || formData.get('affiliate-account-executive') || null,
             next_step: getField('nextStep') || getField('next-step'),
             physical_address: physicalAddress,
             billing_address: billingAddress,

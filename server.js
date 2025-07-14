@@ -848,6 +848,25 @@ const server = http.createServer(async (req, res) => {
           paramIndex++;
         }
         
+        if ('affiliate_account_executive' in body) {
+          updateFields.push(`affiliate_account_executive = $${paramIndex}`);
+          updateValues.push(body.affiliate_account_executive || null);
+          paramIndex++;
+        }
+        
+        // Handle new UUID-based affiliate fields for v1.3
+        if ('affiliate_id' in body) {
+          updateFields.push(`affiliate_id = $${paramIndex}`);
+          updateValues.push(body.affiliate_id || null);
+          paramIndex++;
+        }
+        
+        if ('affiliate_ae_id' in body) {
+          updateFields.push(`affiliate_ae_id = $${paramIndex}`);
+          updateValues.push(body.affiliate_ae_id || null);
+          paramIndex++;
+        }
+        
         // Always update the timestamp
         updateFields.push(`updated_at = NOW()`);
         
@@ -1259,6 +1278,127 @@ const server = http.createServer(async (req, res) => {
         console.error('Error deleting note:', error);
         res.writeHead(500, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: 'Failed to delete note: ' + error.message }));
+      }
+      return;
+    }
+
+    // AFFILIATE MANAGEMENT API ENDPOINTS
+    
+    // Get all affiliates
+    if (pathname === '/api/affiliates' && req.method === 'GET') {
+      if (!isAuthenticated(req)) {
+        res.writeHead(401, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Authentication required' }));
+        return;
+      }
+      
+      try {
+        const result = await pool.query('SELECT * FROM affiliates ORDER BY name');
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify(result.rows));
+      } catch (error) {
+        console.error('Error fetching affiliates:', error);
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Failed to fetch affiliates' }));
+      }
+      return;
+    }
+    
+    // Create new affiliate
+    if (pathname === '/api/affiliates' && req.method === 'POST') {
+      if (!isAuthenticated(req)) {
+        res.writeHead(401, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Authentication required' }));
+        return;
+      }
+      
+      try {
+        const { name } = await parseJsonBody(req);
+        if (!name || !name.trim()) {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Affiliate name is required' }));
+          return;
+        }
+        
+        const result = await pool.query(
+          'INSERT INTO affiliates (name) VALUES ($1) RETURNING *',
+          [name.trim()]
+        );
+        
+        res.writeHead(201, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify(result.rows[0]));
+      } catch (error) {
+        console.error('Error creating affiliate:', error);
+        if (error.code === '23505') { // Unique constraint violation
+          res.writeHead(409, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Affiliate name already exists' }));
+        } else {
+          res.writeHead(500, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Failed to create affiliate' }));
+        }
+      }
+      return;
+    }
+    
+    // Get affiliate AEs for a specific affiliate
+    if (pathname.match(/^\/api\/affiliates\/[a-fA-F0-9-]+\/aes$/) && req.method === 'GET') {
+      if (!isAuthenticated(req)) {
+        res.writeHead(401, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Authentication required' }));
+        return;
+      }
+      
+      try {
+        const affiliateId = pathname.split('/')[3];
+        const result = await pool.query(
+          'SELECT * FROM affiliate_aes WHERE affiliate_id = $1 ORDER BY name',
+          [affiliateId]
+        );
+        
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify(result.rows));
+      } catch (error) {
+        console.error('Error fetching affiliate AEs:', error);
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Failed to fetch affiliate AEs' }));
+      }
+      return;
+    }
+    
+    // Create new affiliate AE
+    if (pathname.match(/^\/api\/affiliates\/[a-fA-F0-9-]+\/aes$/) && req.method === 'POST') {
+      if (!isAuthenticated(req)) {
+        res.writeHead(401, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Authentication required' }));
+        return;
+      }
+      
+      try {
+        const affiliateId = pathname.split('/')[3];
+        const { name } = await parseJsonBody(req);
+        
+        if (!name || !name.trim()) {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Affiliate AE name is required' }));
+          return;
+        }
+        
+        const result = await pool.query(
+          'INSERT INTO affiliate_aes (affiliate_id, name) VALUES ($1, $2) RETURNING *',
+          [affiliateId, name.trim()]
+        );
+        
+        res.writeHead(201, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify(result.rows[0]));
+      } catch (error) {
+        console.error('Error creating affiliate AE:', error);
+        if (error.code === '23505') { // Unique constraint violation
+          res.writeHead(409, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Affiliate AE name already exists for this affiliate' }));
+        } else {
+          res.writeHead(500, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Failed to create affiliate AE' }));
+        }
       }
       return;
     }
