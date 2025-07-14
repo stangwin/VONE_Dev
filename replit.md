@@ -90,6 +90,7 @@ The current implementation uses a client-side localStorage database for data per
 
 Preferred communication style: Simple, everyday language.
 UI preferences: Minimal, compact interfaces - avoid large/obtrusive action buttons.
+Change Management: Always ask permission before modifying production environment - formal change management process required.
 
 ## Deployment & Security Status
 
