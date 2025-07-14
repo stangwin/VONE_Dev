@@ -553,13 +553,13 @@ class CRMApp {
     }
 
     setupDevelopmentUI() {
+        // Add dev-environment class to body for styling adjustments
+        document.body.classList.add('dev-environment');
+        
         // Show development banner
         const banner = document.getElementById('dev-environment-banner');
         if (banner) {
             banner.style.display = 'block';
-            
-            // Adjust body padding to account for banner
-            document.body.style.paddingTop = '40px';
         }
         
         // Update page title for development with VONE branding

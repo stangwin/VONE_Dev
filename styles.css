@@ -2572,6 +2572,12 @@ nav {
     overflow-y: auto;
 }
 
+/* Adjust sidebar for development banner */
+body.dev-environment .quick-action-sidebar {
+    top: 40px;
+    height: calc(100vh - 40px);
+}
+
 .quick-action-sidebar.collapsed {
     transform: translateX(-240px);
 }
@@ -2715,6 +2721,11 @@ nav {
     min-height: 100vh;
     padding: 1rem 0.5rem;
     width: calc(100% - 280px);
+}
+
+/* Adjust main content for development banner */
+body.dev-environment .main-content {
+    padding-top: calc(1rem + 40px);
 }
 
 .quick-action-sidebar.collapsed + .main-content {
