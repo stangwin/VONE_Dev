@@ -13,7 +13,10 @@ class AuthService {
   }
 
   async verifyPassword(password, hash) {
-    return await bcrypt.compare(password, hash);
+    console.log('Verifying password with hash length:', hash?.length);
+    const result = await bcrypt.compare(password, hash);
+    console.log('bcrypt.compare result:', result);
+    return result;
   }
 
   async createUser({ name, email, password, auth_provider = 'local', role = 'user' }) {
@@ -175,17 +178,26 @@ class AuthService {
   }
 
   async authenticateUser(email, password) {
+    console.log('AuthService.authenticateUser called with:', email);
+    
     const user = await this.getUserByEmail(email);
+    console.log('User found:', !!user);
     
     if (!user || !user.password_hash) {
+      console.log('No user or no password hash found');
       return null;
     }
 
+    console.log('Verifying password...');
     const isValid = await this.verifyPassword(password, user.password_hash);
+    console.log('Password verification result:', isValid);
+    
     if (!isValid) {
+      console.log('Password verification failed');
       return null;
     }
 
+    console.log('Authentication successful for user:', user.id);
     // Return user without password hash
     const { password_hash, ...userWithoutPassword } = user;
     return userWithoutPassword;

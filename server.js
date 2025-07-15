@@ -290,9 +290,12 @@ const server = http.createServer(async (req, res) => {
         
         // Try normal authentication first
         try {
+          console.log('Attempting authentication for:', email);
           user = await authService.authenticateUser(email, password);
+          console.log('Authentication result:', user ? 'SUCCESS' : 'FAILED');
         } catch (error) {
           console.log('Normal authentication failed:', error.message);
+          console.log('Error stack:', error.stack);
           user = null;
         }
         
