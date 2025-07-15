@@ -191,21 +191,21 @@ class DatabaseAPI {
     }
 
     async deleteCustomer(customerId) {
-        try {
-            const response = await fetch(`/api/customers/${customerId}`, {
-                ...this.getFetchOptions('DELETE')
-            });
-            if (!response.ok) {
-                if (response.status === 403) {
-                    throw new Error('Admin access required');
-                }
-                throw new Error(`HTTP ${response.status}`);
-            }
-            return await response.json();
-        } catch (error) {
-            console.error('Error deleting customer:', error);
-            throw error;
+        if (!customerId) {
+            throw new Error('Customer ID is required');
         }
+        
+        const response = await fetch(`/api/customers/${customerId}`, {
+            method: 'DELETE',
+            credentials: 'include'
+        });
+        
+        if (!response.ok) {
+            const responseText = await response.text();
+            throw new Error(`${response.status} ${responseText}`);
+        }
+        
+        return await response.json();
     }
 
     // File management methods
@@ -954,8 +954,8 @@ class CRMApp {
                         <td class="table-actions">
                             <button class="action-icon" onclick="app.createInQBO('${customer.customer_id}')" title="Create in QuickBooks">💼</button>
                             <button class="action-icon" onclick="app.sendAgreement('${customer.customer_id}')" title="Send Agreement">📄</button>
-                            ${this.userData && this.userData.role === 'admin' ? 
-                                `<button class="action-icon delete-btn" onclick="app.deleteCustomer('${customer.customer_id}')" title="Delete Customer">🗑</button>` : 
+                            ${this.currentUser?.role === 'admin' ? 
+                                `<button class="action-icon delete-btn" data-customer-id="${customer.customer_id}" title="Delete Customer">🗑</button>` : 
                                 ''
                             }
                         </td>
@@ -965,6 +965,24 @@ class CRMApp {
 
             console.log('Setting table innerHTML...');
             tableBody.innerHTML = rowsHTML;
+            
+            // Add event listeners for delete buttons
+            const deleteButtons = tableBody.querySelectorAll('.delete-btn');
+            deleteButtons.forEach(button => {
+                button.addEventListener('click', async () => {
+                    const customerId = button.getAttribute('data-customer-id');
+                    if (!confirm('Archive this customer?')) return;
+                    
+                    try {
+                        await this.db.deleteCustomer(customerId);
+                        this.showToast('Customer archived', 'success');
+                        await this.loadCustomers();
+                    } catch (err) {
+                        console.error(err);
+                        alert(err.message);
+                    }
+                });
+            });
             
             console.log('SUCCESS: Rendered customers table');
             console.log('=== RENDER DEBUG END ===');
@@ -1702,36 +1720,7 @@ class CRMApp {
         }
     }
 
-    async deleteCustomer(customerId) {
-        if (!this.userData || this.userData.role !== 'admin') {
-            this.showToast('Admin access required', 'error');
-            return;
-        }
 
-        if (!confirm('Are you sure you want to delete this customer? This action cannot be undone.')) {
-            return;
-        }
-
-        try {
-            await this.db.deleteCustomer(customerId);
-            
-            // Remove customer from local arrays
-            this.customers = this.customers.filter(c => c.customer_id !== customerId);
-            this.filteredCustomers = this.filteredCustomers.filter(c => c.customer_id !== customerId);
-            
-            // Re-render the customer list
-            this.renderCustomerList();
-            
-            this.showToast('Customer deleted successfully', 'success');
-        } catch (error) {
-            console.error('Error deleting customer:', error);
-            if (error.message === 'Admin access required') {
-                this.showToast('Admin access required', 'error');
-            } else {
-                this.showToast('Failed to delete customer: ' + error.message, 'error');
-            }
-        }
-    }
 
     showAddCustomerForm() {
         this.showView("customer-form");
