@@ -576,17 +576,28 @@ const server = http.createServer(async (req, res) => {
           return;
         }
         
-        // Get customers with affiliate data joined
-        const result = await pool.query(`
-          SELECT 
-            c.*,
-            a.name as affiliate_name,
-            ae.name as affiliate_ae_name
-          FROM customers c
-          LEFT JOIN affiliates a ON c.affiliate_id = a.id
-          LEFT JOIN affiliate_aes ae ON c.affiliate_ae_id = ae.id
-          ORDER BY c.company_name
-        `);
+        // Check if we're in development (has affiliate tables) or production (no affiliate tables)
+        let result;
+        if (isDevelopment) {
+          // Development environment - include affiliate data
+          result = await pool.query(`
+            SELECT 
+              c.*,
+              a.name as affiliate_name,
+              ae.name as affiliate_ae_name
+            FROM customers c
+            LEFT JOIN affiliates a ON c.affiliate_id = a.id
+            LEFT JOIN affiliate_aes ae ON c.affiliate_ae_id = ae.id
+            ORDER BY c.company_name
+          `);
+        } else {
+          // Production environment - simple customer query without affiliate joins
+          result = await pool.query(`
+            SELECT c.*
+            FROM customers c
+            ORDER BY c.company_name
+          `);
+        }
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify(result.rows));
         return;
@@ -600,13 +611,19 @@ const server = http.createServer(async (req, res) => {
           return;
         }
         
-        const schemaPrefix = process.env.ENVIRONMENT === 'development' ? 'vantix_dev.' : '';
+        // Only serve affiliates in development environment
+        if (!isDevelopment) {
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify([])); // Return empty array for production
+          return;
+        }
+        
         const result = await pool.query(`
           SELECT 
             a.*,
             COUNT(c.id) as customer_count
-          FROM ${schemaPrefix}affiliates a
-          LEFT JOIN ${schemaPrefix}customers c ON a.id = c.affiliate_id
+          FROM affiliates a
+          LEFT JOIN customers c ON a.id = c.affiliate_id
           GROUP BY a.id, a.name, a.created_at
           ORDER BY a.name
         `);

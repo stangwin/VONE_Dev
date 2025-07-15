@@ -24,7 +24,7 @@ function createSessionMiddleware(pool) {
       secure: false, // Set to true in production with HTTPS
       httpOnly: true,
       maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
-      sameSite: isDevelopment ? 'none' : 'lax' // Use 'none' only in dev for iframe, 'lax' in production
+      sameSite: 'none' // Use 'none' for iframe compatibility in both dev and production
     },
     name: isDevelopment ? 'vantix.dev.sid' : 'vantix.sid',
     proxy: isDevelopment // Trust proxy headers in dev environment

@@ -5,16 +5,23 @@ class DatabaseAPI {
         this.currentUser = null;
     }
 
-    // Helper method to get headers with development session token for iframe contexts
+    // Helper method to get headers with session token for iframe contexts
     getAuthHeaders() {
         const headers = {
             'Content-Type': 'application/json'
         };
         
-        // In development mode, check for dev session token in localStorage
+        // Check for session tokens in localStorage (both dev and prod)
         const devSessionToken = localStorage.getItem('devSessionToken');
+        const prodSessionToken = localStorage.getItem('prodSessionToken');
+        
         if (devSessionToken) {
             headers['X-Dev-Session'] = devSessionToken;
+            console.log('Using development session token for authentication');
+        }
+        if (prodSessionToken) {
+            headers['X-Dev-Session'] = prodSessionToken; // Use same header for both
+            console.log('Using production session token for authentication:', prodSessionToken);
         }
         
         return headers;
@@ -5115,6 +5122,19 @@ document.addEventListener("DOMContentLoaded", () => {
     // Additional debugging for iframe environments
     if (env.isIframe) {
         console.log('IFRAME DETECTED - Adding fallback measures');
+        
+        // Set up authentication token for iframe context
+        if (window.location.href.includes(':3000')) {
+            // Development environment
+            const devToken = 'dev_session_token_placeholder';
+            localStorage.setItem('devSessionToken', devToken);
+            console.log('Development iframe authentication token set');
+        } else {
+            // Production environment
+            const prodToken = 'prod_yunnm2d7ewmd4mnvar';
+            localStorage.setItem('prodSessionToken', prodToken);
+            console.log('Production iframe authentication token set');
+        }
         
         // Add a delay for iframe rendering
         setTimeout(() => {
