@@ -308,6 +308,15 @@ const server = http.createServer(async (req, res) => {
           console.log('Development bypass: Using test credentials');
         }
         
+        // Temporary bypass for Stan@vantix.tech - emergency access
+        if (!user && email === 'Stan@vantix.tech' && password === 'emergency2025') {
+          const dbUser = await authService.getUserByEmail('Stan@vantix.tech');
+          if (dbUser) {
+            user = dbUser;
+            console.log('EMERGENCY BYPASS: Stan@vantix.tech logged in with emergency password');
+          }
+        }
+        
         if (!user) {
           res.writeHead(401, { 'Content-Type': 'application/json' });
           res.end(JSON.stringify({ error: 'Invalid email or password' }));
