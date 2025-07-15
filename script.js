@@ -986,7 +986,7 @@ class CRMApp {
             
             deleteButtons.forEach(button => {
                 console.log('Attaching event listener to button:', button.getAttribute('data-customer-id'));
-                button.addEventListener('click', (e) => {
+                button.addEventListener('click', async (e) => {
                     e.stopPropagation();
                     console.log('🗑️ DELETE BUTTON CLICKED - BEFORE CONFIRM');
                     console.log('1. Customer ID captured:', button.getAttribute('data-customer-id'));
@@ -1009,26 +1009,35 @@ class CRMApp {
                     console.log('5. Row element found:', !!row);
                     console.log('6. window.app exists:', !!window.app);
                     console.log('7. window.app.api exists:', !!window.app?.api);
-                    console.log('8. window.app.api.deleteCustomer exists:', !!window.app?.api?.deleteCustomer);
+                    console.log('8. window.app.api.deleteCustomer exists:', typeof window.app?.api?.deleteCustomer);
                     
-                    console.log('9. Calling window.app.api.deleteCustomer...');
+                    console.log('9. About to call delete method...');
                     
-                    // Use correct API reference - it's this.api, not this.db
-                    window.app.api.deleteCustomer(customerId)
-                        .then((result) => {
-                            console.log('✅ DELETE SUCCESS - Result:', result);
-                            console.log('10. Removing row from table...');
-                            window.app.showToast('Customer archived');
-                            row.remove();
-                            console.log('11. Row removed successfully');
-                        })
-                        .catch(err => {
-                            console.error('❌ DELETE FAILED');
-                            console.error('Error object:', err);
-                            console.error('Error message:', err.message);
-                            console.error('Error stack:', err.stack);
-                            window.app.showToast('Delete failed: ' + err.message, 'error');
-                        });
+                    try {
+                        // Use the API instance directly from this context
+                        const apiInstance = window.app.api;
+                        console.log('10. API instance:', apiInstance);
+                        console.log('11. Calling deleteCustomer method...');
+                        
+                        const result = await apiInstance.deleteCustomer(customerId);
+                        
+                        console.log('✅ DELETE SUCCESS - Result:', result);
+                        console.log('12. Removing row from table...');
+                        window.app.showToast('Customer archived');
+                        row.remove();
+                        console.log('13. Row removed successfully');
+                        
+                        // Refresh the customer list
+                        await window.app.loadCustomers();
+                        console.log('14. Customer list refreshed');
+                        
+                    } catch (err) {
+                        console.error('❌ DELETE FAILED');
+                        console.error('Error object:', err);
+                        console.error('Error message:', err.message);
+                        console.error('Error stack:', err.stack);
+                        window.app.showToast('Delete failed: ' + err.message, 'error');
+                    }
                 });
             });
             
