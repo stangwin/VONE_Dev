@@ -2309,7 +2309,7 @@ nav {
     text-decoration: underline;
 }
 
-.status-dropdown, .next-step-dropdown {
+.status-dropdown, .next-step-dropdown, .affiliate-dropdown, .affiliate-ae-dropdown {
     border: none;
     background: transparent;
     padding: 0.25rem 0.5rem;
@@ -2318,6 +2318,29 @@ nav {
     cursor: pointer;
     font-family: system-ui, "Segoe UI", "Helvetica Neue", sans-serif;
     color: #33475b;
+    transition: background-color 0.2s ease;
+}
+
+.affiliate-dropdown, .affiliate-ae-dropdown {
+    max-width: 140px;
+}
+
+.affiliate-dropdown:hover, .affiliate-ae-dropdown:hover,
+.status-dropdown:hover, .next-step-dropdown:hover {
+    background-color: #f8f9fa;
+}
+
+.affiliate-dropdown:disabled, .affiliate-ae-dropdown:disabled {
+    background-color: #f5f5f5;
+    color: #999;
+    cursor: not-allowed;
+}
+
+/* Special styling for "Add New" options */
+.affiliate-dropdown option[value="add_new"],
+.affiliate-ae-dropdown option[value="add_new"] {
+    color: #007bff;
+    font-weight: bold;
 }
 
 .status-dropdown:hover, .next-step-dropdown:hover {

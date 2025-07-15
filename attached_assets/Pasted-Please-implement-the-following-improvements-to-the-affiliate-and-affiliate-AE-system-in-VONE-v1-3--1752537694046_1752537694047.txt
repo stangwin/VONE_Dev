@@ -1,0 +1,15 @@
+Please implement the following improvements to the affiliate and affiliate AE system in VONE v1.3:
+	1.	On the dashboard page, both the Affiliate Company and Affiliate AE fields must function as dropdown menus rather than freeform text.
+	2.	On the customer detail page, these same fields must also be editable via dropdown.
+	3.	The Affiliate dropdown should include all existing affiliate companies. At the bottom of this list, include an “➕ Add New Affiliate” option — but this option should only be visible to admin users. If a non-admin attempts to access it, it should either be hidden or return a permissions alert.
+	4.	When a user selects an Affiliate, the Affiliate AE dropdown should dynamically populate only the AEs associated with that affiliate.
+	5.	At the bottom of the Affiliate AE dropdown, include an “➕ Add New AE” option that any user can access. It should allow entering a name and optional contact info. This new AE should be added under the selected affiliate.
+	6.	Changes to Affiliate or AE assignments must be reflected immediately in both the dashboard and the customer detail view.
+	7.	The existing admin panel for managing affiliates and AEs is fine and should remain available to admin users.
+	8.	Ensure that all fields — including Affiliate, Affiliate AE, Company Name, Primary Contact, and Primary Contact Phone — are inline-editable on the dashboard by users with appropriate permissions.
+	9.	Also, confirm that when a new customer is created, the AE list is properly filtered based on the selected affiliate.
+	10.	Finally, we need to add basic user role support to the system. Please add a role column to the users table with the values 'admin' and 'user'. For now, all existing users can default to 'admin'. In the future, we’ll expand role-specific UI logic. But for now:
+	•	Admin users can access the admin panel and add affiliates
+	•	All users can assign AEs or add new AEs under existing affiliates
+
+Please apply these changes in dev only as part of v1.3. Confirm dropdown behavior, field editability, and proper user role gating for affiliate creation. Let me know if any assumptions need clarification.

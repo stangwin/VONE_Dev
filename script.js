@@ -491,6 +491,7 @@ class CRMApp {
             
             console.log('Step 7: Loading affiliate data...');
             await this.loadAffiliates();
+            await this.getAffiliateAEs();
             
             console.log('Step 8: Showing dashboard view...');
             this.showView("dashboard");
@@ -912,16 +913,11 @@ class CRMApp {
                                 ''
                             }
                         </td>
-                        <td>${this.escapeHtml(customer.affiliate_partner || '')}</td>
                         <td>
-                            <input type="text" 
-                                class="account-exec-input" 
-                                data-customer-id="${customer.customer_id}" 
-                                data-original-value="${customer.affiliate_account_executive || ''}"
-                                value="${this.escapeHtml(customer.affiliate_account_executive || '')}" 
-                                placeholder="Account Executive"
-                                onchange="app.updateAccountExecutive(this)"
-                                onfocus="this.select()">
+                            ${this.renderAffiliateDropdown(customer)}
+                        </td>
+                        <td>
+                            ${this.renderAffiliateAEDropdown(customer)}
                         </td>
                         <td>${this.escapeHtml(primaryContactName)}</td>
                         <td>${this.escapeHtml(primaryContactPhone)}</td>
@@ -1685,9 +1681,11 @@ class CRMApp {
     async loadAffiliates() {
         try {
             const affiliates = await this.api.getAffiliates();
+            this.affiliates = affiliates || [];
             this.populateAffiliateDropdown(affiliates);
         } catch (error) {
             console.error('Failed to load affiliates:', error);
+            this.affiliates = [];
         }
     }
 
@@ -1704,6 +1702,12 @@ class CRMApp {
             option.textContent = affiliate.name;
             dropdown.appendChild(option);
         });
+
+        // Show/hide add button based on admin status
+        const addBtn = document.querySelector('[onclick="app.showAddAffiliateModal()"]');
+        if (addBtn) {
+            addBtn.style.display = this.currentUser?.role === 'admin' ? 'inline-block' : 'none';
+        }
     }
 
     async loadAffiliateAEs() {
@@ -1796,6 +1800,190 @@ class CRMApp {
         } catch (error) {
             console.error('Failed to add affiliate AE:', error);
             this.showToast('Failed to add Account Executive', 'error');
+        }
+    }
+
+    // New dropdown rendering and management functions for v1.3
+    renderAffiliateDropdown(customer) {
+        const isAdmin = this.currentUser?.role === 'admin';
+        const currentAffiliate = this.getAffiliateById(customer.affiliate_id) || this.getAffiliateByName(customer.affiliate_partner);
+        
+        let options = (this.affiliates || []).map(affiliate => 
+            `<option value="${affiliate.id}" ${customer.affiliate_id === affiliate.id ? 'selected' : ''}>
+                ${this.escapeHtml(affiliate.name)}
+            </option>`
+        ).join('');
+        
+        // Add "Add New Affiliate" option for admin users only
+        if (isAdmin) {
+            options += '<option value="add_new">➕ Add New Affiliate</option>';
+        }
+        
+        return `
+            <select class="affiliate-dropdown" 
+                    data-customer-id="${customer.customer_id}" 
+                    data-original-value="${customer.affiliate_id || ''}"
+                    onchange="app.handleAffiliateChange(this)">
+                <option value="">Select Affiliate</option>
+                ${options}
+            </select>
+        `;
+    }
+
+    renderAffiliateAEDropdown(customer) {
+        const currentAffiliate = this.getAffiliateById(customer.affiliate_id) || this.getAffiliateByName(customer.affiliate_partner);
+        const availableAEs = currentAffiliate ? 
+            (this.affiliateAEs || []).filter(ae => ae.affiliate_id === currentAffiliate.id) : 
+            [];
+        
+        let options = availableAEs.map(ae => 
+            `<option value="${ae.id}" ${customer.affiliate_ae_id === ae.id ? 'selected' : ''}>
+                ${this.escapeHtml(ae.name)}
+            </option>`
+        ).join('');
+        
+        // Add "Add New AE" option (available to all users)
+        if (currentAffiliate) {
+            options += '<option value="add_new">➕ Add New AE</option>';
+        }
+        
+        return `
+            <select class="affiliate-ae-dropdown" 
+                    data-customer-id="${customer.customer_id}" 
+                    data-original-value="${customer.affiliate_ae_id || ''}"
+                    data-affiliate-id="${currentAffiliate?.id || ''}"
+                    onchange="app.handleAffiliateAEChange(this)"
+                    ${!currentAffiliate ? 'disabled' : ''}>
+                <option value="">Select Account Executive</option>
+                ${options}
+            </select>
+        `;
+    }
+
+    // Helper functions for affiliate management
+    getAffiliateById(id) {
+        return (this.affiliates || []).find(affiliate => affiliate.id === id);
+    }
+
+    getAffiliateByName(name) {
+        return (this.affiliates || []).find(affiliate => affiliate.name === name);
+    }
+
+    getAffiliateAEById(id) {
+        return (this.affiliateAEs || []).find(ae => ae.id === id);
+    }
+
+    // Handle affiliate dropdown changes
+    async handleAffiliateChange(selectElement) {
+        const customerId = selectElement.dataset.customerId;
+        const newAffiliateId = selectElement.value;
+        const originalValue = selectElement.dataset.originalValue;
+
+        if (newAffiliateId === 'add_new') {
+            // Admin only - show add affiliate modal
+            if (this.currentUser?.role !== 'admin') {
+                alert('Only administrators can add new affiliates');
+                selectElement.value = originalValue;
+                return;
+            }
+            
+            const name = prompt('Enter new affiliate name:');
+            if (name && name.trim()) {
+                try {
+                    const newAffiliate = await this.api.createAffiliate(name.trim());
+                    this.affiliates.push(newAffiliate);
+                    
+                    // Update the dropdown and select the new affiliate
+                    selectElement.value = newAffiliate.id;
+                    await this.updateCustomerAffiliate(customerId, newAffiliate.id, null);
+                    this.showToast('New affiliate added successfully', 'success');
+                } catch (error) {
+                    console.error('Failed to add affiliate:', error);
+                    selectElement.value = originalValue;
+                    this.showToast('Failed to add affiliate', 'error');
+                }
+            } else {
+                selectElement.value = originalValue;
+            }
+            return;
+        }
+
+        // Update customer affiliate
+        await this.updateCustomerAffiliate(customerId, newAffiliateId, null);
+    }
+
+    // Handle affiliate AE dropdown changes
+    async handleAffiliateAEChange(selectElement) {
+        const customerId = selectElement.dataset.customerId;
+        const newAEId = selectElement.value;
+        const affiliateId = selectElement.dataset.affiliateId;
+        const originalValue = selectElement.dataset.originalValue;
+
+        if (newAEId === 'add_new') {
+            // Show add AE modal (available to all users)
+            const name = prompt('Enter new Account Executive name:');
+            if (name && name.trim()) {
+                try {
+                    const newAE = await this.api.createAffiliateAE(affiliateId, name.trim());
+                    this.affiliateAEs.push(newAE);
+                    
+                    // Update the dropdown and select the new AE
+                    selectElement.value = newAE.id;
+                    await this.updateCustomerAffiliate(customerId, affiliateId, newAE.id);
+                    this.showToast('New Account Executive added successfully', 'success');
+                } catch (error) {
+                    console.error('Failed to add AE:', error);
+                    selectElement.value = originalValue;
+                    this.showToast('Failed to add Account Executive', 'error');
+                }
+            } else {
+                selectElement.value = originalValue;
+            }
+            return;
+        }
+
+        // Update customer AE
+        await this.updateCustomerAffiliate(customerId, affiliateId, newAEId);
+    }
+
+    // Update customer affiliate and AE assignments
+    async updateCustomerAffiliate(customerId, affiliateId, aeId) {
+        try {
+            const updateData = {
+                affiliate_id: affiliateId || null,
+                affiliate_ae_id: aeId || null
+            };
+            
+            await this.api.updateCustomerAffiliate(customerId, affiliateId, aeId);
+            
+            // Update local data
+            const customer = this.customers.find(c => c.customer_id === customerId);
+            if (customer) {
+                customer.affiliate_id = affiliateId;
+                customer.affiliate_ae_id = aeId;
+            }
+
+            const filteredCustomer = this.filteredCustomers.find(c => c.customer_id === customerId);
+            if (filteredCustomer) {
+                filteredCustomer.affiliate_id = affiliateId;
+                filteredCustomer.affiliate_ae_id = aeId;
+            }
+
+            // Re-render the table to update all dropdowns
+            this.renderCustomerList();
+            
+            // Show success indicator
+            const affiliate = this.getAffiliateById(affiliateId);
+            const ae = this.getAffiliateAEById(aeId);
+            
+            this.showToast(`Updated assignment: ${affiliate?.name || 'None'} - ${ae?.name || 'None'}`, 'success');
+            
+        } catch (error) {
+            console.error('Failed to update customer affiliate:', error);
+            this.showToast('Failed to update assignment', 'error');
+            
+            // Revert dropdowns
+            this.renderCustomerList();
         }
     }
 
