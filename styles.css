@@ -2397,6 +2397,15 @@ nav {
     transform: scale(1.1);
 }
 
+.action-icon.delete-btn {
+    color: hsl(var(--danger));
+}
+
+.action-icon.delete-btn:hover {
+    background: hsl(var(--danger) / 0.1);
+    color: hsl(var(--danger));
+}
+
 .last-note {
     max-width: 200px;
     overflow: hidden;

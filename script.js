@@ -156,6 +156,15 @@ class DatabaseAPI {
             if (!response.ok) {
                 const errorText = await response.text();
                 console.error('Server error response:', errorText);
+                
+                // Handle duplicate customer error
+                if (response.status === 409) {
+                    const error = JSON.parse(errorText);
+                    if (error.error === 'duplicate') {
+                        throw new Error('DUPLICATE_CUSTOMER');
+                    }
+                }
+                
                 throw new Error(`HTTP ${response.status}: ${errorText}`);
             }
             
@@ -184,9 +193,14 @@ class DatabaseAPI {
     async deleteCustomer(customerId) {
         try {
             const response = await fetch(`/api/customers/${customerId}`, {
-                method: 'DELETE'
+                ...this.getFetchOptions('DELETE')
             });
-            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            if (!response.ok) {
+                if (response.status === 403) {
+                    throw new Error('Admin access required');
+                }
+                throw new Error(`HTTP ${response.status}`);
+            }
             return await response.json();
         } catch (error) {
             console.error('Error deleting customer:', error);
@@ -627,6 +641,7 @@ class CRMApp {
             }
 
             this.currentUser = await response.json();
+            this.userData = this.currentUser; // Ensure consistency
             this.updateUserUI();
             
             // Show admin button for admin users
@@ -939,6 +954,10 @@ class CRMApp {
                         <td class="table-actions">
                             <button class="action-icon" onclick="app.createInQBO('${customer.customer_id}')" title="Create in QuickBooks">💼</button>
                             <button class="action-icon" onclick="app.sendAgreement('${customer.customer_id}')" title="Send Agreement">📄</button>
+                            ${this.userData && this.userData.role === 'admin' ? 
+                                `<button class="action-icon delete-btn" onclick="app.deleteCustomer('${customer.customer_id}')" title="Delete Customer">🗑</button>` : 
+                                ''
+                            }
                         </td>
                     </tr>
                 `;
@@ -1670,6 +1689,7 @@ class CRMApp {
 
             // Clear any local state regardless of server response
             this.currentUser = null;
+            this.userData = null;
             this.customers = [];
             this.filteredCustomers = [];
             
@@ -1679,6 +1699,37 @@ class CRMApp {
             console.error('Logout error:', error);
             // Still redirect on error
             window.location.href = '/auth.html';
+        }
+    }
+
+    async deleteCustomer(customerId) {
+        if (!this.userData || this.userData.role !== 'admin') {
+            this.showToast('Admin access required', 'error');
+            return;
+        }
+
+        if (!confirm('Are you sure you want to delete this customer? This action cannot be undone.')) {
+            return;
+        }
+
+        try {
+            await this.db.deleteCustomer(customerId);
+            
+            // Remove customer from local arrays
+            this.customers = this.customers.filter(c => c.customer_id !== customerId);
+            this.filteredCustomers = this.filteredCustomers.filter(c => c.customer_id !== customerId);
+            
+            // Re-render the customer list
+            this.renderCustomerList();
+            
+            this.showToast('Customer deleted successfully', 'success');
+        } catch (error) {
+            console.error('Error deleting customer:', error);
+            if (error.message === 'Admin access required') {
+                this.showToast('Admin access required', 'error');
+            } else {
+                this.showToast('Failed to delete customer: ' + error.message, 'error');
+            }
         }
     }
 
@@ -4329,12 +4380,27 @@ class CRMApp {
         e.preventDefault();
         this.clearErrors();
 
+        // Double-click protection
+        const submitButton = e.target.querySelector('button[type="submit"]');
+        if (submitButton && submitButton.disabled) {
+            return; // Prevent double submission
+        }
+        
+        if (submitButton) {
+            submitButton.disabled = true;
+            submitButton.textContent = 'Saving...';
+        }
+
         const formData = new FormData(e.target);
         const testMode = document.getElementById('test-mode-toggle')?.checked;
         
         // Prevent saving if in test mode
         if (testMode) {
             alert('Test Mode is enabled. Please disable Test Mode to save the customer to the database.');
+            if (submitButton) {
+                submitButton.disabled = false;
+                submitButton.textContent = 'Save Customer';
+            }
             return;
         }
         
@@ -4390,6 +4456,12 @@ class CRMApp {
                 
                 console.log('Error response:', response.status, errorData);
                 
+                // Handle duplicate customer error
+                if (response.status === 409 && errorData.error === 'duplicate') {
+                    this.showToast('Customer already exists', 'error');
+                    return;
+                }
+                
                 // Handle "already exists" gracefully
                 if (errorData.error && errorData.error.toLowerCase().includes('already exists')) {
                     this.showToast('Customer already exists — info updated or duplicate skipped.', 'info');
@@ -4400,7 +4472,17 @@ class CRMApp {
             
         } catch (error) {
             console.error('Error saving customer:', error);
-            this.showToast('Failed to save customer: ' + error.message, 'error');
+            if (error.message === 'DUPLICATE_CUSTOMER') {
+                this.showToast('Customer already exists', 'error');
+            } else {
+                this.showToast('Failed to save customer: ' + error.message, 'error');
+            }
+        } finally {
+            // Re-enable submit button
+            if (submitButton) {
+                submitButton.disabled = false;
+                submitButton.textContent = 'Save Customer';
+            }
         }
     }
 

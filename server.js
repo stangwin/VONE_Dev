@@ -577,10 +577,11 @@ const server = http.createServer(async (req, res) => {
           return;
         }
         
-        // Simple customer query for production
+        // Simple customer query for production (exclude deleted customers)
         const result = await pool.query(`
           SELECT c.*
           FROM customers c
+          WHERE c.deleted_at IS NULL
           ORDER BY c.company_name
         `);
         res.writeHead(200, { 'Content-Type': 'application/json' });
@@ -693,7 +694,7 @@ const server = http.createServer(async (req, res) => {
         }
         
         const customerId = pathname.split('/')[3];
-        const result = await pool.query('SELECT * FROM customers WHERE customer_id = $1', [customerId]);
+        const result = await pool.query('SELECT * FROM customers WHERE customer_id = $1 AND deleted_at IS NULL', [customerId]);
         
         if (result.rows.length === 0) {
           res.writeHead(404, { 'Content-Type': 'application/json' });
@@ -774,6 +775,14 @@ const server = http.createServer(async (req, res) => {
         } catch (error) {
           console.error('Database error creating customer:', error);
           console.error('Error stack:', error.stack);
+          
+          // Check for duplicate constraint violation
+          if (error.code === '23505' && error.constraint === 'unique_company_billing') {
+            res.writeHead(409, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'duplicate' }));
+            return;
+          }
+          
           res.writeHead(500, { 'Content-Type': 'application/json' });
           res.end(JSON.stringify({ error: 'Database error: ' + error.message }));
         }
@@ -959,25 +968,51 @@ const server = http.createServer(async (req, res) => {
         return;
       }
 
-      // Customer deletion (exact path only, not file paths)
+      // Customer soft-deletion (exact path only, not file paths)
       if (pathname.match(/^\/api\/customers\/[a-zA-Z0-9_-]+$/) && req.method === 'DELETE') {
         if (!isAuthenticated(req)) {
           res.writeHead(401, { 'Content-Type': 'application/json' });
           res.end(JSON.stringify({ error: 'Authentication required' }));
           return;
         }
-        const customerId = pathname.split('/')[3];
-        console.log('Deleting customer:', customerId);
-        const result = await pool.query('DELETE FROM customers WHERE customer_id = $1 RETURNING *', [customerId]);
         
-        if (result.rows.length === 0) {
-          res.writeHead(404, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ error: 'Customer not found' }));
+        // Check if user is admin
+        const user = await authService.getUserById(req.session.userId);
+        if (!user || user.role !== 'admin') {
+          res.writeHead(403, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Admin access required' }));
           return;
         }
         
+        const customerId = pathname.split('/')[3];
+        console.log('Soft-deleting customer:', customerId);
+        
+        // Soft delete: set deleted_at timestamp
+        const result = await pool.query(
+          'UPDATE customers SET deleted_at = NOW() WHERE customer_id = $1 AND deleted_at IS NULL RETURNING *', 
+          [customerId]
+        );
+        
+        if (result.rows.length === 0) {
+          res.writeHead(404, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Customer not found or already deleted' }));
+          return;
+        }
+        
+        // Create system note for deletion
+        try {
+          const noteQuery = `
+            INSERT INTO customer_notes (customer_id, content, created_by, created_at)
+            VALUES ($1, $2, $3, NOW()) RETURNING *
+          `;
+          await pool.query(noteQuery, [customerId, `Customer archived by ${user.name}`, req.session.userId]);
+          console.log('System note created for customer deletion');
+        } catch (noteError) {
+          console.error('Failed to create deletion system note:', noteError);
+        }
+        
         res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ message: 'Customer deleted successfully' }));
+        res.end(JSON.stringify({ message: 'Customer archived successfully' }));
         return;
       }
 
