@@ -576,159 +576,18 @@ const server = http.createServer(async (req, res) => {
           return;
         }
         
-        // Check if we're in development (has affiliate tables) or production (no affiliate tables)
-        let result;
-        if (isDevelopment) {
-          // Development environment - include affiliate data
-          result = await pool.query(`
-            SELECT 
-              c.*,
-              a.name as affiliate_name,
-              ae.name as affiliate_ae_name
-            FROM customers c
-            LEFT JOIN affiliates a ON c.affiliate_id = a.id
-            LEFT JOIN affiliate_aes ae ON c.affiliate_ae_id = ae.id
-            ORDER BY c.company_name
-          `);
-        } else {
-          // Production environment - simple customer query without affiliate joins
-          result = await pool.query(`
-            SELECT c.*
-            FROM customers c
-            ORDER BY c.company_name
-          `);
-        }
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify(result.rows));
-        return;
-      }
-
-      // Affiliate Management API Endpoints
-      if (pathname === '/api/affiliates' && req.method === 'GET') {
-        if (!isAuthenticated(req)) {
-          res.writeHead(401, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ error: 'Authentication required' }));
-          return;
-        }
-        
-        // Only serve affiliates in development environment
-        if (!isDevelopment) {
-          res.writeHead(200, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify([])); // Return empty array for production
-          return;
-        }
-        
+        // Simple customer query for production
         const result = await pool.query(`
-          SELECT 
-            a.*,
-            COUNT(c.id) as customer_count
-          FROM affiliates a
-          LEFT JOIN customers c ON a.id = c.affiliate_id
-          GROUP BY a.id, a.name, a.created_at
-          ORDER BY a.name
+          SELECT c.*
+          FROM customers c
+          ORDER BY c.company_name
         `);
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify(result.rows));
         return;
       }
 
-      if (pathname === '/api/affiliates' && req.method === 'POST') {
-        if (!isAuthenticated(req)) {
-          res.writeHead(401, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ error: 'Authentication required' }));
-          return;
-        }
 
-        const { name } = await parseJsonBody(req);
-        if (!name || name.trim() === '') {
-          res.writeHead(400, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ error: 'Affiliate name is required' }));
-          return;
-        }
-
-        try {
-          const schemaPrefix = process.env.ENVIRONMENT === 'development' ? 'vantix_dev.' : '';
-          const result = await pool.query(
-            `INSERT INTO ${schemaPrefix}affiliates (name) VALUES ($1) RETURNING *`,
-            [name.trim()]
-          );
-          res.writeHead(201, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify(result.rows[0]));
-        } catch (error) {
-          if (error.code === '23505') { // Unique constraint violation
-            res.writeHead(409, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({ error: 'Affiliate name already exists' }));
-          } else {
-            res.writeHead(500, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({ error: 'Failed to create affiliate' }));
-          }
-        }
-        return;
-      }
-
-      if (pathname === '/api/affiliate-aes' && req.method === 'GET') {
-        if (!isAuthenticated(req)) {
-          res.writeHead(401, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ error: 'Authentication required' }));
-          return;
-        }
-        
-        const url_obj = new URL(req.url, `http://${req.headers.host}`);
-        const affiliate_id = url_obj.searchParams.get('affiliate_id');
-        
-        const schemaPrefix = process.env.ENVIRONMENT === 'development' ? 'vantix_dev.' : '';
-        let query = `
-          SELECT 
-            ae.*,
-            a.name as affiliate_name,
-            COUNT(c.id) as customer_count
-          FROM ${schemaPrefix}affiliate_aes ae
-          LEFT JOIN ${schemaPrefix}affiliates a ON ae.affiliate_id = a.id
-          LEFT JOIN ${schemaPrefix}customers c ON ae.id = c.affiliate_ae_id
-        `;
-        let params = [];
-        
-        if (affiliate_id) {
-          query += ' WHERE ae.affiliate_id = $1';
-          params = [affiliate_id];
-        }
-        
-        query += ' GROUP BY ae.id, ae.name, ae.affiliate_id, ae.created_at, a.name ORDER BY a.name, ae.name';
-        
-        const result = await pool.query(query, params);
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify(result.rows));
-        return;
-      }
-
-      if (pathname === '/api/affiliate-aes' && req.method === 'POST') {
-        if (!isAuthenticated(req)) {
-          res.writeHead(401, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ error: 'Authentication required' }));
-          return;
-        }
-
-        const { name, affiliate_id } = await parseJsonBody(req);
-        if (!name || name.trim() === '' || !affiliate_id) {
-          res.writeHead(400, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ error: 'AE name and affiliate_id are required' }));
-          return;
-        }
-
-        try {
-          const schemaPrefix = process.env.ENVIRONMENT === 'development' ? 'vantix_dev.' : '';
-          const result = await pool.query(
-            `INSERT INTO ${schemaPrefix}affiliate_aes (name, affiliate_id) VALUES ($1, $2) RETURNING *`,
-            [name.trim(), affiliate_id]
-          );
-          res.writeHead(201, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify(result.rows[0]));
-        } catch (error) {
-          res.writeHead(500, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ error: 'Failed to create AE' }));
-        }
-        return;
-      }
 
       // Get notes for customer (must come before general customer GET)
       if (req.method === 'GET' && pathname.match(/^\/api\/customers\/[a-zA-Z0-9_-]+\/notes$/)) {
@@ -1022,18 +881,9 @@ const server = http.createServer(async (req, res) => {
           paramIndex++;
         }
         
-        // Handle new UUID-based affiliate fields for v1.3
-        if ('affiliate_id' in body) {
-          updateFields.push(`affiliate_id = $${paramIndex}`);
-          updateValues.push(body.affiliate_id || null);
-          paramIndex++;
-        }
+
         
-        if ('affiliate_ae_id' in body) {
-          updateFields.push(`affiliate_ae_id = $${paramIndex}`);
-          updateValues.push(body.affiliate_ae_id || null);
-          paramIndex++;
-        }
+
         
         // Always update the timestamp
         updateFields.push(`updated_at = NOW()`);
@@ -1450,72 +1300,7 @@ const server = http.createServer(async (req, res) => {
       return;
     }
 
-    // DUPLICATE AFFILIATE ENDPOINTS REMOVED - USING EARLIER IMPLEMENTATION
-    
-    // Get affiliate AEs for a specific affiliate
-    if (pathname.match(/^\/api\/affiliates\/[a-fA-F0-9-]+\/aes$/) && req.method === 'GET') {
-      if (!isAuthenticated(req)) {
-        res.writeHead(401, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: 'Authentication required' }));
-        return;
-      }
-      
-      try {
-        const affiliateId = pathname.split('/')[3];
-        const schemaPrefix = process.env.ENVIRONMENT === 'development' ? 'vantix_dev.' : '';
-        const result = await pool.query(
-          `SELECT * FROM ${schemaPrefix}affiliate_aes WHERE affiliate_id = $1 ORDER BY name`,
-          [affiliateId]
-        );
-        
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify(result.rows));
-      } catch (error) {
-        console.error('Error fetching affiliate AEs:', error);
-        res.writeHead(500, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: 'Failed to fetch affiliate AEs' }));
-      }
-      return;
-    }
-    
-    // Create new affiliate AE
-    if (pathname.match(/^\/api\/affiliates\/[a-fA-F0-9-]+\/aes$/) && req.method === 'POST') {
-      if (!isAuthenticated(req)) {
-        res.writeHead(401, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: 'Authentication required' }));
-        return;
-      }
-      
-      try {
-        const affiliateId = pathname.split('/')[3];
-        const { name } = await parseJsonBody(req);
-        
-        if (!name || !name.trim()) {
-          res.writeHead(400, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ error: 'Affiliate AE name is required' }));
-          return;
-        }
-        
-        const schemaPrefix = process.env.ENVIRONMENT === 'development' ? 'vantix_dev.' : '';
-        const result = await pool.query(
-          `INSERT INTO ${schemaPrefix}affiliate_aes (affiliate_id, name) VALUES ($1, $2) RETURNING *`,
-          [affiliateId, name.trim()]
-        );
-        
-        res.writeHead(201, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify(result.rows[0]));
-      } catch (error) {
-        console.error('Error creating affiliate AE:', error);
-        if (error.code === '23505') { // Unique constraint violation
-          res.writeHead(409, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ error: 'Affiliate AE name already exists for this affiliate' }));
-        } else {
-          res.writeHead(500, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ error: 'Failed to create affiliate AE' }));
-        }
-      }
-      return;
-    }
+
 
     // Parse text with OpenAI
     if (pathname === '/api/parse-text' && req.method === 'POST') {

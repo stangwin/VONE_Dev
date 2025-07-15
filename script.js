@@ -500,8 +500,16 @@ class CRMApp {
             this.initializeSidebar();
             
             console.log('Step 7: Loading affiliate data...');
-            await this.loadAffiliates();
-            await this.getAffiliateAEs();
+            // Only load affiliate data in development environment
+            if (this.isDevelopment) {
+                await this.loadAffiliates();
+                await this.getAffiliateAEs();
+            } else {
+                // Production environment - skip affiliate loading
+                console.log('Production environment - skipping affiliate data loading');
+                this.affiliates = [];
+                this.affiliateAEs = [];
+            }
             
             console.log('Step 8: Showing dashboard view...');
             this.showView("dashboard");
