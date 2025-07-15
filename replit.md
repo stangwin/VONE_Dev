@@ -185,16 +185,17 @@ Change Management: Always ask permission before modifying production environment
 - **Comprehensive audit trail and error handling**
 
 ### Sync Tool Features
-- **Database Comparison**: Compare Dev vs Prod across all critical tables
-- **Selective Sync**: Choose specific records to sync from Dev to Prod
-- **Safety Safeguards**: Multiple confirmation dialogs and rollback capabilities
-- **Report Generation**: Detailed comparison reports with recommendations
-- **Real-time Monitoring**: Live sync progress and result reporting
+- **Automated Validation**: Continuous comparison until Dev matches Prod exactly
+- **Schema-Aware Sync**: Handles column differences between environments
+- **Retry Logic**: Up to 3 attempts with 2-second delays between validation cycles
+- **Complete Table Replacement**: Truncates and rebuilds Dev tables from Prod source
+- **Comprehensive Reporting**: Detailed sync reports with timestamps and status
+- **Error Handling**: Graceful handling of missing tables and column mismatches
 
 ### Access Methods
+- **Primary Tool**: `node production-dev-sync.js` - Automated prod-to-dev sync with validation
+- **Legacy Tool**: `node dev-database-sync.js` - Manual comparison and selective sync
 - **Web Interface**: Development Console at `/dev-console` → Database Comparison section
-- **Command Line**: `node dev-database-sync.js` for terminal-based reports
-- **API Endpoints**: `/api/dev/compare-databases` and `/api/dev/sync-to-production`
 
 ### Tables Monitored
 - **customers**: Core customer records and company information
