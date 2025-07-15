@@ -966,21 +966,24 @@ class CRMApp {
             console.log('Setting table innerHTML...');
             tableBody.innerHTML = rowsHTML;
             
-            // Add event listeners for delete buttons
+            // Add event listeners for delete buttons with proper context binding
             const deleteButtons = tableBody.querySelectorAll('.delete-btn');
             deleteButtons.forEach(button => {
                 button.addEventListener('click', (e) => {
                     e.stopPropagation();
                     if (!confirm('Archive this customer?')) return;
                     const customerId = button.getAttribute('data-customer-id');
-                    this.db.deleteCustomer(customerId)
+                    const row = button.closest('tr');
+                    
+                    // Use app instance directly to avoid context issues
+                    window.app.db.deleteCustomer(customerId)
                         .then(() => {
-                            this.showToast('Customer archived');
-                            button.closest('tr').remove();
+                            window.app.showToast('Customer archived');
+                            row.remove();
                         })
                         .catch(err => {
                             console.error('Delete failed:', err);
-                            this.showToast('Delete failed – see console', 'error');
+                            window.app.showToast('Delete failed: ' + err.message, 'error');
                         });
                 });
             });
