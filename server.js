@@ -659,14 +659,15 @@ const server = http.createServer(async (req, res) => {
         const url_obj = new URL(req.url, `http://${req.headers.host}`);
         const affiliate_id = url_obj.searchParams.get('affiliate_id');
         
+        const schemaPrefix = process.env.ENVIRONMENT === 'development' ? 'vantix_dev.' : '';
         let query = `
           SELECT 
             ae.*,
             a.name as affiliate_name,
             COUNT(c.id) as customer_count
-          FROM affiliate_aes ae
-          LEFT JOIN affiliates a ON ae.affiliate_id = a.id
-          LEFT JOIN customers c ON ae.id = c.affiliate_ae_id
+          FROM ${schemaPrefix}affiliate_aes ae
+          LEFT JOIN ${schemaPrefix}affiliates a ON ae.affiliate_id = a.id
+          LEFT JOIN ${schemaPrefix}customers c ON ae.id = c.affiliate_ae_id
         `;
         let params = [];
         
@@ -698,8 +699,9 @@ const server = http.createServer(async (req, res) => {
         }
 
         try {
+          const schemaPrefix = process.env.ENVIRONMENT === 'development' ? 'vantix_dev.' : '';
           const result = await pool.query(
-            'INSERT INTO affiliate_aes (name, affiliate_id) VALUES ($1, $2) RETURNING *',
+            `INSERT INTO ${schemaPrefix}affiliate_aes (name, affiliate_id) VALUES ($1, $2) RETURNING *`,
             [name.trim(), affiliate_id]
           );
           res.writeHead(201, { 'Content-Type': 'application/json' });
@@ -1477,8 +1479,9 @@ const server = http.createServer(async (req, res) => {
           return;
         }
         
+        const schemaPrefix = process.env.ENVIRONMENT === 'development' ? 'vantix_dev.' : '';
         const result = await pool.query(
-          'INSERT INTO affiliate_aes (affiliate_id, name) VALUES ($1, $2) RETURNING *',
+          `INSERT INTO ${schemaPrefix}affiliate_aes (affiliate_id, name) VALUES ($1, $2) RETURNING *`,
           [affiliateId, name.trim()]
         );
         
