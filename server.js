@@ -733,6 +733,7 @@ const server = http.createServer(async (req, res) => {
         const finalPrimaryContact = primary_contact || primaryContact;
         const finalAuthorizedSigner = authorized_signer || authorizedSigner;
         const finalBillingContact = billing_contact || billingContact;
+        const finalNotes = notes || [];
         
         console.log('Final mapped values:');
         console.log('  company_name:', finalCompanyName);
@@ -752,7 +753,7 @@ const server = http.createServer(async (req, res) => {
              physical_address, billing_address, primary_contact, authorized_signer, billing_contact, notes, created_at, updated_at)
              VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, NOW(), NOW()) RETURNING *`,
             [finalCustomerId, finalCompanyName, finalStatus, finalAffiliatePartner, finalNextStep, finalPhysicalAddress, finalBillingAddress, 
-             JSON.stringify(finalPrimaryContact), JSON.stringify(finalAuthorizedSigner), JSON.stringify(finalBillingContact), JSON.stringify(notes)]
+             JSON.stringify(finalPrimaryContact), JSON.stringify(finalAuthorizedSigner), JSON.stringify(finalBillingContact), JSON.stringify(finalNotes)]
           );
           
           // Create system note for customer creation
