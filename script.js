@@ -988,33 +988,39 @@ class CRMApp {
                 console.log('Attaching event listener to button:', button.getAttribute('data-customer-id'));
                 button.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    console.log('🗑️ DELETE BUTTON CLICKED');
+                    console.log('🗑️ DELETE BUTTON CLICKED - BEFORE CONFIRM');
                     console.log('1. Customer ID captured:', button.getAttribute('data-customer-id'));
                     
-                    if (!confirm('Archive this customer?')) {
+                    console.log('2. Showing confirm dialog...');
+                    const confirmResult = confirm('Archive this customer?');
+                    console.log('3. Confirm result:', confirmResult);
+                    
+                    if (!confirmResult) {
                         console.log('❌ User cancelled delete');
                         return;
                     }
                     
+                    console.log('✅ User confirmed delete - AFTER CONFIRM');
+                    
                     const customerId = button.getAttribute('data-customer-id');
                     const row = button.closest('tr');
                     
-                    console.log('2. Proceeding with delete for customer:', customerId);
-                    console.log('3. Row element found:', !!row);
-                    console.log('4. window.app exists:', !!window.app);
-                    console.log('5. window.app.db exists:', !!window.app?.db);
-                    console.log('6. window.app.db.deleteCustomer exists:', !!window.app?.db?.deleteCustomer);
+                    console.log('4. Proceeding with delete for customer:', customerId);
+                    console.log('5. Row element found:', !!row);
+                    console.log('6. window.app exists:', !!window.app);
+                    console.log('7. window.app.api exists:', !!window.app?.api);
+                    console.log('8. window.app.api.deleteCustomer exists:', !!window.app?.api?.deleteCustomer);
                     
-                    console.log('7. Calling window.app.db.deleteCustomer...');
+                    console.log('9. Calling window.app.api.deleteCustomer...');
                     
-                    // Use app instance directly to avoid context issues
-                    window.app.db.deleteCustomer(customerId)
+                    // Use correct API reference - it's this.api, not this.db
+                    window.app.api.deleteCustomer(customerId)
                         .then((result) => {
                             console.log('✅ DELETE SUCCESS - Result:', result);
-                            console.log('8. Removing row from table...');
+                            console.log('10. Removing row from table...');
                             window.app.showToast('Customer archived');
                             row.remove();
-                            console.log('9. Row removed successfully');
+                            console.log('11. Row removed successfully');
                         })
                         .catch(err => {
                             console.error('❌ DELETE FAILED');
