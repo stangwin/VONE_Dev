@@ -621,9 +621,13 @@ class CRMApp {
 
     async loadUserData() {
         try {
+            console.log('Loading user data from /api/user...');
             const response = await fetch('/api/user', {
                 credentials: 'include'
             });
+
+            console.log('User API response status:', response.status);
+            console.log('User API response ok:', response.ok);
 
             if (!response.ok) {
                 console.log('User not authenticated, redirecting to auth page...');
@@ -641,6 +645,7 @@ class CRMApp {
             }
 
             this.currentUser = await response.json();
+            console.log('User data loaded successfully:', this.currentUser);
             this.userData = this.currentUser; // Ensure consistency
             this.updateUserUI();
             
