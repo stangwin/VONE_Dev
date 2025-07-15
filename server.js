@@ -133,28 +133,45 @@ const parseJsonBody = (req) => {
 const devSessions = new Map();
 
 // Session middleware wrapper for HTTP server
-function handleWithSession(req, res, handler) {
+async function handleWithSession(req, res, handler) {
   // Check for session token for iframe contexts (both dev and prod)
   if (req.headers['x-dev-session']) {
     const sessionToken = req.headers['x-dev-session'];
-    const sessionData = devSessions.get(sessionToken);
     
-    if (sessionData) {
-      // Create a mock session object compatible with express-session
-      req.session = {
-        id: sessionToken,
-        userId: sessionData.userId,
-        user: sessionData.user,
-        save: (callback) => callback && callback(),
-        destroy: (callback) => {
-          devSessions.delete(sessionToken);
-          callback && callback();
-        }
-      };
-      const envMode = isDevelopment ? 'Development' : 'Production';
-      console.log(`${envMode} session token found:`, { userId: sessionData.userId, email: sessionData.user?.email });
-      // Call handler directly with session token
-      return handler(req, res);
+    try {
+      // For production, query database directly
+      const tableName = isDevelopment ? 'session_dev' : 'session_prod';
+      const sessionQuery = `SELECT sess FROM ${tableName} WHERE sid = $1 AND expire > NOW()`;
+      const sessionResult = await pool.query(sessionQuery, [sessionToken]);
+      
+      if (sessionResult.rows.length > 0) {
+        const sessionData = sessionResult.rows[0].sess;
+        
+        // Create a mock session object compatible with express-session
+        req.session = {
+          id: sessionToken,
+          userId: sessionData.userId,
+          user: sessionData.user,
+          save: (callback) => callback && callback(),
+          destroy: (callback) => {
+            callback && callback();
+          }
+        };
+        
+        const envMode = isDevelopment ? 'Development' : 'Production';
+        console.log(`${envMode} session token authenticated:`, { 
+          userId: sessionData.userId, 
+          email: sessionData.user?.email,
+          tokenPrefix: sessionToken.substring(0, 10) + '...'
+        });
+        
+        // Call handler directly with session token
+        return handler(req, res);
+      } else {
+        console.log('Session token not found in database:', sessionToken.substring(0, 10) + '...');
+      }
+    } catch (error) {
+      console.error('Session token lookup error:', error);
     }
   }
   
@@ -247,7 +264,7 @@ const server = http.createServer(async (req, res) => {
   }
 
   // Wrap all requests with session handling
-  return handleWithSession(req, res, async (req, res) => {
+  return await handleWithSession(req, res, async (req, res) => {
     
 
 
@@ -960,6 +977,122 @@ const server = http.createServer(async (req, res) => {
         
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ message: 'Customer deleted successfully' }));
+        return;
+      }
+
+      // Get all affiliates
+      if (pathname === '/api/affiliates' && req.method === 'GET') {
+        if (!isAuthenticated(req)) {
+          res.writeHead(401, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Authentication required' }));
+          return;
+        }
+
+        try {
+          const result = await pool.query('SELECT * FROM affiliates ORDER BY name');
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify(result.rows));
+        } catch (error) {
+          console.error('Get affiliates error:', error);
+          res.writeHead(500, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Failed to fetch affiliates' }));
+        }
+        return;
+      }
+
+      // Get all affiliate account executives (optionally filtered by affiliate)
+      if (pathname === '/api/affiliate-aes' && req.method === 'GET') {
+        if (!isAuthenticated(req)) {
+          res.writeHead(401, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Authentication required' }));
+          return;
+        }
+
+        try {
+          const query = parsedUrl.query.affiliate_id 
+            ? 'SELECT * FROM affiliate_aes WHERE affiliate_id = $1 ORDER BY name'
+            : 'SELECT * FROM affiliate_aes ORDER BY name';
+          
+          const params = parsedUrl.query.affiliate_id ? [parsedUrl.query.affiliate_id] : [];
+          const result = await pool.query(query, params);
+          
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify(result.rows));
+        } catch (error) {
+          console.error('Get affiliate AEs error:', error);
+          res.writeHead(500, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Failed to fetch affiliate account executives' }));
+        }
+        return;
+      }
+
+      // Create new affiliate
+      if (pathname === '/api/affiliates' && req.method === 'POST') {
+        if (!isAuthenticated(req)) {
+          res.writeHead(401, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Authentication required' }));
+          return;
+        }
+
+        try {
+          const body = await parseJsonBody(req);
+          
+          if (!body.name || body.name.trim() === '') {
+            res.writeHead(400, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'Affiliate name is required' }));
+            return;
+          }
+
+          const result = await pool.query(
+            'INSERT INTO affiliates (id, name) VALUES (gen_random_uuid(), $1) RETURNING *',
+            [body.name.trim()]
+          );
+          
+          res.writeHead(201, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify(result.rows[0]));
+        } catch (error) {
+          console.error('Create affiliate error:', error);
+          res.writeHead(500, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Failed to create affiliate' }));
+        }
+        return;
+      }
+
+      // Create new affiliate account executive
+      if (pathname === '/api/affiliate-aes' && req.method === 'POST') {
+        if (!isAuthenticated(req)) {
+          res.writeHead(401, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Authentication required' }));
+          return;
+        }
+
+        try {
+          const body = await parseJsonBody(req);
+          
+          if (!body.name || body.name.trim() === '') {
+            res.writeHead(400, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'Account Executive name is required' }));
+            return;
+          }
+
+          if (!body.affiliate_id) {
+            res.writeHead(400, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'Affiliate ID is required' }));
+            return;
+          }
+
+          const result = await pool.query(
+            'INSERT INTO affiliate_aes (id, affiliate_id, name) VALUES (gen_random_uuid(), $1, $2) RETURNING *',
+            [body.affiliate_id, body.name.trim()]
+          );
+          
+          res.writeHead(201, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify(result.rows[0]));
+        } catch (error) {
+          console.error('Create affiliate AE error:', error);
+          res.writeHead(500, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Failed to create affiliate account executive' }));
+        }
         return;
       }
 

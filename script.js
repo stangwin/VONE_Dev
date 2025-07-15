@@ -500,16 +500,7 @@ class CRMApp {
             this.initializeSidebar();
             
             console.log('Step 7: Loading affiliate data...');
-            // Only load affiliate data in development environment
-            if (this.isDevelopment) {
-                await this.loadAffiliates();
-                await this.getAffiliateAEs();
-            } else {
-                // Production environment - skip affiliate loading
-                console.log('Production environment - skipping affiliate data loading');
-                this.affiliates = [];
-                this.affiliateAEs = [];
-            }
+            await this.loadAffiliates();
             
             console.log('Step 8: Showing dashboard view...');
             this.showView("dashboard");
@@ -934,10 +925,10 @@ class CRMApp {
                             </div>
                         </td>
                         <td>
-                            ${this.isDevelopment ? this.renderAffiliateDropdown(customer) : this.escapeHtml(customer.affiliate_partner || '')}
+                            ${this.renderAffiliateCell(customer)}
                         </td>
                         <td>
-                            ${this.isDevelopment ? this.renderAffiliateAEDropdown(customer) : this.escapeHtml(customer.affiliate_account_executive || '')}
+                            ${this.renderAffiliateAECell(customer)}
                         </td>
                         <td>${this.escapeHtml(primaryContactName)}</td>
                         <td>${this.escapeHtml(primaryContactPhone)}</td>
@@ -1823,6 +1814,46 @@ class CRMApp {
         }
     }
 
+    // Affiliate cell rendering for dashboard table
+    renderAffiliateCell(customer) {
+        return `
+            <div class="inline-edit-cell" data-field="affiliate_partner" data-customer-id="${customer.customer_id}">
+                <span class="display-value" onclick="app.startInlineEdit(this)">${this.escapeHtml(customer.affiliate_partner || 'None')}</span>
+                <select class="edit-input affiliate-dropdown" style="display: none;" data-customer-id="${customer.customer_id}" onchange="app.updateAffiliateInline(this)" onblur="app.cancelInlineEdit(this)">
+                    <option value="">None</option>
+                    ${(this.affiliates || []).map(affiliate => 
+                        `<option value="${affiliate.name}" ${customer.affiliate_partner === affiliate.name ? 'selected' : ''}>
+                            ${this.escapeHtml(affiliate.name)}
+                        </option>`
+                    ).join('')}
+                    ${this.currentUser?.role === 'admin' ? '<option value="add_new">➕ Add New Affiliate</option>' : ''}
+                </select>
+            </div>
+        `;
+    }
+
+    renderAffiliateAECell(customer) {
+        const currentAffiliate = this.affiliates?.find(a => a.name === customer.affiliate_partner);
+        const availableAEs = currentAffiliate ? 
+            (this.affiliateAEs || []).filter(ae => ae.affiliate_id === currentAffiliate.id) : 
+            [];
+        
+        return `
+            <div class="inline-edit-cell" data-field="affiliate_account_executive" data-customer-id="${customer.customer_id}">
+                <span class="display-value" onclick="app.startInlineEdit(this)">${this.escapeHtml(customer.affiliate_account_executive || 'None')}</span>
+                <select class="edit-input affiliate-ae-dropdown" style="display: none;" data-customer-id="${customer.customer_id}" onchange="app.updateAffiliateAEInline(this)" onblur="app.cancelInlineEdit(this)">
+                    <option value="">None</option>
+                    ${availableAEs.map(ae => 
+                        `<option value="${ae.name}" ${customer.affiliate_account_executive === ae.name ? 'selected' : ''}>
+                            ${this.escapeHtml(ae.name)}
+                        </option>`
+                    ).join('')}
+                    ${currentAffiliate ? '<option value="add_new">➕ Add New AE</option>' : ''}
+                </select>
+            </div>
+        `;
+    }
+
     // New dropdown rendering and management functions for v1.3
     renderAffiliateDropdown(customer) {
         const isAdmin = this.currentUser?.role === 'admin';
@@ -1891,6 +1922,130 @@ class CRMApp {
 
     getAffiliateAEById(id) {
         return (this.affiliateAEs || []).find(ae => ae.id === id);
+    }
+
+    // Inline editing functions for dashboard table
+    startInlineEdit(displayElement) {
+        const cell = displayElement.closest('.inline-edit-cell');
+        const select = cell.querySelector('.edit-input');
+        
+        displayElement.style.display = 'none';
+        select.style.display = 'inline-block';
+        select.focus();
+    }
+
+    cancelInlineEdit(selectElement) {
+        const cell = selectElement.closest('.inline-edit-cell');
+        const display = cell.querySelector('.display-value');
+        
+        selectElement.style.display = 'none';
+        display.style.display = 'inline';
+    }
+
+    async updateAffiliateInline(selectElement) {
+        const customerId = selectElement.dataset.customerId;
+        const value = selectElement.value;
+        
+        if (value === 'add_new') {
+            this.showAddAffiliateModal();
+            this.cancelInlineEdit(selectElement);
+            return;
+        }
+
+        try {
+            await this.api.updateCustomer(customerId, { affiliate_partner: value });
+            
+            // Update local data
+            const customer = this.customers.find(c => c.customer_id === customerId);
+            if (customer) {
+                customer.affiliate_partner = value;
+                // Clear AE when affiliate changes
+                customer.affiliate_account_executive = '';
+                await this.api.updateCustomer(customerId, { affiliate_account_executive: '' });
+            }
+            
+            // Refresh the view
+            this.renderCustomerList();
+            this.showToast('Affiliate updated successfully', 'success');
+        } catch (error) {
+            console.error('Failed to update affiliate:', error);
+            this.showToast('Failed to update affiliate', 'error');
+            this.cancelInlineEdit(selectElement);
+        }
+    }
+
+    async updateAffiliateAEInline(selectElement) {
+        const customerId = selectElement.dataset.customerId;
+        const value = selectElement.value;
+        
+        if (value === 'add_new') {
+            // Find current affiliate for this customer
+            const customer = this.customers.find(c => c.customer_id === customerId);
+            if (customer && customer.affiliate_partner) {
+                this.showAddAffiliateAEModal();
+            }
+            this.cancelInlineEdit(selectElement);
+            return;
+        }
+
+        try {
+            await this.api.updateCustomer(customerId, { affiliate_account_executive: value });
+            
+            // Update local data
+            const customer = this.customers.find(c => c.customer_id === customerId);
+            if (customer) {
+                customer.affiliate_account_executive = value;
+            }
+            
+            // Refresh the view
+            this.renderCustomerList();
+            this.showToast('Account Executive updated successfully', 'success');
+        } catch (error) {
+            console.error('Failed to update affiliate AE:', error);
+            this.showToast('Failed to update Account Executive', 'error');
+            this.cancelInlineEdit(selectElement);
+        }
+    }
+
+    // Helper functions for customer detail affiliate dropdowns
+    getAffiliateAEOptionsForDetail(customer) {
+        const currentAffiliate = this.affiliates?.find(a => a.name === customer.affiliate_partner);
+        const availableAEs = currentAffiliate ? 
+            (this.affiliateAEs || []).filter(ae => ae.affiliate_id === currentAffiliate.id) : 
+            [];
+        
+        return availableAEs.map(ae => 
+            `<option value="${ae.name}" ${customer.affiliate_account_executive === ae.name ? 'selected' : ''}>
+                ${this.escapeHtml(ae.name)}
+            </option>`
+        ).join('');
+    }
+
+    handleAffiliateDetailChange(selectElement) {
+        const value = selectElement.value;
+        const aeSelect = document.getElementById('edit-affiliate-account-executive');
+        
+        if (value === 'add_new') {
+            this.showAddAffiliateModal();
+            selectElement.value = this.currentCustomer.affiliate_partner || '';
+            return;
+        }
+
+        // Clear and update AE dropdown when affiliate changes
+        if (aeSelect) {
+            aeSelect.innerHTML = '<option value="">None</option>';
+            
+            if (value) {
+                const affiliate = this.affiliates?.find(a => a.name === value);
+                if (affiliate) {
+                    const availableAEs = (this.affiliateAEs || []).filter(ae => ae.affiliate_id === affiliate.id);
+                    const aeOptions = availableAEs.map(ae => 
+                        `<option value="${ae.name}">${this.escapeHtml(ae.name)}</option>`
+                    ).join('');
+                    aeSelect.innerHTML += aeOptions + '<option value="add_new">➕ Add New AE</option>';
+                }
+            }
+        }
     }
 
     // Handle affiliate dropdown changes
@@ -2132,18 +2287,27 @@ class CRMApp {
                             </div>
                             <div class="detail-field">
                                 <label>Affiliate Company</label>
-                                ${this.editingSections.has('general') && this.isDevelopment ? 
-                                    `<select id="edit-affiliate-partner">
+                                ${this.editingSections.has('general') ? 
+                                    `<select id="edit-affiliate-partner" onchange="app.handleAffiliateDetailChange(this)">
                                         <option value="">None</option>
-                                        <option value="VOXO" ${customer.affiliate_partner === 'VOXO' ? 'selected' : ''}>VOXO</option>
+                                        ${(this.affiliates || []).map(affiliate => 
+                                            `<option value="${affiliate.name}" ${customer.affiliate_partner === affiliate.name ? 'selected' : ''}>
+                                                ${this.escapeHtml(affiliate.name)}
+                                            </option>`
+                                        ).join('')}
+                                        ${this.currentUser?.role === 'admin' ? '<option value="add_new">➕ Add New Affiliate</option>' : ''}
                                     </select>` :
                                     `<span class="field-value">${this.escapeHtml(customer.affiliate_partner) || 'None'}</span>`
                                 }
                             </div>
                             <div class="detail-field">
                                 <label>Affiliate Account Executive</label>
-                                ${this.editingSections.has('general') && this.isDevelopment ? 
-                                    `<input type="text" id="edit-affiliate-account-executive" value="${this.escapeHtml(customer.affiliate_account_executive) || ''}">` :
+                                ${this.editingSections.has('general') ? 
+                                    `<select id="edit-affiliate-account-executive">
+                                        <option value="">None</option>
+                                        ${this.getAffiliateAEOptionsForDetail(customer)}
+                                        ${customer.affiliate_partner ? '<option value="add_new">➕ Add New AE</option>' : ''}
+                                    </select>` :
                                     `<span class="field-value">${this.escapeHtml(customer.affiliate_account_executive) || 'Not assigned'}</span>`
                                 }
                             </div>
@@ -5139,7 +5303,7 @@ document.addEventListener("DOMContentLoaded", () => {
             console.log('Development iframe authentication token set');
         } else {
             // Production environment
-            const prodToken = 'prod_yunnm2d7ewmd4mnvar';
+            const prodToken = 'XRBwNU_jPk1OuFV9eeig70nEtI-PAlRL';
             localStorage.setItem('prodSessionToken', prodToken);
             console.log('Production iframe authentication token set');
         }

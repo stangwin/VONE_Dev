@@ -2992,3 +2992,40 @@ body.dev-environment .main-content {
         padding: 8px 12px;
     }
 }
+
+/* Inline editing styles for affiliate dropdowns */
+.inline-edit-cell {
+    position: relative;
+    min-width: 120px;
+}
+
+.inline-edit-cell .display-value {
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+    display: inline-block;
+    min-height: 24px;
+    line-height: 16px;
+}
+
+.inline-edit-cell .display-value:hover {
+    background-color: hsl(var(--secondary));
+    text-decoration: underline;
+}
+
+.inline-edit-cell .edit-input {
+    width: 100%;
+    padding: 4px 8px;
+    border: 1px solid hsl(var(--primary));
+    border-radius: 4px;
+    font-size: inherit;
+    background: white;
+    min-height: 32px;
+}
+
+.inline-edit-cell .edit-input:focus {
+    outline: none;
+    border-color: hsl(var(--primary));
+    box-shadow: 0 0 0 2px hsla(var(--primary), 0.2);
+}
