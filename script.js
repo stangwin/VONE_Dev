@@ -5413,11 +5413,11 @@ document.addEventListener("DOMContentLoaded", () => {
     };
     
     console.log('Creating CRM app instance...');
-    app = new CRMApp();
+    window.app = new CRMApp();
     
-    // Make app globally accessible for debugging
-    window.debugApp = app;
-    console.log('App instance created and available as window.debugApp');
+    // Make app globally accessible for debugging (legacy reference)
+    window.debugApp = window.app;
+    console.log('App instance created and available as window.app and window.debugApp');
     
     // Additional debugging for iframe environments
     if (env.isIframe) {
@@ -5439,9 +5439,9 @@ document.addEventListener("DOMContentLoaded", () => {
         // Add a delay for iframe rendering
         setTimeout(() => {
             console.log('Iframe fallback: Re-checking DOM after delay');
-            if (app && app.customers && app.customers.length > 0) {
+            if (window.app && window.app.customers && window.app.customers.length > 0) {
                 console.log('Iframe fallback: Re-rendering customers');
-                app.renderCustomerList();
+                window.app.renderCustomerList();
             }
         }, 1000);
     }
