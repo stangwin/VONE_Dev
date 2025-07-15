@@ -1,0 +1,43 @@
+🔧 PRODUCTION HOT-PATCH – Fix “undefined is not an object (evaluating 'this.db.deleteCustomer')” when archiving a customer
+
+1. **Root cause**  
+   • In `renderCustomerList` the event-listener for the 🗑 button is created with a regular `function(e){…}`.  
+   • Inside that handler `this` no longer refers to the `CRMApp` instance, so `this.db` is **undefined**.  
+   • Result: calling `this.db.deleteCustomer` throws the reported error.
+
+2. **Code fixes (prod only, dev already has full affiliate code – leave it untouched)**  
+   a) **`script.js` – renderCustomerList**  
+      • Replace the current delete click handler with an **arrow function** so `this` is lexically bound:  
+      ```javascript
+      deleteBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (!confirm('Archive this customer?')) return;
+        const customerId = row.dataset.customerId;
+        this.db.deleteCustomer(customerId)
+          .then(() => {
+            this.showToast('Customer archived');
+            row.remove();
+          })
+          .catch(err => {
+            console.error('Delete failed:', err);
+            this.showToast('Delete failed – see console', 'error');
+          });
+      });
+      ```
+      • Ensure `deleteBtn` gets `cursor:pointer` via the existing `.action-icon` class.  
+
+   b) **`DatabaseAPI.deleteCustomer`**  
+      • Confirm it’s exported and uses `fetch('/api/customers/'+id, {method:'DELETE', credentials:'include'})`.  
+      • Return `response.ok` / throw error so `.catch()` above is triggered correctly.
+
+3. **Regression checks**  
+   • **Create** a throw-away customer e.g. “Delete Me Test”.  
+   • Click the 🗑, confirm archive → row disappears, toast shows.  
+   • Refresh page → archived customer **not** in list (server filters `deleted_at IS NULL`).  
+   • Verify normal users (role “user”) **do not** see the 🗑 icon.
+
+4. **NO other changes**  
+   • Do **not** touch dev-only affiliate/AE code.  
+   • Do **not** restart dev server. Restart **only** prod (`npm run start:prod` or current script).
+
+Return: “✅ Archive button fixed and verified (prod) – no errors thrown” or detailed error list if anything still fails.

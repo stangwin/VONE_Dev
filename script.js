@@ -969,18 +969,19 @@ class CRMApp {
             // Add event listeners for delete buttons
             const deleteButtons = tableBody.querySelectorAll('.delete-btn');
             deleteButtons.forEach(button => {
-                button.addEventListener('click', async () => {
-                    const customerId = button.getAttribute('data-customer-id');
+                button.addEventListener('click', (e) => {
+                    e.stopPropagation();
                     if (!confirm('Archive this customer?')) return;
-                    
-                    try {
-                        await this.db.deleteCustomer(customerId);
-                        this.showToast('Customer archived', 'success');
-                        await this.loadCustomers();
-                    } catch (err) {
-                        console.error(err);
-                        alert(err.message);
-                    }
+                    const customerId = button.getAttribute('data-customer-id');
+                    this.db.deleteCustomer(customerId)
+                        .then(() => {
+                            this.showToast('Customer archived');
+                            button.closest('tr').remove();
+                        })
+                        .catch(err => {
+                            console.error('Delete failed:', err);
+                            this.showToast('Delete failed – see console', 'error');
+                        });
                 });
             });
             
