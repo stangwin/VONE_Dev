@@ -1,0 +1,48 @@
+We are in DEVELOPMENT mode (port 3000).  
+The archive/trash-can flow still shows the confirmation dialog but leaves the row visible and makes no DB change.
+
+1. Reproduce:
+   • Refresh dev UI.  
+   • Add a test customer “Archive Bug Dev”.  
+   • Click 🗑 → confirm.  
+   • Observe: no fetch to /api/customers/:id DELETE or no row removal.
+
+2. Debug & fix IN DEV ONLY:
+   a. Frontend:
+      – Ensure renderCustomerList adds a delete button whose click handler  
+        calls DatabaseAPI.deleteCustomer(id) with proper credentials:'include'.  
+      – Use an arrow function or bind to preserve `this`.  
+      – After success, remove the row (or refresh) and show toast.  
+      – Console-log any caught error.
+
+   b. Network:
+      – Verify the DELETE request is sent (check DevTools/network).  
+      – Status must be 200 with `{ message:"Customer archived" }`.
+
+   c. Server:
+      – Confirm route DELETE /api/customers/:id exists and
+        • checks admin role,
+        • sets deleted_at = NOW(),
+        • returns JSON 200.  
+      – Log SQL run and resulting row count.
+
+   d. Database:
+      – In vantix_dev.customers, verify deleted_at is set for the test row.  
+      – GET /api/customers must exclude rows where deleted_at IS NOT NULL.
+
+3. Automated test:
+   • With fetch (or curl) create customer X, delete it, list customers – expect X absent.  
+   • Repeat twice to ensure idempotent.
+
+4. After dev fix passes:
+   • Back up production DB.  
+   • Switch to PRODUCTION mode (`./switch-to-production.sh`).  
+   • Apply *only* the JS handler and (if needed) server route tweaks—no schema change.  
+   • Run the same automated test in prod: create temp customer, archive, confirm disappearance.  
+   • Roll back temp customer.
+
+5. Report:
+   • Exact lines changed in script.js and server.js.  
+   • Confirmation that prod and dev both archive correctly, with before/after DB counts.
+
+DO NOT touch any unrelated code or schema. Only implement the archive bug fix and verify. Return “✔ archive flow works in dev & prod” when done.

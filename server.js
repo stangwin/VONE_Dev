@@ -988,8 +988,9 @@ const server = http.createServer(async (req, res) => {
         console.log('Soft-deleting customer:', customerId);
         
         // Soft delete: set deleted_at timestamp
+        const schema = process.env.DATABASE_URL_DEV ? 'vantix_dev' : 'public';
         const result = await pool.query(
-          'UPDATE customers SET deleted_at = NOW() WHERE customer_id = $1 AND deleted_at IS NULL RETURNING *', 
+          `UPDATE ${schema}.customers SET deleted_at = NOW() WHERE customer_id = $1 AND deleted_at IS NULL RETURNING *`, 
           [customerId]
         );
         
@@ -1002,7 +1003,7 @@ const server = http.createServer(async (req, res) => {
         // Create system note for deletion
         try {
           const noteQuery = `
-            INSERT INTO customer_notes (customer_id, content, created_by, created_at)
+            INSERT INTO ${schema}.customer_notes (customer_id, content, created_by, created_at)
             VALUES ($1, $2, $3, NOW()) RETURNING *
           `;
           await pool.query(noteQuery, [customerId, `Customer archived by ${user.name}`, req.session.userId]);
