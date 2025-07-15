@@ -1440,7 +1440,8 @@ const server = http.createServer(async (req, res) => {
       }
       
       try {
-        const result = await pool.query('SELECT * FROM affiliates ORDER BY name');
+        const schemaPrefix = process.env.ENVIRONMENT === 'development' ? 'vantix_dev.' : '';
+        const result = await pool.query(`SELECT * FROM ${schemaPrefix}affiliates ORDER BY name`);
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify(result.rows));
       } catch (error) {
