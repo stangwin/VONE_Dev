@@ -268,30 +268,45 @@ class DatabaseSyncTool {
                 
                 // Insert all production records into development
                 if (prodResult.rows.length > 0) {
+                    // Get development table columns first
+                    const devColumnsQuery = this.useSchemaIsolation ? 
+                        `SELECT column_name FROM information_schema.columns WHERE table_name = '${tableName}' AND table_schema = 'vantix_dev' ORDER BY ordinal_position` :
+                        `SELECT column_name FROM information_schema.columns WHERE table_name = '${tableName}' AND table_schema = 'public' ORDER BY ordinal_position`;
+                    const devColumnsResult = await this.devPool.query(devColumnsQuery);
+                    const devColumns = devColumnsResult.rows.map(row => row.column_name);
+                    
                     for (const record of prodResult.rows) {
-                        const columns = Object.keys(record);
-                        const values = Object.values(record);
-                        const placeholders = values.map((_, i) => `$${i + 1}`).join(', ');
+                        // Filter columns to only include those that exist in development schema
+                        const filteredColumns = [];
+                        const filteredValues = [];
                         
-                        const devInsertQuery = this.useSchemaIsolation ? 
-                            `INSERT INTO vantix_dev.${tableName} (${columns.join(', ')}) VALUES (${placeholders})` :
-                            `INSERT INTO ${tableName} (${columns.join(', ')}) VALUES (${placeholders})`;
-                        
-                        // Fix JSON values that might have parsing issues
-                        const cleanedValues = values.map(value => {
-                            if (typeof value === 'string' && value.includes('"}"}')) {
-                                try {
-                                    // Try to parse and reformat JSON if it's malformed
-                                    const parsed = JSON.parse(value.replace(/"}"}$/, '"}'));
-                                    return JSON.stringify(parsed);
-                                } catch (e) {
-                                    return value; // Return original if can't parse
+                        for (const [column, value] of Object.entries(record)) {
+                            if (devColumns.includes(column)) {
+                                filteredColumns.push(column);
+                                
+                                // Fix JSON values that might have parsing issues
+                                if (typeof value === 'string' && value.includes('"}"}')) {
+                                    try {
+                                        // Try to parse and reformat JSON if it's malformed
+                                        const parsed = JSON.parse(value.replace(/"}"}$/, '"}'));
+                                        filteredValues.push(JSON.stringify(parsed));
+                                    } catch (e) {
+                                        filteredValues.push(value); // Return original if can't parse
+                                    }
+                                } else {
+                                    filteredValues.push(value);
                                 }
                             }
-                            return value;
-                        });
+                        }
                         
-                        await this.devPool.query(devInsertQuery, cleanedValues);
+                        if (filteredColumns.length > 0) {
+                            const placeholders = filteredValues.map((_, i) => `$${i + 1}`).join(', ');
+                            const devInsertQuery = this.useSchemaIsolation ? 
+                                `INSERT INTO vantix_dev.${tableName} (${filteredColumns.join(', ')}) VALUES (${placeholders})` :
+                                `INSERT INTO ${tableName} (${filteredColumns.join(', ')}) VALUES (${placeholders})`;
+                            
+                            await this.devPool.query(devInsertQuery, filteredValues);
+                        }
                     }
                 }
                 
