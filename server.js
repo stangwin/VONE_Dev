@@ -1303,8 +1303,8 @@ const server = http.createServer(async (req, res) => {
           console.log('Final note type:', noteType, 'Author name:', authorName);
           
           const result = await pool.query(
-            `INSERT INTO customer_notes (customer_id, author_id, author_name, content, type, timestamp, created_at, updated_at)
-             VALUES ($1, $2, $3, $4, $5, NOW(), NOW(), NOW())
+            `INSERT INTO customer_notes (customer_id, author_id, author_name, content, type, timestamp, created_at)
+             VALUES ($1, $2, $3, $4, $5, NOW(), NOW())
              RETURNING *`,
             [customerId, user.id, authorName, noteData.content, noteType]
           );
@@ -1353,8 +1353,8 @@ const server = http.createServer(async (req, res) => {
           console.log('Creating system note for customer:', customerId, 'Content:', systemContent);
 
           const result = await pool.query(
-            `INSERT INTO customer_notes (customer_id, author_id, author_name, content, type, timestamp, created_at, updated_at)
-             VALUES ($1, $2, $3, $4, 'system', NOW(), NOW(), NOW())
+            `INSERT INTO customer_notes (customer_id, author_id, author_name, content, type, timestamp, created_at)
+             VALUES ($1, $2, $3, $4, 'system', NOW(), NOW())
              RETURNING *`,
             [customerId, user.id, 'System', systemContent]
           );
