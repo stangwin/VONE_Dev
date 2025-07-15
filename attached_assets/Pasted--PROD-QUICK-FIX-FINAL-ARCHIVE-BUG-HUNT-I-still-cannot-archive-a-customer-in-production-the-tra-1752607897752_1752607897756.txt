@@ -1,0 +1,35 @@
+🔧  PROD QUICK-FIX – FINAL ARCHIVE BUG HUNT
+I still cannot archive a customer in production: the trash-can dialog appears, I click **OK**, nothing happens (row remains, no toast).  
+Backend auth *is* working; console now shows  
+• “Found delete buttons: 20”  
+• correct `currentUser` (admin)  
+• listeners attached.  
+We need to trace the full request/response chain and patch whatever is missing.
+
+1️⃣ **Add deep logging**  
+   ▪ Front-end: inside the delete click handler log, in order:  
+     - `customerId` captured  
+     - the exact `fetch`/`this.db.deleteCustomer` options (`method`, `url`, headers, body)  
+     - the returned `status` and `statusText`  
+     - the parsed JSON/message (or any thrown error).  
+   ▪ Back-end (`DELETE /api/customers/:id`): log the same tuple — `userId`, `customer_id`, incoming headers, resolved schema, final SQL text, and the JSON you send back.
+
+2️⃣ **Verify the request actually reaches the server**  
+   ▪ Open Dev-Tools → Network, click the 🗑 again, confirm the DELETE hits `/api/customers/<id>`.  
+   ▪ If *no* call appears, the JS promise path is failing before `fetch`; fix that.  
+   ▪ If it **does** appear, note the exact response code/body.
+
+3️⃣ **Patch whichever side is failing**  
+   ▪ If backend returns 401/403 ➜ session cookie isn’t included; ensure `credentials:'include'` or `withCredentials:true`.  
+   ▪ If backend returns 404/500 ➜ inspect the SQL; verify `deleted_at` column & schema prefix; fix and retest.  
+   ▪ On success (200/204) make sure the front-end removes the row via `row.remove()` **only after** resolving `res.ok`.  
+   ▪ Always toast either “Customer archived” or an error message with the JSON payload.
+
+4️⃣ **Hard-test end-to-end in PROD only**  
+   ▪ Create `Archive Test Live` customer.  
+   ▪ Archive it.  
+   ▪ Confirm: row disappears, toast shows, `/api/customers` no longer returns that ID, DB shows `deleted_at` populated.
+
+5️⃣ **Leave DEV untouched** – work only against `public` schema, port 5000.
+
+Log everything to console so I can paste results back. Do **not** add any new features; just make archiving rock-solid. Once done, summarise fixes applied and show the final console/network trace proving success.

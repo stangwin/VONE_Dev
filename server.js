@@ -970,35 +970,57 @@ const server = http.createServer(async (req, res) => {
 
       // Customer soft-deletion (exact path only, not file paths)
       if (pathname.match(/^\/api\/customers\/[a-zA-Z0-9_-]+$/) && req.method === 'DELETE') {
+        console.log('🔥 BACKEND DELETE REQUEST RECEIVED');
+        console.log('1. Pathname:', pathname);
+        console.log('2. Method:', req.method);
+        console.log('3. Session userId:', req.session?.userId);
+        console.log('4. Session user email:', req.session?.user?.email);
+        console.log('5. Request headers:', req.headers);
+        
         if (!isAuthenticated(req)) {
+          console.log('6. ❌ Authentication failed');
           res.writeHead(401, { 'Content-Type': 'application/json' });
           res.end(JSON.stringify({ error: 'Authentication required' }));
           return;
         }
         
+        console.log('7. ✅ User authenticated');
+        
         // Check if user is admin
         const user = await authService.getUserById(req.session.userId);
+        console.log('8. User lookup result:', user);
+        
         if (!user || user.role !== 'admin') {
+          console.log('9. ❌ Admin access denied, user role:', user?.role);
           res.writeHead(403, { 'Content-Type': 'application/json' });
           res.end(JSON.stringify({ error: 'Admin access required' }));
           return;
         }
         
+        console.log('10. ✅ Admin access confirmed');
+        
         const customerId = pathname.split('/')[3];
-        console.log('Soft-deleting customer:', customerId);
+        console.log('11. Customer ID extracted:', customerId);
         
         // Soft delete: set deleted_at timestamp
         const schema = process.env.DATABASE_URL_DEV ? 'vantix_dev' : 'public';
-        const result = await pool.query(
-          `UPDATE ${schema}.customers SET deleted_at = NOW() WHERE customer_id = $1 AND deleted_at IS NULL RETURNING *`, 
-          [customerId]
-        );
+        console.log('12. Schema determined:', schema);
+        
+        const updateQuery = `UPDATE ${schema}.customers SET deleted_at = NOW() WHERE customer_id = $1 AND deleted_at IS NULL RETURNING *`;
+        console.log('13. SQL Query:', updateQuery);
+        console.log('14. Query params:', [customerId]);
+        
+        const result = await pool.query(updateQuery, [customerId]);
+        console.log('15. Query result rows:', result.rows.length);
         
         if (result.rows.length === 0) {
+          console.log('16. ❌ Customer not found or already deleted');
           res.writeHead(404, { 'Content-Type': 'application/json' });
           res.end(JSON.stringify({ error: 'Customer not found or already deleted' }));
           return;
         }
+        
+        console.log('17. ✅ Customer soft-deleted successfully');
         
         // Create system note for deletion
         try {
@@ -1006,14 +1028,18 @@ const server = http.createServer(async (req, res) => {
             INSERT INTO ${schema}.customer_notes (customer_id, content, created_by, created_at)
             VALUES ($1, $2, $3, NOW()) RETURNING *
           `;
+          console.log('18. Creating system note...');
           await pool.query(noteQuery, [customerId, `Customer archived by ${user.name}`, req.session.userId]);
-          console.log('System note created for customer deletion');
+          console.log('19. ✅ System note created');
         } catch (noteError) {
-          console.error('Failed to create deletion system note:', noteError);
+          console.error('20. ❌ Failed to create deletion system note:', noteError);
         }
         
+        const successResponse = { message: 'Customer archived successfully' };
+        console.log('21. Sending success response:', successResponse);
+        
         res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ message: 'Customer archived successfully' }));
+        res.end(JSON.stringify(successResponse));
         return;
       }
 

@@ -195,24 +195,41 @@ class DatabaseAPI {
             throw new Error('Customer ID is required');
         }
         
-        console.log('DatabaseAPI: Sending DELETE request for customer:', customerId);
+        console.log('🌐 DatabaseAPI: DELETE REQUEST STARTING');
+        console.log('A. Customer ID:', customerId);
         
-        const response = await fetch(`/api/customers/${customerId}`, {
+        const fetchOptions = {
             method: 'DELETE',
             credentials: 'include'
-        });
+        };
         
-        console.log('DatabaseAPI: Delete response status:', response.status);
-        console.log('DatabaseAPI: Delete response ok:', response.ok);
+        const fetchUrl = `/api/customers/${customerId}`;
+        
+        console.log('B. Fetch URL:', fetchUrl);
+        console.log('C. Fetch Options:', fetchOptions);
+        console.log('D. Fetch method:', fetchOptions.method);
+        console.log('E. Fetch credentials:', fetchOptions.credentials);
+        
+        console.log('F. Sending fetch request...');
+        
+        const response = await fetch(fetchUrl, fetchOptions);
+        
+        console.log('G. Response received');
+        console.log('H. Response status:', response.status);
+        console.log('I. Response statusText:', response.statusText);
+        console.log('J. Response ok:', response.ok);
+        console.log('K. Response headers:', Object.fromEntries(response.headers.entries()));
         
         if (!response.ok) {
+            console.log('L. Response NOT OK - getting error text...');
             const responseText = await response.text();
-            console.error('DatabaseAPI: Delete failed with response:', responseText);
+            console.error('M. Error response body:', responseText);
             throw new Error(`${response.status} ${responseText}`);
         }
         
+        console.log('N. Response OK - parsing JSON...');
         const result = await response.json();
-        console.log('DatabaseAPI: Delete successful, result:', result);
+        console.log('O. JSON parsed successfully:', result);
         return result;
     }
 
@@ -971,34 +988,39 @@ class CRMApp {
                 console.log('Attaching event listener to button:', button.getAttribute('data-customer-id'));
                 button.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    console.log('Delete button clicked for customer:', button.getAttribute('data-customer-id'));
+                    console.log('🗑️ DELETE BUTTON CLICKED');
+                    console.log('1. Customer ID captured:', button.getAttribute('data-customer-id'));
                     
                     if (!confirm('Archive this customer?')) {
-                        console.log('User cancelled delete');
+                        console.log('❌ User cancelled delete');
                         return;
                     }
                     
                     const customerId = button.getAttribute('data-customer-id');
                     const row = button.closest('tr');
                     
-                    console.log('Attempting to delete customer:', customerId);
-                    console.log('window.app exists:', !!window.app);
-                    console.log('window.app.db exists:', !!window.app?.db);
-                    console.log('window.app.db.deleteCustomer exists:', !!window.app?.db?.deleteCustomer);
+                    console.log('2. Proceeding with delete for customer:', customerId);
+                    console.log('3. Row element found:', !!row);
+                    console.log('4. window.app exists:', !!window.app);
+                    console.log('5. window.app.db exists:', !!window.app?.db);
+                    console.log('6. window.app.db.deleteCustomer exists:', !!window.app?.db?.deleteCustomer);
+                    
+                    console.log('7. Calling window.app.db.deleteCustomer...');
                     
                     // Use app instance directly to avoid context issues
                     window.app.db.deleteCustomer(customerId)
                         .then((result) => {
-                            console.log('Delete successful, result:', result);
-                            console.log('Removing row from table');
+                            console.log('✅ DELETE SUCCESS - Result:', result);
+                            console.log('8. Removing row from table...');
                             window.app.showToast('Customer archived');
                             row.remove();
-                            console.log('Row removed successfully');
+                            console.log('9. Row removed successfully');
                         })
                         .catch(err => {
-                            console.error('Delete failed with error:', err);
+                            console.error('❌ DELETE FAILED');
+                            console.error('Error object:', err);
                             console.error('Error message:', err.message);
-                            console.error('Error details:', err);
+                            console.error('Error stack:', err.stack);
                             window.app.showToast('Delete failed: ' + err.message, 'error');
                         });
                 });
