@@ -968,16 +968,32 @@ class CRMApp {
             
             // Add event listeners for delete buttons with proper context binding
             const deleteButtons = tableBody.querySelectorAll('.delete-btn');
+            console.log('Found delete buttons:', deleteButtons.length);
+            console.log('Current user:', this.currentUser);
+            
             deleteButtons.forEach(button => {
+                console.log('Attaching event listener to button:', button.getAttribute('data-customer-id'));
                 button.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    if (!confirm('Archive this customer?')) return;
+                    console.log('Delete button clicked for customer:', button.getAttribute('data-customer-id'));
+                    
+                    if (!confirm('Archive this customer?')) {
+                        console.log('User cancelled delete');
+                        return;
+                    }
+                    
                     const customerId = button.getAttribute('data-customer-id');
                     const row = button.closest('tr');
+                    
+                    console.log('Attempting to delete customer:', customerId);
+                    console.log('window.app exists:', !!window.app);
+                    console.log('window.app.db exists:', !!window.app?.db);
+                    console.log('window.app.db.deleteCustomer exists:', !!window.app?.db?.deleteCustomer);
                     
                     // Use app instance directly to avoid context issues
                     window.app.db.deleteCustomer(customerId)
                         .then(() => {
+                            console.log('Delete successful, removing row');
                             window.app.showToast('Customer archived');
                             row.remove();
                         })
