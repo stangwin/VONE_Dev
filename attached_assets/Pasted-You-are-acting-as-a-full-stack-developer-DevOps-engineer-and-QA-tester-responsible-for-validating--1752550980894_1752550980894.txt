@@ -1,0 +1,51 @@
+You are acting as a full-stack developer, DevOps engineer, and QA tester responsible for validating the full readiness of VONE v1.3 ("Foundation & Flow") using only prompt-based instructions. The purpose of this prompt is to simulate an end-to-end deployment and test process with no human involvement other than writing the prompt. This version includes affiliate management, customer record handling, dashboard editing, admin controls, user roles, and closing logic. Your job is to confirm that everything works flawlessly in dev before promotion.
+
+Step 1 – Perform a Perfect Database Sync: 
+Begin by copying all data from the production schema (public) to the development schema (vantix_dev). This sync must be exact and verifiable. After syncing, compare every table, field, and record between DEV and PROD. If even one value does not match, automatically re-sync the affected areas or repeat the entire sync. Do not proceed until you are absolutely confident that the dev database is a perfect replica of production. If future load testing requires simulated or dummy data, it must be created in a separate test schema or clearly flagged and never mixed with real sync data. This sync process should be reusable in future versions.
+
+Step 2 – Comprehensive Feature Testing:
+As a simulated end user, log into the dev system using normal credentials. Confirm that each of the following features is working correctly both in the dashboard and customer detail views:
+- Customer list loads correctly (14 customers expected)
+- Each customer record opens and displays correct data
+- Primary contact and phone can be edited and saved (phone auto-formats)
+- Status and Next Step dropdowns function correctly (including “Other” spacing fix)
+- Closing a customer triggers a note popup and writes to the notes table
+- Notes can be viewed, added, and are associated with the correct customer
+- Files can be uploaded and clearly tagged to a customer location
+- Affiliate and Affiliate AE dropdowns work dynamically:
+  - Selecting an affiliate filters AE options
+  - Adding a new AE works for all users
+  - Adding a new affiliate only works for admins
+  - All changes reflect immediately in both dashboard and detail views
+
+Step 3 – Admin Panel Testing:
+- Access the admin panel from the user dropdown
+- Add, edit, and delete affiliates and affiliate AEs
+- Validate that only admins can manage affiliates
+- Confirm changes persist and affect dropdowns throughout the app
+
+Step 4 – User Roles:
+- Confirm that role-based permissions are working:
+  - Admins can access admin panel and add affiliates
+  - Regular users cannot access admin panel
+  - All users can assign AEs and edit customer records
+
+Step 5 – UI and UX Validation:
+- Check spacing and alignment of all elements (dashboard, dropdowns, modals)
+- Validate no overlaps (e.g., sidebar over header)
+- Confirm no cosmetic bugs in spacing for "Other" next step input
+- Verify all dynamic UI updates happen in real time without refresh
+
+Step 6 – Error Handling:
+- Ensure no login error like "Failed to load application data"
+- Test console for uncaught errors or API failures
+- Ensure the app never appears broken to the end user
+- Log any issues found and fix them before continuing
+
+Step 7 – Final Report:
+- Create a checklist of every tested item and show pass/fail
+- Fix all failures immediately
+- If you find areas that could be improved (but are not broken), list them as "Suggested Enhancements" but do not implement them until approved
+- Confirm that VONE v1.3 is complete and ready for production promotion with no known issues
+
+Begin now. Your job is to complete this simulation from a clean slate through the finished version of v1.3 with full validation. No manual testing or fixes should be required outside this prompt. This is the standard all future versions will be held to.
