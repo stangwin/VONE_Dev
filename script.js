@@ -934,10 +934,10 @@ class CRMApp {
                             </div>
                         </td>
                         <td>
-                            ${this.renderAffiliateDropdown(customer)}
+                            ${this.isDevelopment ? this.renderAffiliateDropdown(customer) : this.escapeHtml(customer.affiliate_partner || '')}
                         </td>
                         <td>
-                            ${this.renderAffiliateAEDropdown(customer)}
+                            ${this.isDevelopment ? this.renderAffiliateAEDropdown(customer) : this.escapeHtml(customer.affiliate_account_executive || '')}
                         </td>
                         <td>${this.escapeHtml(primaryContactName)}</td>
                         <td>${this.escapeHtml(primaryContactPhone)}</td>
@@ -2131,8 +2131,8 @@ class CRMApp {
                                 }
                             </div>
                             <div class="detail-field">
-                                <label>Affiliate Partner</label>
-                                ${this.editingSections.has('general') ? 
+                                <label>Affiliate Company</label>
+                                ${this.editingSections.has('general') && this.isDevelopment ? 
                                     `<select id="edit-affiliate-partner">
                                         <option value="">None</option>
                                         <option value="VOXO" ${customer.affiliate_partner === 'VOXO' ? 'selected' : ''}>VOXO</option>
@@ -2141,8 +2141,8 @@ class CRMApp {
                                 }
                             </div>
                             <div class="detail-field">
-                                <label>Affiliate AE</label>
-                                ${this.editingSections.has('general') ? 
+                                <label>Affiliate Account Executive</label>
+                                ${this.editingSections.has('general') && this.isDevelopment ? 
                                     `<input type="text" id="edit-affiliate-account-executive" value="${this.escapeHtml(customer.affiliate_account_executive) || ''}">` :
                                     `<span class="field-value">${this.escapeHtml(customer.affiliate_account_executive) || 'Not assigned'}</span>`
                                 }
