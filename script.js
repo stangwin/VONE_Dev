@@ -894,7 +894,7 @@ class CRMApp {
                         </td>
                         <td>
                             <div class="next-step-container">
-                                <select class="next-step-dropdown ${customer.next_step && !this.getNextStepOptionsForStatus(customer.status).includes(customer.next_step) ? 'has-custom' : ''}" 
+                                <select class="next-step-dropdown ${customer.next_step && !this.getNextStepOptionsForStatus(customer.status).includes(customer.next_step) && customer.next_step !== '' ? 'has-custom' : ''}" 
                                         data-customer-id="${customer.customer_id}" 
                                         data-original-value="${customer.next_step || ''}" 
                                         onchange="app.updateCustomerNextStepFromDropdown(this)">
@@ -902,9 +902,9 @@ class CRMApp {
                                     ${this.getNextStepOptionsForStatus(customer.status).map(option => 
                                         `<option value="${option}" ${customer.next_step === option ? 'selected' : ''}>${option}</option>`
                                     ).join('')}
-                                    <option value="Other" ${customer.next_step && !this.getNextStepOptionsForStatus(customer.status).includes(customer.next_step) ? 'selected' : ''}>Other (Custom)</option>
+                                    <option value="Other" ${customer.next_step && !this.getNextStepOptionsForStatus(customer.status).includes(customer.next_step) && customer.next_step !== '' ? 'selected' : ''}>Other (Custom)</option>
                                 </select>
-                                ${customer.next_step && !this.getNextStepOptionsForStatus(customer.status).includes(customer.next_step) ? 
+                                ${customer.next_step && !this.getNextStepOptionsForStatus(customer.status).includes(customer.next_step) && customer.next_step !== '' ? 
                                     `<input type="text" class="custom-next-step-input" 
                                            value="${this.escapeHtml(customer.next_step)}" 
                                            data-customer-id="${customer.customer_id}"
@@ -3740,24 +3740,51 @@ class CRMApp {
             let nextStepValue = selectedValue;
             
             if (selectedValue === 'Other') {
-                // Add has-custom class to dropdown for connected styling
+                // Don't update database yet - wait for custom input
                 selectElement.classList.add('has-custom');
                 
-                // Reload customers to show the custom input with proper styling
-                await this.loadCustomers();
-                
-                // Focus on the new input field after render
-                setTimeout(() => {
-                    const customInput = document.querySelector(`input[data-customer-id="${customerId}"].custom-next-step-input`);
-                    if (customInput) {
-                        customInput.focus();
-                        customInput.select(); // Select existing text for easy editing
+                // Find the container and add custom input
+                const container = selectElement.closest('.next-step-container');
+                if (container) {
+                    // Remove existing custom input if any
+                    const existingInput = container.querySelector('.custom-next-step-input');
+                    if (existingInput) {
+                        existingInput.remove();
                     }
-                }, 100);
+                    
+                    // Create and add new custom input
+                    const customInput = document.createElement('input');
+                    customInput.type = 'text';
+                    customInput.className = 'custom-next-step-input';
+                    customInput.value = originalValue && originalValue !== 'Other' ? originalValue : '';
+                    customInput.dataset.customerId = customerId;
+                    customInput.placeholder = 'Enter custom next step';
+                    
+                    // Add event handlers
+                    customInput.onblur = () => this.updateCustomerNextStep(customInput);
+                    customInput.onkeypress = (e) => {
+                        if (e.key === 'Enter') customInput.blur();
+                    };
+                    
+                    container.appendChild(customInput);
+                    
+                    // Focus and select text
+                    setTimeout(() => {
+                        customInput.focus();
+                        customInput.select();
+                    }, 10);
+                }
                 return;
             } else {
-                // Remove has-custom class
+                // Remove has-custom class and any custom input
                 selectElement.classList.remove('has-custom');
+                const container = selectElement.closest('.next-step-container');
+                if (container) {
+                    const existingInput = container.querySelector('.custom-next-step-input');
+                    if (existingInput) {
+                        existingInput.remove();
+                    }
+                }
             }
 
             // Validate: Next Step is required unless status is "Closed"
