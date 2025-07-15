@@ -622,30 +622,12 @@ class CRMApp {
     async loadUserData() {
         try {
             console.log('Loading user data from /api/user...');
-            const response = await fetch('/api/user', {
-                credentials: 'include'
-            });
-
-            console.log('User API response status:', response.status);
-            console.log('User API response ok:', response.ok);
-
-            if (!response.ok) {
-                console.log('User not authenticated, redirecting to auth page...');
-                // In iframe, show login instructions instead of redirecting
-                if (window.top !== window.self) {
-                    const errorDiv = document.getElementById('dashboard-error');
-                    if (errorDiv) {
-                        errorDiv.innerHTML = '<strong>Login Required:</strong> <a href="/auth.html" target="_blank" style="color: #007bff; text-decoration: underline;">Click here to login</a> (test@test.com / test123) then refresh this page to access the CRM.';
-                        errorDiv.style.display = 'block';
-                    }
-                } else {
-                    window.location.href = '/auth.html';
-                }
-                return;
-            }
-
-            this.currentUser = await response.json();
-            console.log('User data loaded successfully:', this.currentUser);
+            
+            // Use the same authentication method as other API calls
+            const response = await this.api.makeRequest('GET', '/api/user');
+            
+            console.log('User data loaded successfully:', response);
+            this.currentUser = response;
             this.userData = this.currentUser; // Ensure consistency
             this.updateUserUI();
             
@@ -656,6 +638,7 @@ class CRMApp {
             }
         } catch (error) {
             console.error('Failed to load user data:', error);
+            console.log('User not authenticated, redirecting to auth page...');
             // In iframe, show login instructions instead of redirecting
             if (window.top !== window.self) {
                 const errorDiv = document.getElementById('dashboard-error');
