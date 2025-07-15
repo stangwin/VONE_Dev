@@ -600,12 +600,13 @@ const server = http.createServer(async (req, res) => {
           return;
         }
         
+        const schemaPrefix = process.env.ENVIRONMENT === 'development' ? 'vantix_dev.' : '';
         const result = await pool.query(`
           SELECT 
             a.*,
             COUNT(c.id) as customer_count
-          FROM affiliates a
-          LEFT JOIN customers c ON a.id = c.affiliate_id
+          FROM ${schemaPrefix}affiliates a
+          LEFT JOIN ${schemaPrefix}customers c ON a.id = c.affiliate_id
           GROUP BY a.id, a.name, a.created_at
           ORDER BY a.name
         `);
@@ -629,8 +630,9 @@ const server = http.createServer(async (req, res) => {
         }
 
         try {
+          const schemaPrefix = process.env.ENVIRONMENT === 'development' ? 'vantix_dev.' : '';
           const result = await pool.query(
-            'INSERT INTO affiliates (name) VALUES ($1) RETURNING *',
+            `INSERT INTO ${schemaPrefix}affiliates (name) VALUES ($1) RETURNING *`,
             [name.trim()]
           );
           res.writeHead(201, { 'Content-Type': 'application/json' });
@@ -1429,64 +1431,7 @@ const server = http.createServer(async (req, res) => {
       return;
     }
 
-    // AFFILIATE MANAGEMENT API ENDPOINTS
-    
-    // Get all affiliates
-    if (pathname === '/api/affiliates' && req.method === 'GET') {
-      if (!isAuthenticated(req)) {
-        res.writeHead(401, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: 'Authentication required' }));
-        return;
-      }
-      
-      try {
-        const schemaPrefix = process.env.ENVIRONMENT === 'development' ? 'vantix_dev.' : '';
-        const result = await pool.query(`SELECT * FROM ${schemaPrefix}affiliates ORDER BY name`);
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify(result.rows));
-      } catch (error) {
-        console.error('Error fetching affiliates:', error);
-        res.writeHead(500, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: 'Failed to fetch affiliates' }));
-      }
-      return;
-    }
-    
-    // Create new affiliate
-    if (pathname === '/api/affiliates' && req.method === 'POST') {
-      if (!isAuthenticated(req)) {
-        res.writeHead(401, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: 'Authentication required' }));
-        return;
-      }
-      
-      try {
-        const { name } = await parseJsonBody(req);
-        if (!name || !name.trim()) {
-          res.writeHead(400, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ error: 'Affiliate name is required' }));
-          return;
-        }
-        
-        const result = await pool.query(
-          'INSERT INTO affiliates (name) VALUES ($1) RETURNING *',
-          [name.trim()]
-        );
-        
-        res.writeHead(201, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify(result.rows[0]));
-      } catch (error) {
-        console.error('Error creating affiliate:', error);
-        if (error.code === '23505') { // Unique constraint violation
-          res.writeHead(409, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ error: 'Affiliate name already exists' }));
-        } else {
-          res.writeHead(500, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ error: 'Failed to create affiliate' }));
-        }
-      }
-      return;
-    }
+    // DUPLICATE AFFILIATE ENDPOINTS REMOVED - USING EARLIER IMPLEMENTATION
     
     // Get affiliate AEs for a specific affiliate
     if (pathname.match(/^\/api\/affiliates\/[a-fA-F0-9-]+\/aes$/) && req.method === 'GET') {
@@ -1498,8 +1443,9 @@ const server = http.createServer(async (req, res) => {
       
       try {
         const affiliateId = pathname.split('/')[3];
+        const schemaPrefix = process.env.ENVIRONMENT === 'development' ? 'vantix_dev.' : '';
         const result = await pool.query(
-          'SELECT * FROM affiliate_aes WHERE affiliate_id = $1 ORDER BY name',
+          `SELECT * FROM ${schemaPrefix}affiliate_aes WHERE affiliate_id = $1 ORDER BY name`,
           [affiliateId]
         );
         

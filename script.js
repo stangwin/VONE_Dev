@@ -424,8 +424,11 @@ class DatabaseAPI {
     }
 
     async getAffiliateAEs(affiliateId = null) {
-        const params = affiliateId ? `?affiliate_id=${affiliateId}` : '';
-        return await this.makeRequest('GET', `/api/affiliate-aes${params}`);
+        if (affiliateId) {
+            return await this.makeRequest('GET', `/api/affiliates/${affiliateId}/aes`);
+        } else {
+            return await this.makeRequest('GET', `/api/affiliate-aes`);
+        }
     }
 
     async createAffiliateAE(affiliateId, name) {
