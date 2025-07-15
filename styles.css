@@ -2534,7 +2534,21 @@ nav {
     line-height: 1;
 }
 
-/* Custom Next Step Input Styling */
+/* Next Step Container with Connected Layout */
+.next-step-container {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    align-items: flex-start;
+    min-width: 140px;
+}
+
+.next-step-container.inline {
+    flex-direction: row;
+    align-items: center;
+    gap: 6px;
+}
+
 .custom-next-step-input {
     border: 1px solid #d1d7e0;
     padding: 0.25rem 0.5rem;
@@ -2544,15 +2558,34 @@ nav {
     font-family: system-ui, "Segoe UI", "Helvetica Neue", sans-serif;
     color: #33475b;
     transition: all 0.2s ease;
-    margin-left: 8px;
-    width: 150px;
-    display: inline-block;
+    width: 130px;
+    margin-top: 2px;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+    border-top: none;
 }
 
 .custom-next-step-input:focus {
     outline: none;
     border-color: #0073e6;
     box-shadow: 0 0 0 2px rgba(0, 115, 230, 0.2);
+    border-top: 1px solid #0073e6;
+}
+
+/* Connected dropdown styling when custom input is active */
+.next-step-dropdown.has-custom {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+/* Form context custom input styling */
+.form-group .custom-next-step-input {
+    width: 100%;
+    margin-top: 8px;
+    border-radius: 4px;
+    border: 1px solid #d1d7e0;
 }
 
 /* Account Executive Input - VONE v1.3 Enhancement */

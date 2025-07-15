@@ -893,25 +893,27 @@ class CRMApp {
                             </select>
                         </td>
                         <td>
-                            <select class="next-step-dropdown" 
-                                    data-customer-id="${customer.customer_id}" 
-                                    data-original-value="${customer.next_step || ''}" 
-                                    onchange="app.updateCustomerNextStepFromDropdown(this)">
-                                <option value="">Select Next Step</option>
-                                ${this.getNextStepOptionsForStatus(customer.status).map(option => 
-                                    `<option value="${option}" ${customer.next_step === option ? 'selected' : ''}>${option}</option>`
-                                ).join('')}
-                                <option value="Other" ${customer.next_step && !this.getNextStepOptionsForStatus(customer.status).includes(customer.next_step) ? 'selected' : ''}>Other (Custom)</option>
-                            </select>
-                            ${customer.next_step && !this.getNextStepOptionsForStatus(customer.status).includes(customer.next_step) ? 
-                                `<input type="text" class="custom-next-step-input" 
-                                       value="${this.escapeHtml(customer.next_step)}" 
-                                       data-customer-id="${customer.customer_id}"
-                                       onblur="app.updateCustomerNextStep(this)"
-                                       onkeypress="if(event.key==='Enter') this.blur()"
-                                       placeholder="Enter custom next step">` : 
-                                ''
-                            }
+                            <div class="next-step-container">
+                                <select class="next-step-dropdown ${customer.next_step && !this.getNextStepOptionsForStatus(customer.status).includes(customer.next_step) ? 'has-custom' : ''}" 
+                                        data-customer-id="${customer.customer_id}" 
+                                        data-original-value="${customer.next_step || ''}" 
+                                        onchange="app.updateCustomerNextStepFromDropdown(this)">
+                                    <option value="">Select Next Step</option>
+                                    ${this.getNextStepOptionsForStatus(customer.status).map(option => 
+                                        `<option value="${option}" ${customer.next_step === option ? 'selected' : ''}>${option}</option>`
+                                    ).join('')}
+                                    <option value="Other" ${customer.next_step && !this.getNextStepOptionsForStatus(customer.status).includes(customer.next_step) ? 'selected' : ''}>Other (Custom)</option>
+                                </select>
+                                ${customer.next_step && !this.getNextStepOptionsForStatus(customer.status).includes(customer.next_step) ? 
+                                    `<input type="text" class="custom-next-step-input" 
+                                           value="${this.escapeHtml(customer.next_step)}" 
+                                           data-customer-id="${customer.customer_id}"
+                                           onblur="app.updateCustomerNextStep(this)"
+                                           onkeypress="if(event.key==='Enter') this.blur()"
+                                           placeholder="Enter custom next step">` : 
+                                    ''
+                                }
+                            </div>
                         </td>
                         <td>
                             ${this.renderAffiliateDropdown(customer)}
@@ -3738,31 +3740,24 @@ class CRMApp {
             let nextStepValue = selectedValue;
             
             if (selectedValue === 'Other') {
-                // Look for custom input in the same row
-                const row = selectElement.closest('tr');
-                const customInput = row.querySelector('.custom-next-step-input');
+                // Add has-custom class to dropdown for connected styling
+                selectElement.classList.add('has-custom');
                 
-                if (!customInput) {
-                    // Create custom input
-                    const customInputHtml = `<input type="text" class="custom-next-step-input" 
-                                                   value="${this.escapeHtml(originalValue)}" 
-                                                   data-customer-id="${customerId}"
-                                                   onblur="app.updateCustomerNextStep(this)"
-                                                   onkeypress="if(event.key==='Enter') this.blur()"
-                                                   placeholder="Enter custom next step"
-                                                   style="margin-left: 5px; width: 120px;">`;
-                    selectElement.insertAdjacentHTML('afterend', customInputHtml);
-                    return; // Don't update yet, wait for custom input
-                }
+                // Reload customers to show the custom input with proper styling
+                await this.loadCustomers();
                 
-                nextStepValue = customInput.value.trim();
+                // Focus on the new input field after render
+                setTimeout(() => {
+                    const customInput = document.querySelector(`input[data-customer-id="${customerId}"].custom-next-step-input`);
+                    if (customInput) {
+                        customInput.focus();
+                        customInput.select(); // Select existing text for easy editing
+                    }
+                }, 100);
+                return;
             } else {
-                // Remove any custom input if it exists
-                const row = selectElement.closest('tr');
-                const customInput = row.querySelector('.custom-next-step-input');
-                if (customInput) {
-                    customInput.remove();
-                }
+                // Remove has-custom class
+                selectElement.classList.remove('has-custom');
             }
 
             // Validate: Next Step is required unless status is "Closed"
