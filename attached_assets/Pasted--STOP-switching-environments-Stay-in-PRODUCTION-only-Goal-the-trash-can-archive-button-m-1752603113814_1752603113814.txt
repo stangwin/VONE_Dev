@@ -1,0 +1,50 @@
+🛑  STOP switching environments.  Stay in **PRODUCTION** only.
+
+Goal: the trash-can archive button must immediately remove a customer row and set `deleted_at` in the public.customers table.  In the live UI it still does nothing.
+
+Step-by-step:
+
+1. Run   ./switch-to-production.sh   and restart the prod server (port 5000).  Confirm `check-environment.sh` prints “PRODUCTION”.
+
+2. Open the browser at the prod URL (no DEV banner).  Log in as Stan@vantix.tech / VantixCRM2024! and reproduce:
+   • Click 🗑 on any test customer  
+   • Press “Archive this customer?” → nothing happens.
+
+3. Browser-side debugging (prod):
+   • Open DevTools → Console.  Capture any JS errors.  
+   • Open Network tab.  Click 🗑 again.  Verify whether a DELETE /api/customers/<id> (or PUT with deleted_at) request is actually sent and note its status & payload.
+
+4. Back-end debugging (prod):
+   • Tail server logs during the click.  Confirm whether the DELETE route logs run.  
+   • If the frontend never sends the call, fix the JS event handler: use  
+     ```js
+     document.querySelectorAll('.delete-btn').forEach(btn=>{
+       btn.addEventListener('click', e=>{
+         e.stopPropagation();
+         if(!confirm('Archive this customer?')) return;
+         const id = btn.dataset.customerId;
+         window.app.db.deleteCustomer(id)
+           .then(()=>{ window.app.showToast('Customer archived'); btn.closest('tr').remove(); })
+           .catch(err=>{ console.error(err); window.app.showToast('Delete failed','error'); });
+       });
+     });
+     ```
+     Ensure **window.app.db.deleteCustomer** exists and returns a promise.
+
+5. If the API returns 401/403 fix session headers (`credentials:'include'` and proper cookie).
+
+6. If the API succeeds (200) but the row stays, verify the `.remove()` call actually runs; otherwise reload list after success.
+
+7. After fix:  
+   • Create “Archive UI Test” customer.  
+   • Archive it via UI → row disappears instantly.  
+   • `SELECT deleted_at FROM public.customers WHERE company_name='Archive UI Test';` returns a timestamp.  
+   • Refresh page → customer no longer listed.
+
+Do **NOT** touch development schema or code paths.  Work only in prod, commit, restart server, and reply with a concise success report:  
+– JS error fixed / none  
+– API call status  
+– Row removal confirmed  
+– DB `deleted_at` confirmed
+
+End of prompt
