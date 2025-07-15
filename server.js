@@ -249,22 +249,7 @@ const server = http.createServer(async (req, res) => {
   // Wrap all requests with session handling
   return handleWithSession(req, res, async (req, res) => {
     
-    // Debug logging for notes requests
-    // Enhanced session debugging for auth issues
-    if (pathname.includes('auth') || pathname.includes('customers') || pathname.includes('user')) {
-      console.log('=== SESSION DEBUG ===');
-      console.log('Method:', req.method);
-      console.log('Pathname:', pathname);
-      console.log('Headers present:', {
-        cookie: !!req.headers.cookie,
-        referer: req.headers.referer?.substring(0, 60) + '...'
-      });
-      console.log('Session exists:', !!req.session);
-      console.log('Session ID:', req.session?.id?.substring(0, 8) + '...');
-      console.log('User ID:', req.session?.userId);
-      console.log('Session keys:', req.session ? Object.keys(req.session) : 'none');
-      console.log('==================');
-    }
+
 
     // Block all dev endpoints in production
     if (pathname.startsWith('/api/dev/')) {
@@ -290,12 +275,9 @@ const server = http.createServer(async (req, res) => {
         
         // Try normal authentication first
         try {
-          console.log('Attempting authentication for:', email);
           user = await authService.authenticateUser(email, password);
-          console.log('Authentication result:', user ? 'SUCCESS' : 'FAILED');
         } catch (error) {
-          console.log('Normal authentication failed:', error.message);
-          console.log('Error stack:', error.stack);
+          console.log('Authentication failed:', error.message);
           user = null;
         }
         
@@ -308,16 +290,6 @@ const server = http.createServer(async (req, res) => {
             role: 'admin',
             two_factor_enabled: false
           };
-          console.log('Development bypass: Using test credentials');
-        }
-        
-        // Temporary bypass for Stan@vantix.tech - emergency access
-        if (!user && email === 'Stan@vantix.tech' && password === 'emergency2025') {
-          const dbUser = await authService.getUserByEmail('Stan@vantix.tech');
-          if (dbUser) {
-            user = dbUser;
-            console.log('EMERGENCY BYPASS: Stan@vantix.tech logged in with emergency password');
-          }
         }
         
         if (!user) {
