@@ -195,17 +195,25 @@ class DatabaseAPI {
             throw new Error('Customer ID is required');
         }
         
+        console.log('DatabaseAPI: Sending DELETE request for customer:', customerId);
+        
         const response = await fetch(`/api/customers/${customerId}`, {
             method: 'DELETE',
             credentials: 'include'
         });
         
+        console.log('DatabaseAPI: Delete response status:', response.status);
+        console.log('DatabaseAPI: Delete response ok:', response.ok);
+        
         if (!response.ok) {
             const responseText = await response.text();
+            console.error('DatabaseAPI: Delete failed with response:', responseText);
             throw new Error(`${response.status} ${responseText}`);
         }
         
-        return await response.json();
+        const result = await response.json();
+        console.log('DatabaseAPI: Delete successful, result:', result);
+        return result;
     }
 
     // File management methods
@@ -980,13 +988,17 @@ class CRMApp {
                     
                     // Use app instance directly to avoid context issues
                     window.app.db.deleteCustomer(customerId)
-                        .then(() => {
-                            console.log('Delete successful, removing row');
+                        .then((result) => {
+                            console.log('Delete successful, result:', result);
+                            console.log('Removing row from table');
                             window.app.showToast('Customer archived');
                             row.remove();
+                            console.log('Row removed successfully');
                         })
                         .catch(err => {
-                            console.error('Delete failed:', err);
+                            console.error('Delete failed with error:', err);
+                            console.error('Error message:', err.message);
+                            console.error('Error details:', err);
                             window.app.showToast('Delete failed: ' + err.message, 'error');
                         });
                 });
