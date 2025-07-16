@@ -932,7 +932,7 @@ class CRMApp {
                         </td>
                         <td>
                             <div class="next-step-container">
-                                <select class="next-step-dropdown ${customer.next_step && !this.getNextStepOptionsForStatus(customer.status).includes(customer.next_step) && customer.next_step !== '' ? 'has-custom' : ''}" 
+                                <select class="next-step-dropdown" 
                                         data-customer-id="${customer.customer_id}" 
                                         data-original-value="${customer.next_step || ''}" 
                                         onchange="app.updateCustomerNextStepFromDropdown(this)">
@@ -940,18 +940,17 @@ class CRMApp {
                                     ${this.getNextStepOptionsForStatus(customer.status).map(option => 
                                         `<option value="${option}" ${customer.next_step === option ? 'selected' : ''}>${option}</option>`
                                     ).join('')}
-                                    <option value="Other" ${customer.next_step && !this.getNextStepOptionsForStatus(customer.status).includes(customer.next_step) && customer.next_step !== '' ? 'selected' : ''}>Other (Custom)</option>
+
                                 </select>
-                                ${customer.next_step && !this.getNextStepOptionsForStatus(customer.status).includes(customer.next_step) && customer.next_step !== '' ? 
-                                    `<input type="text" class="custom-next-step-input" 
-                                           value="${this.escapeHtml(customer.next_step)}" 
-                                           data-customer-id="${customer.customer_id}"
-                                           onblur="app.updateCustomerNextStep(this)"
-                                           onkeypress="if(event.key==='Enter') this.blur()"
-                                           placeholder="Enter custom next step">` : 
-                                    ''
-                                }
+
                             </div>
+                        </td>
+                        <td class="next-step-due-cell">
+                            <input type="date" class="next-step-due-input" 
+                                   data-customer-id="${customer.customer_id}" 
+                                   value="${customer.next_step_due || ''}"
+                                   onchange="app.updateCustomerNextStepDue(this)"
+                                   title="Next Step Due Date">
                         </td>
                         <td>
                             ${this.renderAffiliateCell(customer)}
@@ -1264,47 +1263,10 @@ class CRMApp {
                 nextStepDropdown.appendChild(optionElement);
             });
             
-            // Add "Other" option
-            const otherOption = document.createElement('option');
-            otherOption.value = 'Other';
-            otherOption.textContent = 'Other (Custom)';
-            nextStepDropdown.appendChild(otherOption);
-            
             // Handle custom next steps that are no longer valid
             if (currentNextStep && !newOptions.includes(currentNextStep) && currentNextStep !== '') {
-                // If current next step is not in new options, set to "Other" and show custom input
-                nextStepDropdown.value = 'Other';
-                
-                // Find and update/create custom input field
-                const row = nextStepDropdown.closest('tr');
-                const nextStepCell = nextStepDropdown.closest('td');
-                
-                // Remove existing custom input if present
-                const existingCustomInput = nextStepCell.querySelector('.custom-next-step-input');
-                if (existingCustomInput) {
-                    existingCustomInput.remove();
-                }
-                
-                // Add custom input with current value
-                const customInput = document.createElement('input');
-                customInput.type = 'text';
-                customInput.className = 'custom-next-step-input';
-                customInput.value = currentNextStep;
-                customInput.setAttribute('data-customer-id', customerId);
-                customInput.setAttribute('placeholder', 'Enter custom next step');
-                customInput.addEventListener('blur', (e) => this.updateCustomerNextStep(e.target));
-                customInput.addEventListener('keypress', (e) => {
-                    if (e.key === 'Enter') e.target.blur();
-                });
-                
-                nextStepCell.appendChild(customInput);
-            } else {
-                // Remove custom input if it exists and not needed
-                const nextStepCell = nextStepDropdown.closest('td');
-                const existingCustomInput = nextStepCell.querySelector('.custom-next-step-input');
-                if (existingCustomInput) {
-                    existingCustomInput.remove();
-                }
+                // If current next step is not in new options, clear the selection
+                nextStepDropdown.value = '';
             }
             
             console.log(`Updated next step dropdown for customer ${customerId} based on new status: ${newStatus}`);
@@ -1412,6 +1374,56 @@ class CRMApp {
             
             const errorMsg = error.message || 'Failed to update next step. Please try again.';
             alert(errorMsg);
+        }
+    }
+
+    async updateCustomerNextStepDue(inputElement) {
+        const customerId = inputElement.dataset.customerId;
+        const nextStepDue = inputElement.value;
+        const originalValue = inputElement.dataset.originalValue || '';
+
+        // Store original value for rollback
+        if (!inputElement.dataset.originalValue) {
+            const customer = this.customers.find(c => c.customer_id === customerId);
+            inputElement.dataset.originalValue = customer?.next_step_due || '';
+        }
+
+        try {
+            console.log(`Updating customer ${customerId} next step due to "${nextStepDue}"`);
+            
+            const updateData = { next_step_due: nextStepDue };
+            await this.api.updateCustomer(customerId, updateData);
+            
+            // Create system note for next step due change
+            if (originalValue !== nextStepDue) {
+                const content = originalValue ? 
+                    `Next step due date updated from "${originalValue}" to "${nextStepDue}"` : 
+                    `Next step due date set to "${nextStepDue}"`;
+                await this.api.createSystemNote(customerId, content);
+            }
+            
+            // Update local data
+            const customer = this.customers.find(c => c.customer_id === customerId);
+            if (customer) {
+                customer.next_step_due = nextStepDue;
+            }
+
+            // Update filtered customers as well
+            const filteredCustomer = this.filteredCustomers.find(c => c.customer_id === customerId);
+            if (filteredCustomer) {
+                filteredCustomer.next_step_due = nextStepDue;
+            }
+
+            inputElement.dataset.originalValue = nextStepDue;
+            console.log(`✓ Customer ${customerId} next step due updated successfully`);
+            
+            // Re-render next actions section
+            this.renderNextActions();
+            
+        } catch (error) {
+            console.error('Error updating next step due:', error);
+            inputElement.value = originalValue;
+            alert('Failed to update next step due date. Please try again.');
         }
     }
 
@@ -2378,9 +2390,15 @@ class CRMApp {
                                     `<select id="edit-next-step">
                                         <option value="">Select Next Step</option>
                                         ${nextStepOptionsHtml}
-                                        <option value="Other">Other (Custom)</option>
                                     </select>` :
                                     `<span class="field-value">${this.escapeHtml(customer.next_step) || 'None'}</span>`
+                                }
+                            </div>
+                            <div class="detail-field">
+                                <label>Next Step Due</label>
+                                ${this.editingSections.has('general') ? 
+                                    `<input type="date" id="edit-next-step-due" value="${customer.next_step_due || ''}">` :
+                                    `<span class="field-value">${customer.next_step_due ? new Date(customer.next_step_due).toLocaleDateString() : 'Not set'}</span>`
                                 }
                             </div>
                             <div class="detail-field">
@@ -3962,21 +3980,9 @@ class CRMApp {
             nextStepSelect.appendChild(optionElement);
         });
         
-        // Add "Other" option for custom next steps
-        const otherOption = document.createElement('option');
-        otherOption.value = 'Other';
-        otherOption.textContent = 'Other (Custom)';
-        nextStepSelect.appendChild(otherOption);
-        
-        // If current selection is not in new options, set to Other and show custom input
+        // If current selection is not in new options, clear it
         if (currentNextStep && !nextStepOptions.includes(currentNextStep) && currentNextStep !== '') {
-            nextStepSelect.value = 'Other';
-            this.showCustomNextStepInput(true, currentNextStep);
-        } else if (currentNextStep === 'Other') {
-            nextStepSelect.value = 'Other';
-            this.showCustomNextStepInput(true);
-        } else {
-            this.showCustomNextStepInput(false);
+            nextStepSelect.value = '';
         }
         
         // If current selection is not in new options, try to keep the current customer's next_step
@@ -3988,28 +3994,7 @@ class CRMApp {
         }
     }
 
-    showCustomNextStepInput(show, value = '') {
-        const container = document.getElementById('edit-next-step').parentNode;
-        let customInput = container.querySelector('.custom-next-step-input');
-        
-        if (show) {
-            if (!customInput) {
-                customInput = document.createElement('input');
-                customInput.type = 'text';
-                customInput.className = 'custom-next-step-input';
-                customInput.placeholder = 'Enter custom next step';
-                customInput.style.marginTop = '5px';
-                customInput.style.width = '100%';
-                container.appendChild(customInput);
-            }
-            customInput.value = value;
-            customInput.style.display = 'block';
-        } else {
-            if (customInput) {
-                customInput.style.display = 'none';
-            }
-        }
-    }
+
 
     async updateCustomerNextStepFromDropdown(selectElement) {
         const customerId = selectElement.dataset.customerId;
@@ -4018,54 +4003,6 @@ class CRMApp {
 
         try {
             let nextStepValue = selectedValue;
-            
-            if (selectedValue === 'Other') {
-                // Don't update database yet - wait for custom input
-                selectElement.classList.add('has-custom');
-                
-                // Find the container and add custom input
-                const container = selectElement.closest('.next-step-container');
-                if (container) {
-                    // Remove existing custom input if any
-                    const existingInput = container.querySelector('.custom-next-step-input');
-                    if (existingInput) {
-                        existingInput.remove();
-                    }
-                    
-                    // Create and add new custom input
-                    const customInput = document.createElement('input');
-                    customInput.type = 'text';
-                    customInput.className = 'custom-next-step-input';
-                    customInput.value = originalValue && originalValue !== 'Other' ? originalValue : '';
-                    customInput.dataset.customerId = customerId;
-                    customInput.placeholder = 'Enter custom next step';
-                    
-                    // Add event handlers
-                    customInput.onblur = () => this.updateCustomerNextStep(customInput);
-                    customInput.onkeypress = (e) => {
-                        if (e.key === 'Enter') customInput.blur();
-                    };
-                    
-                    container.appendChild(customInput);
-                    
-                    // Focus and select text
-                    setTimeout(() => {
-                        customInput.focus();
-                        customInput.select();
-                    }, 10);
-                }
-                return;
-            } else {
-                // Remove has-custom class and any custom input
-                selectElement.classList.remove('has-custom');
-                const container = selectElement.closest('.next-step-container');
-                if (container) {
-                    const existingInput = container.querySelector('.custom-next-step-input');
-                    if (existingInput) {
-                        existingInput.remove();
-                    }
-                }
-            }
 
             // Validate: Next Step is required unless status is "Closed"
             const customer = this.customers.find(c => c.customer_id === customerId);
@@ -4395,6 +4332,7 @@ class CRMApp {
             affiliate_id: formData.get('affiliatePartner') || formData.get('affiliate-partner') || null,
             affiliate_ae_id: formData.get('affiliateAccountExecutive') || formData.get('affiliate-account-executive') || null,
             next_step: getField('nextStep') || getField('next-step'),
+            next_step_due: getField('nextStepDue') || getField('next-step-due'),
             physical_address: physicalAddress,
             billing_address: billingAddress,
             primary_contact: {
@@ -4562,6 +4500,7 @@ class CRMApp {
                 const status = document.getElementById('edit-status')?.value;
                 const affiliatePartner = document.getElementById('edit-affiliate-partner')?.value;
                 const nextStep = document.getElementById('edit-next-step')?.value?.trim();
+                const nextStepDue = document.getElementById('edit-next-step-due')?.value;
 
                 if (!companyName) {
                     this.showToast('Company name is required.', 'error');
@@ -4575,7 +4514,8 @@ class CRMApp {
                     status: status || this.currentCustomer.status,
                     affiliate_partner: affiliatePartner || null,
                     affiliate_account_executive: affiliateAccountExecutive || null,
-                    next_step: nextStep || null
+                    next_step: nextStep || null,
+                    next_step_due: nextStepDue || null
                 };
 
                 // Track changes for system notes
@@ -4593,6 +4533,9 @@ class CRMApp {
                 }
                 if (this.currentCustomer.affiliate_account_executive !== affiliateAccountExecutive) {
                     changes.push({ field: 'Affiliate AE', oldValue: this.currentCustomer.affiliate_account_executive || 'None', newValue: affiliateAccountExecutive || 'None' });
+                }
+                if (this.currentCustomer.next_step_due !== nextStepDue) {
+                    changes.push({ field: 'Next Step Due', oldValue: this.currentCustomer.next_step_due || 'Not set', newValue: nextStepDue || 'Not set' });
                 }
 
             } else if (sectionName === 'contact') {

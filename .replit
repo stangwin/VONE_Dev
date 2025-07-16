@@ -26,7 +26,7 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "ENVIRONMENT=development DEV_PORT=3000 node server.js"
+args = "ENVIRONMENT=development DATABASE_URL_DEV=\"postgresql://neondb_owner:npg_sR8aqHOu71JE@ep-rough-math-a5mjxgkw.us-east-2.aws.neon.tech/neondb?sslmode=require&schema=vantix_dev\" DEV_PORT=3000 node server.js"
 waitForPort = 3000
 
 [[workflows.workflow]]

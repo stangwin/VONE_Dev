@@ -1932,6 +1932,30 @@ nav {
     box-shadow: 0 0 0 2px hsl(var(--primary) / 0.1);
 }
 
+/* Next Step Due column styling */
+.next-step-due-cell {
+    text-align: center;
+}
+
+.next-step-due-input {
+    width: 100%;
+    max-width: 110px;
+    padding: 4px 6px;
+    border: 1px solid #d1d7e0;
+    border-radius: 4px;
+    font-size: 11px;
+    font-family: system-ui, "Segoe UI", "Helvetica Neue", sans-serif;
+    color: #33475b;
+    background: white;
+    text-align: center;
+}
+
+.next-step-due-input:focus {
+    outline: none;
+    border-color: hsl(var(--primary));
+    box-shadow: 0 0 0 2px hsl(var(--primary) / 0.1);
+}
+
 .filter-group select,
 .filter-group input {
     padding: 0.5rem 0.75rem;
@@ -2008,6 +2032,13 @@ nav {
     /* Next Step column */
     width: 15%;
     min-width: 140px;
+}
+
+.customers-table th:nth-child(4),
+.customers-table td:nth-child(4) {
+    /* Next Step Due column */
+    width: 10%;
+    min-width: 110px;
 }
 
 .customers-table th:nth-child(4),
@@ -2547,35 +2578,28 @@ nav {
 .file-attachment-indicator {
     display: inline-flex;
     align-items: center;
-    gap: 4px;
-    padding: 4px 8px;
-    background: #f8f9fa;
-    border: 1px solid #e9ecef;
-    border-radius: 12px;
+    gap: 2px;
     cursor: pointer;
-    transition: all 0.2s ease;
     color: #6c757d;
-    font-size: 0.75rem;
+    font-size: 11px;
     text-decoration: none;
-    min-width: 40px;
-    justify-content: center;
+    line-height: 1;
+    vertical-align: middle;
 }
 
 .file-attachment-indicator:hover {
-    background: #e9ecef;
-    border-color: #dee2e6;
     color: #495057;
-    transform: translateY(-1px);
 }
 
 .file-icon {
-    font-size: 0.875rem;
+    font-size: 14px;
     color: #6c757d;
+    line-height: 1;
 }
 
 .file-count {
     font-weight: 500;
-    font-size: 0.75rem;
+    font-size: 11px;
     color: #495057;
     line-height: 1;
 }
