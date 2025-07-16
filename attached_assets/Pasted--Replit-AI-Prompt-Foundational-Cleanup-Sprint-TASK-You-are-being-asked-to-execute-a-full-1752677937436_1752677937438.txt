@@ -1,0 +1,118 @@
+## 🔧 Replit AI Prompt: Foundational Cleanup Sprint
+
+**TASK:** You are being asked to execute a full Foundational Cleanup Sprint on the VONE CRM codebase. This sprint focuses on frontend spacing/UI issues, frontend logic cleanup, and critical red-flag backend architectural fixes. DO NOT promote changes to production. DO NOT delete or reformat any existing documentation or changelog entries unless explicitly instructed.
+
+---
+
+## 📜 RULES OF ENGAGEMENT
+
+**Before beginning**, refer to and honor the project rules in `docs/RULES_OF_ENGAGEMENT.md`.  
+Always treat that file as your operating contract.  
+You may NEVER:
+- Push to production directly
+- Skip documentation
+- Assume success without testing and user approval
+- Use client-side logic for critical flows
+
+---
+
+## 🛠 OBJECTIVE
+
+This sprint includes the following changes:
+
+---
+
+### 🔲 UI/UX Cleanup (Dashboard Page)
+
+1. **Table Layout Fixes:**
+   - Reduce whitespace and unnecessary row height
+   - Shrink the “Files” column to icon-only width (show icon + number)
+   - Keep all phone numbers and addresses **on one line** (use truncation if needed)
+   - Truncate **Company Name** to max 25 characters with ellipsis `...`, and show full name in tooltip on hover
+
+2. **Next Step Field Logic:**
+   - Drop the “Other” option unless its use cases justify it
+   - If “Other” is retained:
+     - Place the accompanying text field **inline**, not on a new line
+     - Limit its width to 200px max
+     - Make sure it does not push the row height taller
+
+3. **Filter & Search Area:**
+   - Consolidate status/affiliate filters and search box into a **single horizontal bar**
+   - Place this bar just below the top nav and above the table, right-aligned if possible
+   - Make sure it works responsively on smaller viewports
+
+4. **Header Row Cleanup:**
+   - Make header text **shorter** (e.g., “Cust Name” instead of “Customer Name”)
+   - Prevent header row text from wrapping
+   - Reduce header row height to match cleaned-up table row height
+
+---
+
+### 🔲 Backend / Frontend Architecture Fixes
+
+5. **Remove Redundant Route Logic:**
+   - Review all `/routes` and `pages/` files
+   - Consolidate duplicated logic into shared helper functions
+   - Avoid inline logic repetition between route handlers
+
+6. **Relocate Client-Side Business Logic:**
+   - Move any critical conditional logic that modifies data or controls flow to the server API layer
+   - UI should **request, not decide**
+
+7. **Improve Form Validation:**
+   - Implement consistent, reusable form validation using a centralized schema or helper (e.g., Zod or manual validator)
+   - Validation must:
+     - Prevent submission on invalid fields
+     - Display helpful error messages inline
+     - Avoid unnecessary page reloads
+
+8. **Fix Broken Navigation:**
+   - Clicking on a customer name in the dashboard should route to `/customer/[id]` and open the detail page
+   - This is currently broken — review the router config and fix it
+   - Test that clicking the name opens a full detail view for the correct record
+
+---
+
+## 🧪 Automated Testing Requirements
+
+For every fix or feature, run automated UI or logic tests as applicable.  
+After testing, **do not assume success** — instead:
+
+- **Show a report** of any test failures (even cosmetic)
+- **Offer recommendations** for fixing the failures
+- **Pause for human input** before implementing fixes
+
+Example prompt:
+> ✅ Testing completed. 2 failures detected in Form Validation and Navigation logic.  
+> 🛠 Recommend adding Zod validation to `/api/update_customer`.  
+> ❓ Proceed with this fix?
+
+---
+
+## 📚 Documentation Requirements
+
+Once all changes are tested and confirmed by the user:
+
+1. Add a new entry to `docs/CHANGELOG.md`:
+   - Title: `Version 1.3 – Foundational Cleanup Sprint`
+   - Date: Today’s date
+   - List changes by section: UI Fixes, Architectural Refactoring, Bug Fixes
+
+2. Do not erase prior entries in `CHANGELOG.md`.  
+3. Do not overwrite `docs/PLANNING.md` or `docs/RULES_OF_ENGAGEMENT.md`.
+
+---
+
+## 🚫 Deployment Note
+
+**Do not promote this version to production.**  
+This environment is still dev, even if used as temporary production.  
+All changes must be reviewed and confirmed manually before final deployment steps are taken.
+
+---
+
+## 💬 Final Prompt Reminder
+
+Always refer back to this prompt **and the `RULES_OF_ENGAGEMENT.md`** when unsure.  
+Do not guess. Ask questions. Present options. Never self-promote code to production.  

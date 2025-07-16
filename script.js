@@ -914,8 +914,9 @@ class CRMApp {
                 return `
                     <tr>
                         <td>
-                            <a href="#" class="company-link" onclick="app.showCustomerDetail('${customer.customer_id}'); return false;">
-                                ${this.escapeHtml(customer.company_name)}
+                            <a href="#" class="company-link" onclick="app.showCustomerDetail('${customer.customer_id}'); return false;" 
+                               title="${this.escapeHtml(customer.company_name)}">
+                                ${this.truncateCompanyName(customer.company_name)}
                             </a>
                         </td>
                         <td class="status-cell">
@@ -5121,6 +5122,15 @@ class CRMApp {
         const div = document.createElement('div');
         div.textContent = text;
         return div.innerHTML;
+    }
+
+    truncateCompanyName(companyName) {
+        if (!companyName || typeof companyName !== 'string') return '';
+        const maxLength = 25;
+        if (companyName.length <= maxLength) {
+            return this.escapeHtml(companyName);
+        }
+        return this.escapeHtml(companyName.substring(0, maxLength) + '...');
     }
 
     // Toast notification system

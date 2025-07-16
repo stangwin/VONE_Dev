@@ -157,33 +157,24 @@
                         <div class="error-message" id="dashboard-error" style="display: none"></div>
                     </div>
 
-                    <!-- Filters Section -->
-                    <div class="filters-section">
+                    <!-- Consolidated Filter Bar -->
+                    <div class="filter-bar">
                         <div class="filter-controls">
-                            <div class="filter-group">
-                                <label>Status:</label>
-                                <select id="status-filter">
-                                    <option value="">All Statuses</option>
-                                    <option value="Lead">Lead</option>
-                                    <option value="Quoted">Quoted</option>
-                                    <option value="Signed">Signed</option>
-                                    <option value="Onboarding">Onboarding</option>
-                                    <option value="Hypercare">Hypercare</option>
-                                    <option value="Active">Active</option>
-                                    <option value="Closed">Closed</option>
-                                </select>
-                            </div>
-                            <div class="filter-group">
-                                <label>Affiliate:</label>
-                                <select id="affiliate-filter">
-                                    <option value="">All Affiliates</option>
-                                    <option value="VOXO">VOXO</option>
-                                </select>
-                            </div>
-                            <div class="filter-group">
-                                <label>Search:</label>
-                                <input type="text" id="search-filter" placeholder="Company name or contact...">
-                            </div>
+                            <select id="status-filter" title="Filter by Status">
+                                <option value="">All Statuses</option>
+                                <option value="Lead">Lead</option>
+                                <option value="Quoted">Quoted</option>
+                                <option value="Signed">Signed</option>
+                                <option value="Onboarding">Onboarding</option>
+                                <option value="Hypercare">Hypercare</option>
+                                <option value="Active">Active</option>
+                                <option value="Closed">Closed</option>
+                            </select>
+                            <select id="affiliate-filter" title="Filter by Affiliate">
+                                <option value="">All Affiliates</option>
+                                <option value="VOXO">VOXO</option>
+                            </select>
+                            <input type="text" id="search-filter" placeholder="Search company or contact...">
                         </div>
                     </div>
 
@@ -192,15 +183,15 @@
                         <table class="customers-table" id="customers-table">
                             <thead>
                                 <tr>
-                                    <th data-sort="company_name">Company Name <span class="sort-indicator"></span></th>
+                                    <th data-sort="company_name">Company <span class="sort-indicator"></span></th>
                                     <th data-sort="status">Status <span class="sort-indicator"></span></th>
                                     <th data-sort="next_step">Next Step <span class="sort-indicator"></span></th>
-                                    <th data-sort="affiliate_partner">Affiliate Company <span class="sort-indicator"></span></th>
-                                    <th data-sort="affiliate_account_executive">Affiliate AE <span class="sort-indicator"></span></th>
-                                    <th data-sort="primary_contact">Primary Contact <span class="sort-indicator"></span></th>
-                                    <th>Primary Contact Phone</th>
+                                    <th data-sort="affiliate_partner">Affiliate <span class="sort-indicator"></span></th>
+                                    <th data-sort="affiliate_account_executive">AE <span class="sort-indicator"></span></th>
+                                    <th data-sort="primary_contact">Contact <span class="sort-indicator"></span></th>
+                                    <th>Phone</th>
                                     <th>Files</th>
-                                    <th>Last Note</th>
+                                    <th>Note</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
