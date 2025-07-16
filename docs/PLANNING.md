@@ -34,6 +34,7 @@ The project is also a testbed for building software "in plain English" — where
 | 2025-07-05 | Customer DELETE functionality debugged and implemented with full async logging         |
 | 2025-07-12 | GitHub repo created; production history ported into Git; oversized backup removed      |
 | 2025-07-15 | Planning, Changelog, and Rules of Engagement documents scaffolded and tracked in Git  |
+| 2025-07-16 | Full codebase analysis completed — red flags and next sprint defined                  |
 
 ---
 
@@ -54,6 +55,26 @@ The project is also a testbed for building software "in plain English" — where
 4. **Dashboard + Analytics**
    - Add summary views for sales pipeline, support status, account stage
    - Include timeline view for customer activity history
+
+---
+
+## 🔁 Sprint Plan
+
+### 🏁 Sprint 1 — Codebase Cleanup (2025-07-17 through 2025-07-20)
+
+- [ ] Refactor repeated route logic into shared controller structure
+- [ ] Move client-side logic (e.g. customer deletion) to backend
+- [ ] Enforce consistent form validation on all fields
+- [ ] Replace any remaining inline scripts with modular handlers
+- [ ] Confirm secret handling via Replit Secrets Manager
+
+### 🎯 Sprint 2 — UI Design & Layout Refinement (2025-07-21 through 2025-07-24)
+
+- [ ] Evaluate dashboard spacing and padding across screen sizes
+- [ ] Shrink table columns for `Files` and `Phone` (prevent line wrap)
+- [ ] Replace `Other`/custom dropdown option with smarter UI logic
+- [ ] Collapse or reposition filters/search bar for space efficiency
+- [ ] Use Google Stitch (Material 3) to evaluate and modernize layout
 
 ---
 
@@ -93,12 +114,13 @@ The project is also a testbed for building software "in plain English" — where
 This CRM is being built with a prompt-first development strategy. The intent is not to become a full-stack coder, but to manage product vision, guide AI-based development, and validate outcomes.
 
 To support this, the project includes:
+
 - `docs/RULES_OF_ENGAGEMENT.md` — defines how AI should respond to prompts
 - `docs/CHANGELOG.md` — defines what has changed and when
 - `docs/PLANNING.md` — defines what we’re doing and why
 
-AI tooling (Replit, ChatGPT, etc.) should always refer to these documents before executing code changes.
+AI tooling (Replit, ChatGPT, Claude, etc.) should always refer to these documents before executing code changes.
 
 ---
 
-_Last updated: 2025-07-15_
+_Last updated: 2025-07-16_

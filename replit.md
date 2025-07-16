@@ -252,7 +252,9 @@ The quick action sidebar provides rapid access to common CRM operations and real
 
 ## Changelog
 
-Changelog:
+**Note**: Changelog has been moved to `/docs/` folder. This section is deprecated.
+
+Legacy changelog:
 - July 14, 2025: **PRODUCTION NOTE** - Updated production AE data to match dashboard display (Rusty Betts, Neal Bontrager, Drake Druckenmiller) - monitor for issues
 - July 14, 2025: **COMPLETED** - VONE v1.3 "Foundation & Flow" enhancements implemented in development environment
 - July 14, 2025: Changed dashboard table header from "Account Exec" to "Affiliate AE" for accurate labeling

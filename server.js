@@ -1025,11 +1025,11 @@ const server = http.createServer(async (req, res) => {
         // Create system note for deletion
         try {
           const noteQuery = `
-            INSERT INTO ${schema}.customer_notes (customer_id, content, created_by, created_at)
+            INSERT INTO ${schema}.customer_notes (customer_id, content, author_name, created_at)
             VALUES ($1, $2, $3, NOW()) RETURNING *
           `;
           console.log('18. Creating system note...');
-          await pool.query(noteQuery, [customerId, `Customer archived by ${user.name}`, req.session.userId]);
+          await pool.query(noteQuery, [customerId, `Customer archived by ${user.name}`, user.name]);
           console.log('19. ✅ System note created');
         } catch (noteError) {
           console.error('20. ❌ Failed to create deletion system note:', noteError);
