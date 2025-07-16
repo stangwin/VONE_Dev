@@ -1,0 +1,55 @@
+🧹 Final Cleanup Tasks Before Deployment – Sprint 1.2.1
+
+Execute these final UI cleanup tasks in the development environment ONLY. Do not modify the production environment.
+
+---
+
+✅ 1. FIX BROKEN CUSTOMER DETAIL VIEW
+- Clicking a customer name in the table should open the customer detail page.
+- Confirm that `app.showCustomerDetail()` is being properly called and routed.
+- If broken due to missing event binding or selector issue, fix immediately.
+
+---
+
+✅ 2. FILES ICON CAUSING TALL ROWS
+- The Files column is **forcing excessive vertical height**.
+- Reduce icon to no more than **16x16 pixels** max.
+- Set:
+  - `padding: 0`
+  - `margin: 0`
+  - `line-height: 1.2`
+  - `vertical-align: middle`
+  - Apply `display: inline-flex; align-items: center;`
+- Final result: **Row height should remain consistent** whether or not the Files icon is present.
+
+---
+
+✅ 3. "NEXT STEP DUE" COLUMN WIDTH
+- Rename column header from `Next Step Due` ➝ `Due`
+- Limit the width of the "Due" column with CSS (`max-width: 100px`) to avoid wasting table space.
+
+---
+
+✅ 4. COLUMN ALIGNMENT FIXES
+- AE and Affiliate column headers do **not align** with their data.
+- AE header is **left-justified**, while values are right-justified or center-aligned.
+- Fix alignment for **both AE and Affiliate** columns:
+  - Choose **center-aligned** for both headers and values (preferred)
+  - Or, **left-align everything consistently** – header and cell values
+
+---
+
+✅ 5. LEFT NAVIGATION PADDING / VISUAL BULK
+- The left-side Quick Actions menu is visually heavy.
+- Reduce its visual footprint by adjusting:
+  - `padding-left` / `padding-right`
+  - Line spacing between groups (less space between section titles and buttons)
+  - Reduce button height slightly (`padding: 6px 12px`)
+- Leave behavior/functionality unchanged – just optimize visual footprint.
+
+---
+
+🧪 When all tasks are complete:
+- Restart the **development** server only.
+- Validate that all fixes work properly without touching production.
+- Do **not deploy** until prompted.
