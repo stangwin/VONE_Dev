@@ -965,7 +965,6 @@ class CRMApp {
                         </td>
                         <td class="last-note">${this.escapeHtml(lastNote)}</td>
                         <td class="table-actions">
-                            <button class="action-icon" onclick="app.createInQBO('${customer.customer_id}')" title="Create in QuickBooks">💼</button>
                             <button class="action-icon" onclick="app.sendAgreement('${customer.customer_id}')" title="Send Agreement">📄</button>
                             ${this.currentUser?.role === 'admin' ? 
                                 `<button class="action-icon delete-btn" data-customer-id="${customer.customer_id}" title="Delete Customer">🗑</button>` : 

@@ -1,0 +1,49 @@
+🚨 Please execute the following cleanup updates with precision:
+
+---
+
+🔧 1. Customer Detail View Still Broken:
+→ Clicking a customer name should **open the full Customer Detail View**.
+→ This is a critical bug — please trace the onclick event handler and ensure it correctly routes to the detail view.
+→ Double-check that route paths and component loading logic are working in both dev and production.
+
+---
+
+🎯 2. "Due" Column Too Narrow:
+→ The current width causes the dates (e.g. 07/16/2025) to truncate.
+→ Please **set this column to auto-width based on content**, with a minimum of ~100px and a max of ~120px if needed.
+→ Keep the "Due" label, just fix the actual column sizing to fit the data cleanly.
+
+---
+
+🧭 3. Column Alignment Cleanup:
+→ Please **left-align ALL table columns** for consistency: headers and cell values (Status, Next Step, Due, Affiliate, AE, Contact, Phone, Note).
+→ This includes AE and Affiliate — remove centering and right justification.
+
+---
+
+🗂️ 4. “Files” Column is Acceptable Now — ✅ NO CHANGE NEEDED.
+
+---
+
+⚠️ 5. “Note” Column Too Narrow:
+→ Propose a fix:
+   - Either **increase column width** to display at least 40 characters of text,
+   - Or **temporarily hide this column** if it's not usable yet.
+→ Your call: if the field will be functional soon, widen it. Otherwise, remove it for now and reintroduce later.
+
+---
+
+🧊 6. Actions Column: Hidden Icon Confusion
+→ The ghosted/masked icon in the "Actions" column is for QuickBooks integration, but it's currently **non-functional and confusing**.
+→ Temporarily:
+   - Either **remove it completely**, or
+   - **dim it further and add a tooltip** like “Coming Soon: QuickBooks Sync” so users aren't confused.
+→ Make sure it's visually consistent and doesn’t add height or shift rows.
+
+---
+
+Please complete these items as the **final pass** before we deploy to production.
+Do not alter working filters, add customer UI, or other functioning pieces.
+
+Once finished, notify that the build is ready for production promotion. Thank you.
