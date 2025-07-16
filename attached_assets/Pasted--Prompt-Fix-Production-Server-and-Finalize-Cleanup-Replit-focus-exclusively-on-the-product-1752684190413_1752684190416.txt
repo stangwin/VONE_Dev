@@ -1,0 +1,59 @@
+💬 **Prompt: Fix Production Server and Finalize Cleanup**
+
+Replit — focus exclusively on the production environment. The development environment is unstable and should not be modified or referenced in this task.
+
+### 🛠 OBJECTIVE:
+The production environment was fully functional during the UI cleanup sprint, but now it no longer loads (“Hmm… We couldn't reach this app”). Please restore the production server and finalize the following checklist:
+
+---
+
+### ✅ FIX PRODUCTION SERVER
+1. Start the production server on **port 5000**.
+2. Make sure `.env` is configured correctly for **production**, using the valid production `DATABASE_URL`.
+3. Ensure `server.js` uses `process.env.PORT || 5000` for correct port detection.
+4. Confirm the server starts successfully and is reachable in the browser tab, NOT just Preview.
+
+---
+
+### ✅ FINAL FUNCTIONALITY VERIFICATION
+
+Once the server is running:
+
+#### 🧩 1. Customer Detail View
+- Clicking the **customer name** should load the **customer detail page** (currently broken).
+
+#### 📅 2. "Due" Column Width
+- The column title should be “Due”.
+- The column should be **just wide enough to display the date**, not truncate it.
+
+#### 🧍‍♂️ 3. Affiliate and AE Columns
+- Ensure **column headers and data** are all **left-aligned** and match.
+
+#### 🗂 4. Files Icon
+- Confirm the files icon appears properly inline (current appearance is acceptable).
+
+#### 📝 5. Note Field
+- Increase column width so last note text is **readable (at least 40 characters)**.
+- Or, if not feasible, temporarily **hide this column**.
+
+#### ❌ 6. QuickBooks Icon
+- Confirm the non-functional 💼 QuickBooks icon in the Actions column is **removed**.
+
+---
+
+### 🧪 FINAL VERIFICATION:
+Once all issues are fixed:
+- Confirm server is accessible at `/`, not just in Preview
+- Let me know once the production server is fully operational so I can begin testing
+- DO NOT touch or reboot the development server for now
+
+---
+
+```env
+# Confirm .env contents for production (example only, user will verify secrets)
+ENVIRONMENT=production
+DATABASE_URL=postgresql://user:***@host/dbname
+PORT=5000
+```
+
+Let me know once this is all complete and the production environment is working.
