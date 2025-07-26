@@ -5,26 +5,11 @@ class DatabaseAPI {
         this.currentUser = null;
     }
 
-    // Helper method to get headers with session token for iframe contexts
+    // Helper method to get headers for cookie-based authentication
     getAuthHeaders() {
-        const headers = {
+        return {
             'Content-Type': 'application/json'
         };
-        
-        // Check for session tokens in localStorage (both dev and prod)
-        const devSessionToken = localStorage.getItem('devSessionToken');
-        const prodSessionToken = localStorage.getItem('prodSessionToken');
-        
-        if (devSessionToken) {
-            headers['X-Dev-Session'] = devSessionToken;
-            console.log('Using development session token for authentication');
-        }
-        if (prodSessionToken) {
-            headers['X-Dev-Session'] = prodSessionToken; // Use same header for both
-            console.log('Using production session token for authentication:', prodSessionToken);
-        }
-        
-        return headers;
     }
 // Cursor test commit
     // Helper method to get fetch options with authentication
@@ -68,19 +53,26 @@ class DatabaseAPI {
 
     async checkAuth() {
         try {
+            console.log('🔍 Frontend auth check starting...');
             const response = await fetch('/api/auth/me', this.getFetchOptions('GET'));
+            
+            console.log('🔍 Auth response status:', response.status);
+            console.log('🔍 Auth response ok:', response.ok);
             
             if (response.ok) {
                 const result = await response.json();
+                console.log('✅ Auth check SUCCESS - User data:', result.user);
                 this.currentUser = result.user;
                 return result.user;
             } else {
+                const errorText = await response.text();
+                console.log('❌ Auth check FAILED - Status:', response.status, 'Response:', errorText);
                 this.currentUser = null;
                 window.location.href = '/auth.html';
                 return null;
             }
         } catch (error) {
-            console.error('Auth check failed:', error);
+            console.error('❌ Auth check ERROR:', error);
             this.currentUser = null;
             window.location.href = '/auth.html';
             return null;

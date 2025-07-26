@@ -129,77 +129,10 @@ const parseJsonBody = (req) => {
   });
 };
 
-// Development session storage for iframe contexts where cookies don't work
-const devSessions = new Map();
+// Removed devSessions - using pure cookie authentication
 
-// Session middleware wrapper for HTTP server
+// Session middleware wrapper for HTTP server  
 async function handleWithSession(req, res, handler) {
-  // Check for session token for iframe contexts (both dev and prod)
-  if (req.headers['x-dev-session']) {
-    const sessionToken = req.headers['x-dev-session'];
-    
-    try {
-      // Check in-memory devSessions first (for tokens created during login)
-      if (devSessions.has(sessionToken)) {
-        const sessionData = devSessions.get(sessionToken);
-        
-        // Create a mock session object compatible with express-session
-        req.session = {
-          id: sessionToken,
-          userId: sessionData.userId,
-          user: sessionData.user,
-          save: (callback) => callback && callback(),
-          destroy: (callback) => {
-            callback && callback();
-          }
-        };
-        
-        console.log('Session token found in memory:', { 
-          userId: sessionData.userId, 
-          email: sessionData.user?.email,
-          tokenPrefix: sessionToken.substring(0, 10) + '...'
-        });
-        
-        // Call handler directly with session token
-        return handler(req, res);
-      }
-      
-      // Fallback: query database for persistent session tokens
-      const tableName = isDevelopment ? 'session_dev' : 'session_prod';
-      const sessionQuery = `SELECT sess FROM ${tableName} WHERE sid = $1 AND expire > NOW()`;
-      const sessionResult = await pool.query(sessionQuery, [sessionToken]);
-      
-      if (sessionResult.rows.length > 0) {
-        const sessionData = sessionResult.rows[0].sess;
-        
-        // Create a mock session object compatible with express-session
-        req.session = {
-          id: sessionToken,
-          userId: sessionData.userId,
-          user: sessionData.user,
-          save: (callback) => callback && callback(),
-          destroy: (callback) => {
-            callback && callback();
-          }
-        };
-        
-        const envMode = isDevelopment ? 'Development' : 'Production';
-        console.log(`${envMode} session token authenticated:`, { 
-          userId: sessionData.userId, 
-          email: sessionData.user?.email,
-          tokenPrefix: sessionToken.substring(0, 10) + '...'
-        });
-        
-        // Call handler directly with session token
-        return handler(req, res);
-      } else {
-        console.log('Session token not found in database:', sessionToken.substring(0, 10) + '...');
-      }
-    } catch (error) {
-      console.error('Session token lookup error:', error);
-    }
-  }
-  
   sessionMiddleware(req, res, (err) => {
     if (err) {
       console.error('Session middleware error:', err);
@@ -357,20 +290,7 @@ const server = http.createServer(async (req, res) => {
           });
         });
         
-        let sessionToken = null;
-        
-        // Always create session token for development iframe contexts
-        if (isDevelopment || !req.headers.cookie) {
-          const tokenPrefix = isDevelopment ? 'dev_' : 'prod_';
-          sessionToken = tokenPrefix + Math.random().toString(36).substring(2) + Date.now().toString(36);
-          devSessions.set(sessionToken, { userId: user.id, user: user });
-          console.log(`Created ${isDevelopment ? 'development' : 'production'} session token for iframe:`, sessionToken);
-        }
-        
         const response = { user };
-        if (sessionToken) {
-          response.devSessionToken = sessionToken; // Keep same key name for client compatibility
-        }
         
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify(response));
