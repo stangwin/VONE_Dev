@@ -87,6 +87,154 @@ if (databaseUrl.includes('placeholder')) {
         };
       }
       return null;
+    },
+    // Mock customer data for testing
+    getCustomers: async () => {
+      return [
+        {
+          id: 1,
+          customer_id: "customer_001",
+          company_name: "My Pharmacist On Call",
+          status: "Onboarding",
+          affiliate_partner: "VOXO",
+          next_step: "Schedule Install",
+          physical_address: "3426 Whittier Blvd, Los Angeles, CA, 90023",
+          billing_address: "3426 Whittier Blvd, Los Angeles, CA, 90023",
+          primary_contact: {
+            name: "Jacqueline",
+            email: "ashers.assistant@gmail.com",
+            phone: "310-882-6661"
+          },
+          authorized_signer: {
+            name: "Asher Eghbali",
+            email: "asher.eghbali@gmail.com",
+            phone: ""
+          },
+          billing_contact: {
+            name: "Asher Eghbali",
+            email: "ahsher.eghbali@gmail.com",
+            phone: "310-497-3109"
+          },
+          created_at: new Date(),
+          updated_at: new Date()
+        },
+        {
+          id: 2,
+          customer_id: "customer_002",
+          company_name: "Berea Drug",
+          status: "Onboarding",
+          affiliate_partner: "VOXO",
+          next_step: "Perform Install",
+          physical_address: "402 Richmond Road North, Berea, KY, 40403",
+          billing_address: "402 Richmond Road North, Berea, KY, 40403",
+          primary_contact: {
+            name: "Robert Little",
+            email: "bereadrug@yahoo.com",
+            phone: "859-986-4521"
+          },
+          authorized_signer: {
+            name: "Robert Little",
+            email: "bereadrug@yahoo.com",
+            phone: ""
+          },
+          billing_contact: {
+            name: "Robert Little",
+            email: "bereadrug@yahoo.com",
+            phone: "859-986-4521"
+          },
+          created_at: new Date(),
+          updated_at: new Date()
+        },
+        {
+          id: 3,
+          customer_id: "customer_003",
+          company_name: "Southeast Pharmacy",
+          status: "Onboarding",
+          affiliate_partner: "VOXO",
+          next_step: "Schedule Install",
+          physical_address: "400 Parker Avenue North, STE 500A, Brooklet, GA, 30415",
+          billing_address: "400 Parker Avenue North, STE 500A, Brooklet, GA, 30415",
+          primary_contact: {
+            name: "Shelby Hook",
+            email: "hookrx@gmail.com",
+            phone: "912-842-2040"
+          },
+          authorized_signer: {
+            name: "Shelby Hook",
+            email: "hookrx@gmail.com",
+            phone: ""
+          },
+          billing_contact: {
+            name: "Shelby Hook",
+            email: "hookrx@gmail.com",
+            phone: "912-842-2040"
+          },
+          created_at: new Date(),
+          updated_at: new Date()
+        },
+        {
+          id: 4,
+          customer_id: "customer_004",
+          company_name: "Rancho Pueblo Pharmacy", 
+          status: "Quoted",
+          affiliate_partner: "VOXO",
+          next_step: "Follow with VOXO AE",
+          physical_address: "",
+          billing_address: "",
+          primary_contact: {
+            name: "Yash Patel",
+            email: "yashpatel031998@gmail.com",
+            phone: "951-972-8822"
+          },
+          authorized_signer: {
+            name: "Yash Patel",
+            email: "yashpatel031998@gmail.com",
+            phone: ""
+          },
+          billing_contact: {
+            name: "",
+            email: "",
+            phone: ""
+          },
+          created_at: new Date(),
+          updated_at: new Date()
+        },
+        {
+          id: 5,
+          customer_id: "customer_005",
+          company_name: "CR Care Pharmacy",
+          status: "Lead",
+          affiliate_partner: "VOXO",
+          next_step: "Follow with VOXO AE",
+          physical_address: "3100 E Avenue NW, Suite 102, Cedar Rapids, IA, 52405",
+          billing_address: "3100 E Avenue NW, Suite 102, Cedar Rapids, IA, 52405",
+          primary_contact: {
+            name: "Jackie Fitzgerald",
+            email: "crcarerx@gmail.com",
+            phone: "319-200-1188"
+          },
+          authorized_signer: {
+            name: "Jackie Fitzgerald",
+            email: "crcarerx@gmail.com",
+            phone: ""
+          },
+          billing_contact: {
+            name: "",
+            email: "",
+            phone: ""
+          },
+          created_at: new Date(),
+          updated_at: new Date()
+        }
+      ];
+    },
+    // Mock affiliate data for testing
+    getAffiliates: async () => {
+      return [
+        { id: 1, name: "VOXO", created_at: new Date() },
+        { id: 2, name: "Direct", created_at: new Date() },
+        { id: 3, name: "Partner Network", created_at: new Date() }
+      ];
     }
   };
 } else if (isDevelopment && databaseUrl.includes('schema=vantix_dev')) {
@@ -575,6 +723,14 @@ const server = http.createServer(async (req, res) => {
           return;
         }
         
+        // Handle test mode with mock data
+        if (databaseUrl.includes('placeholder')) {
+          const customers = await authService.getCustomers();
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify(customers));
+          return;
+        }
+        
         // Simple customer query for production (exclude deleted customers)
         const result = await pool.query(`
           SELECT c.*
@@ -1046,6 +1202,14 @@ const server = http.createServer(async (req, res) => {
         if (!isAuthenticated(req)) {
           res.writeHead(401, { 'Content-Type': 'application/json' });
           res.end(JSON.stringify({ error: 'Authentication required' }));
+          return;
+        }
+
+        // Handle test mode with mock data
+        if (databaseUrl.includes('placeholder')) {
+          const affiliates = await authService.getAffiliates();
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify(affiliates));
           return;
         }
 
