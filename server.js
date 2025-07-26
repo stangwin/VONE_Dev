@@ -139,7 +139,32 @@ async function handleWithSession(req, res, handler) {
     const sessionToken = req.headers['x-dev-session'];
     
     try {
-      // For production, query database directly
+      // Check in-memory devSessions first (for tokens created during login)
+      if (devSessions.has(sessionToken)) {
+        const sessionData = devSessions.get(sessionToken);
+        
+        // Create a mock session object compatible with express-session
+        req.session = {
+          id: sessionToken,
+          userId: sessionData.userId,
+          user: sessionData.user,
+          save: (callback) => callback && callback(),
+          destroy: (callback) => {
+            callback && callback();
+          }
+        };
+        
+        console.log('Session token found in memory:', { 
+          userId: sessionData.userId, 
+          email: sessionData.user?.email,
+          tokenPrefix: sessionToken.substring(0, 10) + '...'
+        });
+        
+        // Call handler directly with session token
+        return handler(req, res);
+      }
+      
+      // Fallback: query database for persistent session tokens
       const tableName = isDevelopment ? 'session_dev' : 'session_prod';
       const sessionQuery = `SELECT sess FROM ${tableName} WHERE sid = $1 AND expire > NOW()`;
       const sessionResult = await pool.query(sessionQuery, [sessionToken]);
