@@ -13,7 +13,7 @@ function createSessionMiddleware(pool) {
   return session({
     store: new PostgresStore({
       pool: pool,
-      createTableIfMissing: false, // Tables already exist, don't try to create
+      createTableIfMissing: true, // Auto-create session table in new environments
       tableName: tableName,
       schemaName: 'public' // Explicitly set schema
     }),
