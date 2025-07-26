@@ -37,7 +37,7 @@ function createSessionMiddleware(pool) {
     resave: false,
     saveUninitialized: false,
     cookie: {
-      secure: !isDevelopment, // Only require HTTPS in production
+      secure: false, // Temporarily disable secure cookies for debugging
       httpOnly: true,
       maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
       sameSite: 'lax' // More compatible than 'none', works for regular website usage
