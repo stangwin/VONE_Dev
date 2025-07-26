@@ -638,13 +638,13 @@ class CRMApp {
 
     async loadUserData() {
         try {
-            console.log('Loading user data from /api/user...');
+            console.log('Loading user data from /api/auth/me...');
             
             // Use the same authentication method as other API calls
-            const response = await this.api.makeRequest('GET', '/api/user');
+            const response = await this.api.makeRequest('GET', '/api/auth/me');
             
             console.log('User data loaded successfully:', response);
-            this.currentUser = response;
+            this.currentUser = response.user; // /api/auth/me returns { user: {...} }
             this.userData = this.currentUser; // Ensure consistency
             this.updateUserUI();
             
