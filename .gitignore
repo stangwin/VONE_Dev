@@ -1,2 +1,22 @@
-production_code_backup_20250712_021010.tar.gz
+# macOS system files
+.DS_Store
+
+# Build/output archives and manual backups
 *.tar.gz
+production_code_backup_*.tar.gz
+vone_split_*
+
+# Sensitive or runtime data
+.env
+.env.*
+uploads/
+
+# Node modules (if present)
+node_modules/
+
+# Replit-specific
+.replit
+.replit.db
+
+# Logs
+*.log
