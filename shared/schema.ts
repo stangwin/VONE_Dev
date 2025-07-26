@@ -33,6 +33,7 @@ export const customers = pgTable('customers', {
     docusign_status: jsonb('docusign_status'), // New field for DocuSign tracking
     created_by: integer('created_by'), // user id for future use
     updated_by: integer('updated_by'), // user id for future use
+    deleted_at: timestamp('deleted_at'), // soft delete timestamp
     created_at: timestamp('created_at').defaultNow(),
     updated_at: timestamp('updated_at').defaultNow(),
 });
