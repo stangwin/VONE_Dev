@@ -8,6 +8,22 @@ function createSessionMiddleware(pool) {
   const isDevelopment = process.env.ENVIRONMENT === 'development';
   const tableName = isDevelopment ? 'session_dev' : 'session_prod';
   
+  if (!pool) {
+    console.log(`🔧 Session middleware: Using memory store for testing mode`);
+    return session({
+      secret: process.env.SESSION_SECRET || 'vantix-crm-secret-key-change-in-production',
+      resave: false,
+      saveUninitialized: false,
+      cookie: {
+        secure: false, // Testing mode - always allow HTTP
+        httpOnly: true,
+        maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+        sameSite: 'lax'
+      },
+      name: 'vantix.test.sid'
+    });
+  }
+  
   console.log(`🔧 Session middleware: Using table "${tableName}" for ${isDevelopment ? 'development' : 'production'}`);
   
   return session({
@@ -21,7 +37,7 @@ function createSessionMiddleware(pool) {
     resave: false,
     saveUninitialized: false,
     cookie: {
-      secure: true, // Render provides HTTPS, so secure cookies work
+      secure: !isDevelopment, // Only require HTTPS in production
       httpOnly: true,
       maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
       sameSite: 'lax' // More compatible than 'none', works for regular website usage
