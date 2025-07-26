@@ -281,10 +281,15 @@ const server = http.createServer(async (req, res) => {
         await new Promise((resolve, reject) => {
           req.session.save((err) => {
             if (err) {
-              console.error('Session save error:', err);
+              console.error('🔍 AUTH DEBUG - Session save error:', err);
               reject(err);
             } else {
-              console.log('Session saved successfully for user:', user.id);
+              console.log('🔍 AUTH DEBUG - Session saved successfully:', {
+                userId: user.id,
+                sessionId: req.session.id,
+                sessionKeys: Object.keys(req.session),
+                timestamp: new Date().toISOString()
+              });
               resolve();
             }
           });
@@ -311,7 +316,21 @@ const server = http.createServer(async (req, res) => {
       }
 
       if (pathname === '/api/auth/me' && req.method === 'GET') {
+        console.log('🔍 AUTH DEBUG - /api/auth/me request:', {
+          hasSession: !!req.session,
+          sessionId: req.session?.id,
+          userId: req.session?.userId,
+          cookies: req.headers.cookie,
+          userAgent: req.headers['user-agent'],
+          timestamp: new Date().toISOString()
+        });
+        
         if (!req.session || !req.session.userId) {
+          console.log('🔍 AUTH DEBUG - Authentication failed:', {
+            sessionExists: !!req.session,
+            sessionData: req.session ? Object.keys(req.session) : 'no session',
+            userId: req.session?.userId
+          });
           res.writeHead(401, { 'Content-Type': 'application/json' });
           res.end(JSON.stringify({ error: 'Not authenticated' }));
           return;
