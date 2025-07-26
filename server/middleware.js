@@ -12,8 +12,9 @@ function createSessionMiddleware(pool) {
     console.log(`🔧 Session middleware: Using memory store for testing mode`);
     return session({
       secret: process.env.SESSION_SECRET || 'vantix-crm-secret-key-change-in-production',
-      resave: false,
+      resave: true, // Force session save for memory store reliability
       saveUninitialized: false,
+      rolling: true, // Reset expiration on activity
       cookie: {
         secure: false, // Testing mode - always allow HTTP
         httpOnly: true,
@@ -36,14 +37,15 @@ function createSessionMiddleware(pool) {
     secret: process.env.SESSION_SECRET || 'vantix-crm-secret-key-change-in-production',
     resave: false,
     saveUninitialized: false,
+    rolling: true, // Reset expiration on activity
     cookie: {
-      secure: false, // Temporarily disable secure cookies for debugging
+      secure: !isDevelopment, // Secure in production, allow HTTP in development
       httpOnly: true,
       maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
       sameSite: 'lax' // More compatible than 'none', works for regular website usage
     },
     name: isDevelopment ? 'vantix.dev.sid' : 'vantix.sid',
-    proxy: isDevelopment // Trust proxy headers in dev environment
+    proxy: true // Always trust proxy headers for Render/cloud deployments
   });
 }
 
