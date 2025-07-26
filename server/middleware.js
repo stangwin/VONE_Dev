@@ -21,10 +21,10 @@ function createSessionMiddleware(pool) {
     resave: false,
     saveUninitialized: false,
     cookie: {
-      secure: false, // Set to true in production with HTTPS
+      secure: true, // Render provides HTTPS, so secure cookies work
       httpOnly: true,
       maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
-      sameSite: 'none' // Use 'none' for iframe compatibility in both dev and production
+      sameSite: 'lax' // More compatible than 'none', works for regular website usage
     },
     name: isDevelopment ? 'vantix.dev.sid' : 'vantix.sid',
     proxy: isDevelopment // Trust proxy headers in dev environment
