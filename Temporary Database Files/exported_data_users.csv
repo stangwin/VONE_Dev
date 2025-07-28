@@ -1,0 +1,4 @@
+id,name,email,password_hash,auth_provider,created_at,role,two_factor_secret,two_factor_enabled
+4,Test User,test@test.com,$2b$12$MS2Guoiy6A9TUDJw90yzxOzuSdNbsBn05RAVdSIrClXd/aF7mIaOa,local,2025-06-26 13:43:36.504116,admin,,
+5,Demo User,demo@demo.com,$2b$12$MS2Guoiy6A9TUDJw90yzxOzuSdNbsBn05RAVdSIrClXd/aF7mIaOa,local,2025-06-26 13:45:32.923307,user,,
+6,Stan Gwin,Stan@vantix.tech,$2b$12$CRAf1NCeMhwu1bcnHxb2ruWnbKVohBS1RzG.Dcn3abUEFDaXOAvey,local,2025-06-26 15:36:04.499609,admin,,

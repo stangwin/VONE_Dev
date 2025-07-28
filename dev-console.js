@@ -261,6 +261,46 @@ async function loadSampleData() {
     }
 }
 
+async function importCsvData() {
+    const statusEl = document.getElementById('sync-status');
+    const button = document.querySelector('button[onclick="importCsvData()"]');
+    const originalText = button.textContent;
+    
+    button.textContent = '🔄 Importing CSV data...';
+    button.disabled = true;
+    statusEl.textContent = '🔄 Starting CSV data import...';
+    statusEl.style.color = '#ff6b35';
+    
+    try {
+        const response = await fetch('/api/dev/import-csv-data', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            credentials: 'include'
+        });
+        
+        if (response.ok) {
+            const result = await response.json();
+            statusEl.textContent = `✅ Import completed! ${result.customers} customers, ${result.affiliates} affiliates, ${result.notes} notes`;
+            statusEl.style.color = '#4CAF50';
+            
+            // Reload database stats
+            window.devConsole.loadDatabaseStats();
+        } else {
+            const error = await response.text();
+            statusEl.textContent = `❌ Failed to import CSV data: ${error}`;
+            statusEl.style.color = '#dc3545';
+        }
+    } catch (error) {
+        statusEl.textContent = `❌ Failed to import CSV data: ${error.message}`;
+        statusEl.style.color = '#dc3545';
+    } finally {
+        button.textContent = originalText;
+        button.disabled = false;
+    }
+}
+
 function switchVersion() {
     const selector = document.getElementById('version-selector');
     const selectedVersion = selector.value;

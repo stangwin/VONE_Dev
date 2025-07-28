@@ -1,0 +1,6 @@
+id,name,manufacturer,model_number,sku,type,category,description,unit_price,billing_type,active,tags,created_at,updated_at
+1,MX67W Firewall,Cisco Meraki,MX67W,MX67W-HW,hardware,Security,Wireless security appliance with built-in wifi,695.00,one-time,t,"{networking,firewall,security,wireless}",2025-07-18 02:37:13.861058,2025-07-18 02:37:13.861058
+2,Z4 Teleworker Gateway,Cisco Meraki,Z4,Z4-HW,hardware,Networking,Compact teleworker gateway for remote offices,195.00,one-time,t,"{networking,gateway,remote}",2025-07-18 02:37:13.861058,2025-07-18 02:37:13.861058
+3,MS120-24P Switch,Cisco Meraki,MS120-24P,MS120-24P-HW,hardware,Networking,24-port gigabit switch with PoE+,395.00,one-time,t,"{networking,switch,poe}",2025-07-18 02:37:13.861058,2025-07-18 02:37:13.861058
+4,MR28 Access Point,Cisco Meraki,MR28,MR28-HW,hardware,Wireless,Cloud-managed 802.11ac Wave 2 access point,245.00,one-time,t,"{networking,wireless,access-point}",2025-07-18 02:37:13.861058,2025-07-18 02:37:13.861058
+5,Advanced Security License,Cisco Meraki,LIC-ADV-SEC,LIC-ADV-SEC-1Y,software,Licensing,Advanced security license per device per year,25.00,annual,t,"{licensing,security}",2025-07-18 02:37:13.861058,2025-07-18 02:37:13.861058
