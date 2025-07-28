@@ -61,8 +61,11 @@ let authService;
 let sessionMiddleware;
 
 // Always try to connect to database for session storage
+console.log('🔧 ===== DATABASE CONNECTION STARTUP =====');
+console.log('🔧 Environment:', isDevelopment ? 'DEVELOPMENT' : 'PRODUCTION');
+console.log('🔧 Database URL configured:', !!databaseUrl);
+console.log('🔧 Database URL preview:', databaseUrl ? databaseUrl.substring(0, 50) + '...' : 'NOT CONFIGURED');
 console.log('🔧 Attempting database connection for session storage...');
-console.log('🔧 Database URL:', databaseUrl ? databaseUrl.substring(0, 50) + '...' : 'not configured');
 
 try {
   pool = new Pool({ connectionString: databaseUrl });
