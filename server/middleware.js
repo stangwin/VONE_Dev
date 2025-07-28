@@ -27,13 +27,32 @@ function createSessionMiddleware(pool) {
   
   console.log(`🔧 Session middleware: Using table "${tableName}" for ${isDevelopment ? 'development' : 'production'}`);
   
+  const sessionStore = new PostgresStore({
+    pool: pool,
+    createTableIfMissing: true, // Auto-create session table in new environments
+    tableName: tableName,
+    schemaName: 'public' // Explicitly set schema
+  });
+  
+  // Add debugging to session store
+  const originalGet = sessionStore.get.bind(sessionStore);
+  const originalSet = sessionStore.set.bind(sessionStore);
+  
+  sessionStore.get = function(sid, callback) {
+    console.log(`🔍 Session GET: ${sid}`);
+    originalGet(sid, (err, session) => {
+      console.log(`🔍 Session GET result:`, { err: err?.message, session: session ? Object.keys(session) : null });
+      callback(err, session);
+    });
+  };
+  
+  sessionStore.set = function(sid, session, callback) {
+    console.log(`🔍 Session SET: ${sid}`, Object.keys(session));
+    originalSet(sid, session, callback);
+  };
+  
   return session({
-    store: new PostgresStore({
-      pool: pool,
-      createTableIfMissing: true, // Auto-create session table in new environments
-      tableName: tableName,
-      schemaName: 'public' // Explicitly set schema
-    }),
+    store: sessionStore,
     secret: process.env.SESSION_SECRET || 'vantix-crm-secret-key-change-in-production',
     resave: false,
     saveUninitialized: false,
