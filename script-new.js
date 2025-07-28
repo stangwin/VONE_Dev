@@ -38,9 +38,13 @@ class DatabaseAPI {
     getFetchOptions(method = 'GET', body = null) {
         const options = {
             method,
-            headers: this.getAuthHeaders(),
-            credentials: 'include'
+            headers: this.getAuthHeaders()
         };
+        
+        // Only use credentials for cross-origin requests
+        if (!this.baseUrl.startsWith(window.location.origin)) {
+            options.credentials = 'include';
+        }
         
         if (body) {
             options.body = JSON.stringify(body);
