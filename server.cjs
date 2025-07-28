@@ -55,17 +55,16 @@ if (!isDevelopment && databaseUrl.includes('dev')) {
   console.warn('Verify this is intentional');
 }
 
-// Initialize database with selected URL and schema handling
+// Initialize database and authentication
 let pool;
 let authService;
-let sessionMiddleware;
 
-// Always try to connect to database for session storage
+// Connect to database for data operations
 console.log('🔧 ===== DATABASE CONNECTION STARTUP =====');
 console.log('🔧 Environment:', isDevelopment ? 'DEVELOPMENT' : 'PRODUCTION');
 console.log('🔧 Database URL configured:', !!databaseUrl);
 console.log('🔧 Database URL preview:', databaseUrl ? databaseUrl.substring(0, 50) + '...' : 'NOT CONFIGURED');
-console.log('🔧 Attempting database connection for session storage...');
+console.log('🔧 Attempting database connection...');
 
 try {
   pool = new Pool({ connectionString: databaseUrl });
@@ -76,37 +75,17 @@ try {
     if (err) {
       console.error('❌ Database connection test failed:', err.message);
     } else {
-      console.log('🔒 Database connected successfully for session storage');
-      
-      // Check if session table exists and has data
-      pool.query('SELECT COUNT(*) FROM session_dev', (err, result) => {
-        if (err) {
-          console.log('🔍 Session table check failed:', err.message);
-        } else {
-          console.log('🔍 Session table has', result.rows[0].count, 'sessions');
-        }
-      });
+      console.log('🔒 Database connected successfully');
     }
   });
   
-  sessionMiddleware = createSessionMiddleware(pool);
+  // Initialize auth service
+  authService = new AuthService(pool);
+  console.log('🔐 JWT Authentication system initialized');
 } catch (error) {
   console.error('❌ Database connection failed:', error.message);
-  console.log('⚠️  Falling back to memory store (sessions will not persist)');
+  console.log('⚠️  Using fallback authentication mode');
   pool = null;
-  sessionMiddleware = require('express-session')({
-    secret: process.env.SESSION_SECRET || 'vantix-crm-secret-key-change-in-production',
-    resave: true,
-    saveUninitialized: false,
-    rolling: true,
-    cookie: {
-      secure: false,
-      httpOnly: true,
-      maxAge: 30 * 24 * 60 * 60 * 1000,
-      sameSite: 'lax'
-    },
-    name: 'vantix.test.sid'
-  });
 }
 
 // Initialize auth service based on database availability
