@@ -151,7 +151,7 @@ class DatabaseAPI {
 
             console.log('Creating customer with data:', customerData);
             
-            const response = await fetch('/api/customers', {
+            const response = await fetch(`${this.baseUrl}/api/customers`, {
                 ...this.getFetchOptions('POST', customerData)
             });
             
@@ -179,7 +179,7 @@ class DatabaseAPI {
 
     async updateCustomer(customerId, updates) {
         try {
-            const response = await fetch(`/api/customers/${customerId}`, {
+            const response = await fetch(`${this.baseUrl}/api/customers/${customerId}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(updates)
@@ -205,7 +205,7 @@ class DatabaseAPI {
             credentials: 'include'
         };
         
-        const fetchUrl = `/api/customers/${customerId}`;
+        const fetchUrl = `${this.baseUrl}/api/customers/${customerId}`;
         
         console.log('B. Fetch URL:', fetchUrl);
         console.log('C. Fetch Options:', fetchOptions);
@@ -253,7 +253,7 @@ class DatabaseAPI {
             }
 
             console.log('Sending upload request to:', `/api/customers/${customerId}/files`);
-            const response = await fetch(`/api/customers/${customerId}/files`, {
+            const response = await fetch(`${this.baseUrl}/api/customers/${customerId}/files`, {
                 method: 'POST',
                 body: formData,
                 credentials: 'include'
@@ -285,7 +285,7 @@ class DatabaseAPI {
     async getCustomerFiles(customerId) {
         try {
             console.log('Fetching files from:', `/api/customers/${customerId}/files`);
-            const response = await fetch(`/api/customers/${customerId}/files`);
+            const response = await fetch(`${this.baseUrl}/api/customers/${customerId}/files`);
             
             console.log('Files response status:', response.status);
             
@@ -333,7 +333,7 @@ class DatabaseAPI {
     async deleteFile(customerId, fileId) {
         try {
             console.log('Deleting file:', fileId, 'for customer:', customerId);
-            const response = await fetch(`/api/customers/${customerId}/files/${fileId}`, {
+            const response = await fetch(`${this.baseUrl}/api/customers/${customerId}/files/${fileId}`, {
                 method: 'DELETE'
             });
 
@@ -364,7 +364,7 @@ class DatabaseAPI {
         console.log('DatabaseAPI: Creating note for customer', customerId);
         console.log('DatabaseAPI: Note data', noteData);
         
-        const response = await fetch(`/api/customers/${customerId}/notes`, {
+        const response = await fetch(`${this.baseUrl}/api/customers/${customerId}/notes`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -397,7 +397,7 @@ class DatabaseAPI {
     async deleteNote(customerId, noteId) {
         console.log('DatabaseAPI: Deleting note', noteId, 'for customer', customerId);
         
-        const response = await fetch(`/api/customers/${customerId}/notes/${noteId}`, {
+        const response = await fetch(`${this.baseUrl}/api/customers/${customerId}/notes/${noteId}`, {
             method: 'DELETE',
             credentials: 'include'
         });
@@ -418,7 +418,7 @@ class DatabaseAPI {
     async getCustomerNotes(customerId) {
         console.log('DatabaseAPI: Fetching notes for customer', customerId);
         
-        const response = await fetch(`/api/customers/${customerId}/notes`, {
+        const response = await fetch(`${this.baseUrl}/api/customers/${customerId}/notes`, {
             method: 'GET',
             credentials: 'include'
         });
@@ -439,7 +439,7 @@ class DatabaseAPI {
     async parseTextWithAI(text) {
         console.log('DatabaseAPI: Parsing text with OpenAI');
         try {
-            const response = await fetch('/api/parse-text', {
+            const response = await fetch(`${this.baseUrl}/api/parse-text`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -1759,10 +1759,10 @@ class CRMApp {
 
     async logout() {
         try {
-            const response = await fetch('/api/auth/logout', {
-                method: 'POST',
-                credentials: 'include'
-            });
+                    const response = await fetch(`${this.api.baseUrl}/api/auth/logout`, {
+            method: 'POST',
+            credentials: 'include'
+        });
 
             // Clear any local state regardless of server response
             this.currentUser = null;
@@ -2738,7 +2738,7 @@ class CRMApp {
         }
         
         try {
-            const response = await fetch(`/api/customers/${this.currentCustomer.customer_id}/notes`, {
+            const response = await fetch(`${this.api.baseUrl}/api/customers/${this.currentCustomer.customer_id}/notes`, {
                 method: 'GET',
                 credentials: 'include',
                 headers: {
@@ -4128,7 +4128,7 @@ class CRMApp {
         if (!this.currentCustomer) return;
         
         try {
-            const response = await fetch(`/api/customers/${this.currentCustomer.customer_id}/notes`, {
+            const response = await fetch(`${this.api.baseUrl}/api/customers/${this.currentCustomer.customer_id}/notes`, {
                 credentials: 'include'
             });
             
