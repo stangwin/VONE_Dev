@@ -336,7 +336,7 @@ function extractTokenFromHeader(req) {
 
 // JWT authentication check function
 function isAuthenticated(req) {
-  return !!req.user;
+  return req.isAuthenticated === true && !!req.user;
 }
 
 // Simple MIME type detection
@@ -386,10 +386,16 @@ async function handleRequest(req, res, handler) {
     const user = verifyToken(token);
     if (user) {
       req.user = user;
+      req.isAuthenticated = true;
       console.log('🔍 JWT Auth: User authenticated:', user.email);
     } else {
       console.log('🔍 JWT Auth: Invalid token');
+      req.user = null;
+      req.isAuthenticated = false;
     }
+  } else {
+    req.user = null;
+    req.isAuthenticated = false;
   }
   
   handler(req, res);
@@ -555,7 +561,7 @@ const server = http.createServer(async (req, res) => {
       if (pathname === '/api/auth/me' && req.method === 'GET') {
         console.log('🔍 JWT Auth: /api/auth/me request');
         
-        if (!req.user) {
+        if (!req.user || !req.isAuthenticated) {
           console.log('🔍 JWT Auth: No valid token found');
           res.writeHead(401, { 'Content-Type': 'application/json' });
           res.end(JSON.stringify({ error: 'Not authenticated' }));
@@ -563,20 +569,14 @@ const server = http.createServer(async (req, res) => {
         }
 
         const user = await authService.getUserById(req.user.id);
-        
         if (!user) {
           res.writeHead(401, { 'Content-Type': 'application/json' });
           res.end(JSON.stringify({ error: 'User not found' }));
           return;
         }
 
-        const userWithStatus = {
-          ...user,
-          twoFactorEnabled: !!user.two_factor_enabled
-        };
-
         res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ user: userWithStatus }));
+        res.end(JSON.stringify({ user }));
         return;
       }
 
