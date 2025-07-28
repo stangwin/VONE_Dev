@@ -341,12 +341,12 @@ const server = http.createServer(async (req, res) => {
   console.log(`   Host: ${req.headers.host}`);
   console.log(`   User-Agent: ${req.headers['user-agent']?.substring(0, 50)}...`);
   
-  // CORS handling - DISABLED for development debugging
+  // CORS handling - Fixed for credentials
   if (pathname.startsWith('/api/')) {
-    console.log(`   🔧 CORS DISABLED for debugging`);
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', '*');
-    res.setHeader('Access-Control-Allow-Headers', '*');
+    console.log(`   🔧 Setting CORS headers for API request`);
+    res.setHeader('Access-Control-Allow-Origin', req.headers.origin || 'https://vone-development-server.onrender.com');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Dev-Session');
     res.setHeader('Access-Control-Allow-Credentials', 'true');
   }
   
