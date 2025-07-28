@@ -339,12 +339,12 @@ const server = http.createServer(async (req, res) => {
   console.log(`   Host: ${req.headers.host}`);
   console.log(`   User-Agent: ${req.headers['user-agent']?.substring(0, 50)}...`);
   
-  // CORS handling - always set headers for API requests
+  // CORS handling - DISABLED for development debugging
   if (pathname.startsWith('/api/')) {
-    console.log(`   🔧 Setting CORS headers for API request`);
-    res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Dev-Session');
+    console.log(`   🔧 CORS DISABLED for debugging`);
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', '*');
+    res.setHeader('Access-Control-Allow-Headers', '*');
     res.setHeader('Access-Control-Allow-Credentials', 'true');
   }
   
