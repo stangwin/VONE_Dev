@@ -1,18 +1,26 @@
 // Database API client
 class DatabaseAPI {
     constructor() {
-        this.baseURL = '';
         this.currentUser = null;
+        // Detect base URL to prevent CORS issues
+        this.baseUrl = this.detectBaseUrl();
+        console.log('🔧 DatabaseAPI initialized with base URL:', this.baseUrl);
     }
 
-    // Helper method to get headers for cookie-based authentication
+    detectBaseUrl() {
+        // Get the current origin (protocol + hostname + port)
+        const origin = window.location.origin;
+        console.log('🔧 Detected origin:', origin);
+        return origin;
+    }
+
     getAuthHeaders() {
         return {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'X-Dev-Session': 'true'
         };
     }
-// Cursor test commit
-    // Helper method to get fetch options with authentication
+
     getFetchOptions(method = 'GET', body = null) {
         const options = {
             method,
@@ -31,8 +39,10 @@ class DatabaseAPI {
         try {
             // Fix URL construction to avoid double /api/
             const url = endpoint.startsWith('/api/') ? endpoint : `/api${endpoint}`;
-            console.log('DatabaseAPI: Making fetch request to', url);
-            const response = await fetch(url, this.getFetchOptions(method, body));
+            // Use the detected base URL to ensure correct domain
+            const fullUrl = `${this.baseUrl}${url}`;
+            console.log('DatabaseAPI: Making fetch request to', fullUrl);
+            const response = await fetch(fullUrl, this.getFetchOptions(method, body));
             
             if (response.status === 401) {
                 console.log('User not authenticated, redirecting to auth page...');
@@ -54,7 +64,7 @@ class DatabaseAPI {
     async checkAuth() {
         try {
             console.log('🔍 Frontend auth check starting...');
-            const response = await fetch('/api/auth/me', this.getFetchOptions('GET'));
+            const response = await fetch(`${this.baseUrl}/api/auth/me`, this.getFetchOptions('GET'));
             
             console.log('🔍 Auth response status:', response.status);
             console.log('🔍 Auth response ok:', response.ok);
@@ -81,7 +91,7 @@ class DatabaseAPI {
 
     async logout() {
         try {
-            await fetch('/api/auth/logout', this.getFetchOptions('POST'));
+            await fetch(`${this.baseUrl}/api/auth/logout`, this.getFetchOptions('POST'));
             this.currentUser = null;
             window.location.href = '/auth.html';
         } catch (error) {
@@ -91,10 +101,10 @@ class DatabaseAPI {
 
     async getCustomers() {
         try {
-            console.log('DatabaseAPI: Making fetch request to', '/api/customers');
+            console.log('DatabaseAPI: Making fetch request to', `${this.baseUrl}/api/customers`);
             console.log('Current window location:', window.location.href);
             
-            const response = await fetch('/api/customers', this.getFetchOptions('GET'));
+            const response = await fetch(`${this.baseUrl}/api/customers`, this.getFetchOptions('GET'));
             
             console.log('DatabaseAPI: Response status:', response.status);
             console.log('DatabaseAPI: Response ok:', response.ok);
@@ -123,7 +133,7 @@ class DatabaseAPI {
 
     async getCustomer(customerId) {
         try {
-            const response = await fetch(`/api/customers/${customerId}`);
+            const response = await fetch(`${this.baseUrl}/api/customers/${customerId}`);
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
             return await response.json();
         } catch (error) {
@@ -546,7 +556,7 @@ class CRMApp {
 
     async checkEnvironment() {
         try {
-            const response = await fetch('/api/environment', {
+            const response = await fetch(`${this.api.baseUrl}/api/environment`, {
                 credentials: 'include'
             });
             
