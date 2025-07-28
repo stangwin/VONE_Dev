@@ -29,10 +29,17 @@ class DatabaseAPI {
     }
 
     getAuthHeaders() {
-        return {
-            'Content-Type': 'application/json',
-            'X-Dev-Session': 'true'
+        const headers = {
+            'Content-Type': 'application/json'
         };
+        
+        // Add JWT token if available
+        const token = localStorage.getItem('jwt_token');
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+        
+        return headers;
     }
 
     getFetchOptions(method = 'GET', body = null) {
@@ -119,9 +126,17 @@ class DatabaseAPI {
         try {
             await fetch(`${this.baseUrl}/api/auth/logout`, this.getFetchOptions('POST'));
             this.currentUser = null;
+            
+            // Clear JWT token
+            localStorage.removeItem('jwt_token');
+            console.log('JWT token cleared on logout');
+            
             window.location.href = '/auth.html';
         } catch (error) {
             console.error('Logout failed:', error);
+            // Still clear token and redirect even if server call fails
+            localStorage.removeItem('jwt_token');
+            window.location.href = '/auth.html';
         }
     }
 

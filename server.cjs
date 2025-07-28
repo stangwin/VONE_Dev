@@ -355,6 +355,11 @@ function extractTokenFromHeader(req) {
   return null;
 }
 
+// JWT authentication check function
+function isAuthenticated(req) {
+  return !!req.user;
+}
+
 // Simple MIME type detection
 const getMimeType = (filePath) => {
   const ext = path.extname(filePath).toLowerCase();
@@ -562,15 +567,9 @@ const server = http.createServer(async (req, res) => {
       }
 
       if (pathname === '/api/auth/logout' && req.method === 'POST') {
-        req.session.destroy((err) => {
-          if (err) {
-            res.writeHead(500, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({ error: 'Failed to logout' }));
-            return;
-          }
-          res.writeHead(200, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ message: 'Logged out successfully' }));
-        });
+        // JWT logout - client handles token removal
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ message: 'Logged out successfully' }));
         return;
       }
 
@@ -587,7 +586,6 @@ const server = http.createServer(async (req, res) => {
         const user = await authService.getUserById(req.user.id);
         
         if (!user) {
-          req.session.destroy();
           res.writeHead(401, { 'Content-Type': 'application/json' });
           res.end(JSON.stringify({ error: 'User not found' }));
           return;

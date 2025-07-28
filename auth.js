@@ -137,7 +137,14 @@ class AuthManager {
 
             if (response.ok) {
                 this.showSuccess(this.isLoginMode ? 'Signed in successfully!' : 'Account created successfully!');
-                // Immediate redirect - let the session cookie handle authentication
+                
+                // Store JWT token if provided
+                if (result.token) {
+                    localStorage.setItem('jwt_token', result.token);
+                    console.log('JWT token stored successfully');
+                }
+                
+                // Immediate redirect
                 window.location.href = '/';
             } else {
                 this.showError(result.error || 'Authentication failed');
@@ -152,13 +159,26 @@ class AuthManager {
 
     async checkAuthStatus() {
         try {
+            // Check if JWT token exists
+            const token = localStorage.getItem('jwt_token');
+            if (!token) {
+                console.log('No JWT token found, staying on auth page');
+                return;
+            }
+
             const response = await fetch('/api/auth/me', {
-                credentials: 'include'
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
             });
 
             if (response.ok) {
                 // User is already authenticated, redirect to dashboard
                 window.location.href = '/';
+            } else {
+                // Token is invalid, clear it
+                localStorage.removeItem('jwt_token');
+                console.log('Invalid JWT token cleared');
             }
         } catch (error) {
             // User is not authenticated, stay on auth page
