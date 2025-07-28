@@ -114,7 +114,7 @@ function startServer() {
     console.log('⏳ Initializing...\n');
     
     // Start the main server
-    require('./server.js');
+    require('./server.cjs');
 }
 
 // Handle process termination
