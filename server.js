@@ -57,11 +57,13 @@ if (!isDevelopment && databaseUrl.includes('dev')) {
 // Initialize database with selected URL and schema handling
 let pool;
 let authService;
+let sessionMiddleware;
 
 if (databaseUrl.includes('placeholder')) {
   // Testing mode - no real database
   console.log('🧪 Running in TEST MODE - database features disabled');
   pool = null;
+  sessionMiddleware = createSessionMiddleware(pool);
   // Mock auth service for testing
   authService = {
     authenticateUser: async (email, password) => {
@@ -273,7 +275,7 @@ const openai = new OpenAI({
 });
 
 // Initialize session middleware
-const sessionMiddleware = createSessionMiddleware(pool);
+sessionMiddleware = createSessionMiddleware(pool);
 
 // Simple MIME type detection
 const getMimeType = (filePath) => {
