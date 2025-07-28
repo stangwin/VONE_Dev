@@ -60,12 +60,22 @@ let authService;
 let sessionMiddleware;
 
 // Always try to connect to database for session storage
+console.log('🔧 Attempting database connection for session storage...');
+console.log('🔧 Database URL:', databaseUrl ? databaseUrl.substring(0, 50) + '...' : 'not configured');
+
 try {
   pool = new Pool({ connectionString: databaseUrl });
-  console.log('🔒 Database connected for session storage');
+  
+  // Test the connection
+  const client = await pool.connect();
+  await client.query('SELECT NOW()');
+  client.release();
+  
+  console.log('🔒 Database connected successfully for session storage');
   sessionMiddleware = createSessionMiddleware(pool);
 } catch (error) {
-  console.log('⚠️  Database connection failed, using memory store');
+  console.error('❌ Database connection failed:', error.message);
+  console.log('⚠️  Falling back to memory store (sessions will not persist)');
   pool = null;
   sessionMiddleware = require('express-session')({
     secret: process.env.SESSION_SECRET || 'vantix-crm-secret-key-change-in-production',
