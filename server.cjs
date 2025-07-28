@@ -7,8 +7,8 @@ const { Pool } = require('pg');
 const { IncomingForm } = require('formidable');
 const crypto = require('crypto');
 const OpenAI = require('openai');
+const jwt = require('jsonwebtoken');
 const { AuthService } = require('./server/auth');
-const { createSessionMiddleware, requireAuth, isAuthenticated } = require('./server/middleware');
 
 // Load environment variables
 require('dotenv').config();
@@ -77,6 +77,15 @@ try {
       console.error('❌ Database connection test failed:', err.message);
     } else {
       console.log('🔒 Database connected successfully for session storage');
+      
+      // Check if session table exists and has data
+      pool.query('SELECT COUNT(*) FROM session_dev', (err, result) => {
+        if (err) {
+          console.log('🔍 Session table check failed:', err.message);
+        } else {
+          console.log('🔍 Session table has', result.rows[0].count, 'sessions');
+        }
+      });
     }
   });
   
@@ -313,8 +322,38 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-// Initialize session middleware
-sessionMiddleware = createSessionMiddleware(pool);
+// JWT secret for token signing
+const JWT_SECRET = process.env.JWT_SECRET || 'vantix-crm-jwt-secret-change-in-production';
+
+// JWT authentication functions
+function generateToken(user) {
+  return jwt.sign(
+    { 
+      id: user.id, 
+      email: user.email, 
+      role: user.role,
+      name: user.name 
+    }, 
+    JWT_SECRET, 
+    { expiresIn: '24h' }
+  );
+}
+
+function verifyToken(token) {
+  try {
+    return jwt.verify(token, JWT_SECRET);
+  } catch (error) {
+    return null;
+  }
+}
+
+function extractTokenFromHeader(req) {
+  const authHeader = req.headers.authorization;
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    return authHeader.substring(7);
+  }
+  return null;
+}
 
 // Simple MIME type detection
 const getMimeType = (filePath) => {
@@ -354,19 +393,22 @@ const parseJsonBody = (req) => {
 
 // Removed devSessions - using pure cookie authentication
 
-// Session middleware wrapper for HTTP server  
-async function handleWithSession(req, res, handler) {
-  sessionMiddleware(req, res, (err) => {
-    if (err) {
-      console.error('Session middleware error:', err);
-      if (!res.headersSent) {
-        res.writeHead(500, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: 'Session error' }));
-      }
-      return;
+// JWT authentication wrapper for HTTP server  
+async function handleRequest(req, res, handler) {
+  // Extract JWT token from Authorization header
+  const token = extractTokenFromHeader(req);
+  
+  if (token) {
+    const user = verifyToken(token);
+    if (user) {
+      req.user = user;
+      console.log('🔍 JWT Auth: User authenticated:', user.email);
+    } else {
+      console.log('🔍 JWT Auth: Invalid token');
     }
-    handler(req, res);
-  });
+  }
+  
+  handler(req, res);
 }
 
 // Create HTTP server
@@ -453,8 +495,8 @@ const server = http.createServer(async (req, res) => {
     }
   }
 
-  // Wrap all requests with session handling
-  return await handleWithSession(req, res, async (req, res) => {
+  // Handle requests with JWT authentication
+  return await handleRequest(req, res, async (req, res) => {
     
 
 
@@ -505,29 +547,14 @@ const server = http.createServer(async (req, res) => {
           return;
         }
 
-        // Ensure session is properly saved
-        req.session.userId = user.id;
-        req.session.user = user;
+        // Generate JWT token
+        const token = generateToken(user);
+        console.log('🔍 JWT Auth: Token generated for user:', user.email);
         
-        // Force session save 
-        await new Promise((resolve, reject) => {
-          req.session.save((err) => {
-            if (err) {
-              console.error('🔍 AUTH DEBUG - Session save error:', err);
-              reject(err);
-            } else {
-              console.log('🔍 AUTH DEBUG - Session saved successfully:', {
-                userId: user.id,
-                sessionId: req.session.id,
-                sessionKeys: Object.keys(req.session),
-                timestamp: new Date().toISOString()
-              });
-              resolve();
-            }
-          });
-        });
-        
-        const response = { user };
+        const response = { 
+          user,
+          token 
+        };
         
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify(response));
@@ -548,27 +575,16 @@ const server = http.createServer(async (req, res) => {
       }
 
       if (pathname === '/api/auth/me' && req.method === 'GET') {
-        console.log('🔍 AUTH DEBUG - /api/auth/me request:', {
-          hasSession: !!req.session,
-          sessionId: req.session?.id,
-          userId: req.session?.userId,
-          cookies: req.headers.cookie,
-          userAgent: req.headers['user-agent'],
-          timestamp: new Date().toISOString()
-        });
+        console.log('🔍 JWT Auth: /api/auth/me request');
         
-        if (!req.session || !req.session.userId) {
-          console.log('🔍 AUTH DEBUG - Authentication failed:', {
-            sessionExists: !!req.session,
-            sessionData: req.session ? Object.keys(req.session) : 'no session',
-            userId: req.session?.userId
-          });
+        if (!req.user) {
+          console.log('🔍 JWT Auth: No valid token found');
           res.writeHead(401, { 'Content-Type': 'application/json' });
           res.end(JSON.stringify({ error: 'Not authenticated' }));
           return;
         }
 
-        const user = await authService.getUserById(req.session.userId);
+        const user = await authService.getUserById(req.user.id);
         
         if (!user) {
           req.session.destroy();
