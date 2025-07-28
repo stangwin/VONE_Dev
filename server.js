@@ -59,11 +59,32 @@ let pool;
 let authService;
 let sessionMiddleware;
 
-if (databaseUrl.includes('placeholder')) {
-  // Testing mode - no real database
-  console.log('🧪 Running in TEST MODE - database features disabled');
-  pool = null;
+// Always try to connect to database for session storage
+try {
+  pool = new Pool({ connectionString: databaseUrl });
+  console.log('🔒 Database connected for session storage');
   sessionMiddleware = createSessionMiddleware(pool);
+} catch (error) {
+  console.log('⚠️  Database connection failed, using memory store');
+  pool = null;
+  sessionMiddleware = require('express-session')({
+    secret: process.env.SESSION_SECRET || 'vantix-crm-secret-key-change-in-production',
+    resave: true,
+    saveUninitialized: false,
+    rolling: true,
+    cookie: {
+      secure: false,
+      httpOnly: true,
+      maxAge: 30 * 24 * 60 * 60 * 1000,
+      sameSite: 'lax'
+    },
+    name: 'vantix.test.sid'
+  });
+}
+
+// Initialize auth service based on database availability
+if (databaseUrl.includes('placeholder') || !pool) {
+  console.log('🧪 Running in TEST MODE - database features disabled');
   // Mock auth service for testing
   authService = {
     authenticateUser: async (email, password) => {
