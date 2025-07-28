@@ -598,7 +598,7 @@ class CRMApp {
     async checkEnvironment() {
         try {
             const response = await fetch(`${this.api.baseUrl}/api/environment`, {
-                credentials: 'include'
+                headers: this.api.getAuthHeaders()
             });
             
             if (response.ok) {
