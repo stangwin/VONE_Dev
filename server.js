@@ -109,9 +109,6 @@ async function createSessionTable() {
   }
 }
 
-// Call this after database connection
-await createSessionTable();
-
 // Initialize session middleware
 const sessionMiddleware = createSessionMiddleware(pool);
 
@@ -207,6 +204,31 @@ async function handleWithSession(req, res, handler) {
       return;
     }
     handler(req, res);
+  });
+}
+
+// Async startup function to handle session table creation
+async function startServer() {
+  try {
+    // Create session table if it doesn't exist
+    await createSessionTable();
+    console.log('✅ Session table created/verified');
+  } catch (error) {
+    console.error('❌ Session table creation error:', error);
+  }
+  
+  // Start the server
+  server.listen(PORT, '0.0.0.0', () => {
+    const envLabel = isDevelopment ? 'DEVELOPMENT' : 'PRODUCTION';
+    console.log(`${envLabel} CRM Server running on port ${PORT}`);
+    console.log('Database connected and ready');
+    
+    if (isDevelopment) {
+      console.log(`🚀 Development server: http://localhost:${PORT}`);
+      console.log(`📊 Dev Console: http://localhost:${PORT}/dev-console`);
+    } else {
+      console.log(`🚀 Production server: http://localhost:${PORT}`);
+    }
   });
 }
 
@@ -1997,15 +2019,8 @@ ${text}`;
   });
 });
 
-server.listen(PORT, '0.0.0.0', () => {
-  const envLabel = isDevelopment ? 'DEVELOPMENT' : 'PRODUCTION';
-  console.log(`${envLabel} CRM Server running on port ${PORT}`);
-  console.log('Database connected and ready');
-  
-  if (isDevelopment) {
-    console.log(`🚀 Development server: http://localhost:${PORT}`);
-    console.log(`📊 Dev Console: http://localhost:${PORT}/dev-console`);
-  } else {
-    console.log(`🚀 Production server: http://localhost:${PORT}`);
-  }
+// Start the server with session table creation
+startServer().catch(error => {
+  console.error('Failed to start server:', error);
+  process.exit(1);
 });
