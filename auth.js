@@ -142,6 +142,9 @@ class AuthManager {
                 if (result.token) {
                     localStorage.setItem('jwt_token', result.token);
                     console.log('JWT token stored successfully');
+                    console.log('Token preview:', result.token.substring(0, 20) + '...');
+                } else {
+                    console.log('No token in login response:', result);
                 }
                 
                 // Immediate redirect
@@ -165,10 +168,15 @@ class AuthManager {
                 console.log('No JWT token found, staying on auth page');
                 return;
             }
+            console.log('Found JWT token, checking validity...');
+            console.log('Token preview:', token.substring(0, 20) + '...');
 
-            const response = await fetch('/api/auth/me', {
+            // Use the current origin to construct the full URL
+            const baseUrl = window.location.origin;
+            const response = await fetch(`${baseUrl}/api/auth/me`, {
                 headers: {
-                    'Authorization': `Bearer ${token}`
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
                 }
             });
 
