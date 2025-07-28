@@ -333,13 +333,22 @@ const server = http.createServer(async (req, res) => {
   const parsedUrl = url.parse(req.url, true);
   const pathname = parsedUrl.pathname;
   
+  // Add request logging
+  console.log(`🌐 [${new Date().toISOString()}] ${req.method} ${pathname}`);
+  console.log(`   Origin: ${req.headers.origin || 'none'}`);
+  console.log(`   Host: ${req.headers.host}`);
+  console.log(`   User-Agent: ${req.headers['user-agent']?.substring(0, 50)}...`);
+  
   // Enhanced CORS headers for development iframe support
   // Only set CORS headers for cross-origin requests
   if (req.headers.origin) {
+    console.log(`   🔧 Setting CORS headers for origin: ${req.headers.origin}`);
     res.setHeader('Access-Control-Allow-Origin', req.headers.origin);
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Dev-Session');
     res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Dev-Session');
+  } else {
+    console.log(`   🔧 No origin header - same-origin request`);
   }
   
   if (req.method === 'OPTIONS') {
