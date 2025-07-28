@@ -90,6 +90,28 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
+// Create session table if it doesn't exist
+async function createSessionTable() {
+  try {
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS session_dev (
+        sid VARCHAR NOT NULL COLLATE "default",
+        sess JSON NOT NULL,
+        expire TIMESTAMP(6) NOT NULL
+      );
+      
+      CREATE INDEX CONCURRENTLY IF NOT EXISTS "IDX_session_expire" ON session_dev ("expire");
+      CREATE UNIQUE INDEX CONCURRENTLY IF NOT EXISTS "IDX_session_sid" ON session_dev ("sid");
+    `);
+    console.log('✅ Session table created/verified');
+  } catch (error) {
+    console.error('❌ Session table creation error:', error);
+  }
+}
+
+// Call this after database connection
+await createSessionTable();
+
 // Initialize session middleware
 const sessionMiddleware = createSessionMiddleware(pool);
 
