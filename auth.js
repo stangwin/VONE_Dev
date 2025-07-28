@@ -143,6 +143,7 @@ class AuthManager {
                     localStorage.setItem('jwt_token', result.token);
                     console.log('JWT token stored successfully');
                     console.log('Token preview:', result.token.substring(0, 20) + '...');
+                    console.log('About to redirect to dashboard');
                 } else {
                     console.log('No token in login response:', result);
                 }
@@ -180,17 +181,26 @@ class AuthManager {
                 }
             });
 
+            console.log('Auth response status:', response.status);
+            console.log('Auth response ok:', response.ok);
+
             if (response.ok) {
                 // User is already authenticated, redirect to dashboard
+                console.log('JWT token is valid, redirecting to dashboard');
                 window.location.href = '/';
             } else {
-                // Token is invalid, clear it
-                localStorage.removeItem('jwt_token');
-                console.log('Invalid JWT token cleared');
+                // Only clear token if we get an actual authentication error
+                if (response.status === 401 || response.status === 403) {
+                    localStorage.removeItem('jwt_token');
+                    console.log('Invalid JWT token cleared due to auth error');
+                } else {
+                    console.log('Non-auth error occurred, keeping token:', response.status);
+                }
             }
         } catch (error) {
-            // User is not authenticated, stay on auth page
-            console.log('User not authenticated');
+            // Only clear token on network errors, not on successful responses
+            console.log('Network error during auth check:', error);
+            console.log('Keeping JWT token, may be temporary network issue');
         }
     }
 
