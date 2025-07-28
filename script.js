@@ -10,7 +10,19 @@ class DatabaseAPI {
     detectBaseUrl() {
         // Get the current origin (protocol + hostname + port)
         const origin = window.location.origin;
-        console.log('🔧 Detected origin:', origin);
+        const href = window.location.href;
+        const protocol = window.location.protocol;
+        const hostname = window.location.hostname;
+        const port = window.location.port;
+        
+        console.log('🔧 Base URL Detection Debug:');
+        console.log('  - window.location.origin:', origin);
+        console.log('  - window.location.href:', href);
+        console.log('  - window.location.protocol:', protocol);
+        console.log('  - window.location.hostname:', hostname);
+        console.log('  - window.location.port:', port);
+        console.log('  - Detected base URL:', origin);
+        
         return origin;
     }
 
@@ -41,6 +53,14 @@ class DatabaseAPI {
             const url = endpoint.startsWith('/api/') ? endpoint : `/api${endpoint}`;
             // Use the detected base URL to ensure correct domain
             const fullUrl = `${this.baseUrl}${url}`;
+            console.log('🔧 makeRequest Debug:');
+            console.log('  - Method:', method);
+            console.log('  - Endpoint:', endpoint);
+            console.log('  - Base URL:', this.baseUrl);
+            console.log('  - Constructed URL:', url);
+            console.log('  - Full URL:', fullUrl);
+            console.log('  - Current origin:', window.location.origin);
+            console.log('  - Is same origin?', fullUrl.startsWith(window.location.origin));
             console.log('DatabaseAPI: Making fetch request to', fullUrl);
             const response = await fetch(fullUrl, this.getFetchOptions(method, body));
             
