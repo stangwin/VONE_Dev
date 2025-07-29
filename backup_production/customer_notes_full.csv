@@ -1,0 +1,403 @@
+id,customer_id,author_id,author_name,content,timestamp,type,created_at,updated_at
+50,customer_001,,Legacy User,Mr. Manuel is the Voice contact at 323-408-3860.,2025-06-23 21:00:00,manual,2025-06-23 21:00:00,2025-07-14 14:24:24.340897
+1,customer_001,6,Stan Gwin,I spoke with Asher a few minutes ago. He's going to get me a person to work with so that we can do the initial prep work and then the cut over. I also spoke with Voxo. Harley and Cameron are the ones working this phone cut. They seem to be ready to go. Need to wait for Asher to call me back. He's going to try to get some name Jose to work with me or he's going to work with me himself.,2025-06-26 20:27:33.435799,manual,2025-06-26 20:27:33.435799,2025-06-26 20:27:33.435799
+2,customer_001,6,Stan Gwin,I spoke with Asher a few minutes ago. He's going to get me a person to work with so that we can do the initial prep work and then the cut over. I also spoke with Voxo. Harley and Cameron are the ones working this phone cut. They seem to be ready to go. Need to wait for Asher to call me back. He's going to try to get some name Jose to work with me or he's going to work with me himself.,2025-06-26 20:34:36.87052,manual,2025-06-26 20:34:36.87052,2025-06-26 20:34:36.87052
+6,customer_001,6,Stan Gwin,From Harley Moorman at Voxo regarding new phone service there --I am installing My Pharmacist on Call right now. Going very well with Manual. He mentioned to me about the firewall and said he will look into setting it up after the phone install.,2025-06-27 17:07:33.935096,manual,2025-06-27 17:07:33.935096,2025-06-27 17:07:33.935096
+10,customer_001,6,Stan Gwin,"I continue to try to communicate with Asher his associate and other people to try to get somebody on site to install the firewall. I get no response except every now and then I get a promise that somebody will help me. I caught wind that Asher was upset with Voxo this past weekend about something. I just tried to call Asher again after he texted the other day and I had responded to his text and got no response back. He answered the phone when I called told me he was in a meeting and on the phone with his wife and he just answered the phone because he thought it was me calling and that he was very confused about why I was taking so long to get this set up. He said he would text or call me later. At this point, we either need to get some movement on their end, agree that he wants to pay somebody else to come in and install the device for him, or we need to agree to not do business together.",2025-07-11 16:22:53.478921,manual,2025-07-11 16:22:53.478921,2025-07-11 16:22:53.478921
+25,customer_001,6,System,"🤖 System: Next step updated from ""Schedule Install"" to ""Perform Install and Test"" (triggered by Stan Gwin)",2025-07-12 00:08:54.245392,system,2025-07-12 00:08:54.245392,2025-07-12 00:08:54.245392
+72,customer_001,6,Stan Gwin,"Email today sent to Asher -- Hi Asher,
+
+I appreciate the time and effort you’ve invested as we’ve tried to move this project forward. It’s clear that you’re highly focused on your business — as you should be — and I respect that.
+At this point, I think it’s best to acknowledge that our approach may not be the right fit for your needs. I don’t want to add any further complexity or frustration to your already full plate, and I believe that me stepping back is the most respectful path for both of us.
+We’ve both worked toward an affordable self-installation model rather than a more costly turnkey or white-glove approach. While we’ve each made a genuine effort to make that work, it seems our processes may not fully align with that direction — and that’s perfectly okay.
+If you’d like to return the equipment, you’re welcome to do so — and we’ll consider the matter closed with no further obligation. If you’d prefer to keep the hardware and licensing, just let me know and I’ll send over an invoice.
+I genuinely appreciate the opportunity and wish you the best in all your endeavors.
+Kindest regards,
+
+Stan
+
+
+Stan G. Gwin
+601.408.9199
+www.vantix.tech",2025-07-16 17:14:04.748874,manual,2025-07-16 17:14:04.748874,2025-07-16 17:14:04.748874
+48,customer_002,,Legacy User,Per call with Sally on 6/5/2025 -- Hardware is on site.,2025-06-23 21:00:00,manual,2025-06-23 21:00:00,2025-07-14 14:24:24.340897
+47,customer_002,,Legacy User,"Installation Date: June 11, 2025",2025-06-23 21:00:00,manual,2025-06-23 21:00:00,2025-07-14 14:24:24.340897
+12,customer_002,6,System,"🤖 System: Status changed from ""Onboarding"" to ""Active"" (triggered by Stan Gwin)",2025-07-12 00:02:19.165785,system,2025-07-12 00:02:19.165785,2025-07-12 00:02:19.165785
+13,customer_002,6,System,"🤖 System: Next step updated from ""Perform Install"" to ""Place in Billing"" (triggered by Stan Gwin)",2025-07-12 00:02:25.470082,system,2025-07-12 00:02:25.470082,2025-07-12 00:02:25.470082
+38,customer_002,6,System,"🤖 System: Next step updated from ""Place in Billing"" to ""Support"" (triggered by Stan Gwin)",2025-07-12 01:54:09.40374,system,2025-07-12 01:54:09.40374,2025-07-12 01:54:09.40374
+73,customer_002,6,System,"🤖 System: Status changed from ""Active"" to ""Onboarding"" (triggered by Stan Gwin)",2025-07-16 17:15:10.794896,system,2025-07-16 17:15:10.794896,2025-07-16 17:15:10.794896
+74,customer_002,6,System,"🤖 System: Next step updated from ""Support"" to ""Place in Billing"" (triggered by Stan Gwin)",2025-07-16 17:15:16.088824,system,2025-07-16 17:15:16.088824,2025-07-16 17:15:16.088824
+87,customer_002,6,System,"🤖 System: Next step due date set to ""2025-07-25"" (triggered by Stan Gwin)",2025-07-17 14:51:20.743095,system,2025-07-17 14:51:20.743095,2025-07-17 14:51:20.743095
+98,customer_002,6,System,"🤖 System: Next step due date set to ""2025-07-25"" (triggered by Stan Gwin)",2025-07-22 15:18:02.116322,system,2025-07-22 15:18:02.116322,2025-07-22 15:18:02.116322
+115,customer_002,6,System,"🤖 System: Next step due date set to ""2025-07-25"" (triggered by Stan Gwin)",2025-07-23 02:57:29.470048,system,2025-07-23 02:57:29.470048,2025-07-23 02:57:29.470048
+119,customer_002,4,System,"🤖 System: Next step due date set to ""2025-07-22"" (triggered by Test User)",2025-07-23 03:34:05.091499,system,2025-07-23 03:34:05.091499,2025-07-23 03:34:05.091499
+120,customer_002,4,System,"🤖 System: Next step due date updated from ""2025-07-22"" to ""2025-07-24"" (triggered by Test User)",2025-07-23 03:34:05.995348,system,2025-07-23 03:34:05.995348,2025-07-23 03:34:05.995348
+128,customer_002,6,System,"🤖 System: Next step due date set to ""2025-07-30"" (triggered by Stan Gwin)",2025-07-25 02:46:41.361886,system,2025-07-25 02:46:41.361886,2025-07-25 02:46:41.361886
+134,customer_002,6,System,"🤖 System: Next step due date set to ""2025-07-25"" (triggered by Stan Gwin)",2025-07-25 02:47:58.021722,system,2025-07-25 02:47:58.021722,2025-07-25 02:47:58.021722
+135,customer_002,6,System,"🤖 System: Next step due date set to ""2025-07-25"" (triggered by Stan Gwin)",2025-07-25 02:48:29.198798,system,2025-07-25 02:48:29.198798,2025-07-25 02:48:29.198798
+139,customer_002,6,System,"🤖 System: Next step due date set to ""2025-07-25"" (triggered by Stan Gwin)",2025-07-25 03:00:37.371577,system,2025-07-25 03:00:37.371577,2025-07-25 03:00:37.371577
+140,customer_002,6,System,"🤖 System: Next step due date set to ""2025-07-31"" (triggered by Stan Gwin)",2025-07-25 03:04:54.322262,system,2025-07-25 03:04:54.322262,2025-07-25 03:04:54.322262
+152,customer_002,6,System,"🤖 System: Next step due date set to ""2025-07-30"" (triggered by Stan Gwin)",2025-07-29 18:27:48.634114,system,2025-07-29 18:27:48.634114,2025-07-29 18:27:48.634114
+52,customer_003,,Legacy User,Z3 is ordered from Network Tigers and shipped directly to the site.,2025-06-23 21:00:00,manual,2025-06-23 21:00:00,2025-07-14 14:24:24.340897
+3,customer_003,6,Stan Gwin,Talked to Shelby this morning. She does not have Wi-Fi working. Figured out the Wi-Fi was being run on her old Draytek router from Lumistry. I've checked her Z3 and it has Wi-Fi capability. I've asked her if she'd like me to turn it on for her to test and see if she likes the service before she decides if she wants to keep it. We also discussed her phone bill. She has a phone bill from Bullock solutions that is the company that provides her Internet service for her. They are also charging her $38 a month for a phone line that she doesn't think she's using. She said she would check with Voxo and see if they had the number and if they don't have the number then she'll call and tell Bullock to disconnect it if they do have the number then she's going to call Bullock and tell them that they just stop the billing and give her a credit for all the money they've been spending they shouldn't have with them.,2025-06-27 16:53:53.60748,manual,2025-06-27 16:53:53.60748,2025-06-27 16:53:53.60748
+4,customer_003,6,Stan Gwin,Talked to Shelby this morning. She does not have Wi-Fi working. Figured out the Wi-Fi was being run on her old Draytek router from Lumistry. I've checked her Z3 and it has Wi-Fi capability. I've asked her if she'd like me to turn it on for her to test and see if she likes the service before she decides if she wants to keep it. We also discussed her phone bill. She has a phone bill from Bullock solutions that is the company that provides her Internet service for her. They are also charging her $38 a month for a phone line that she doesn't think she's using. She said she would check with Voxo and see if they had the number and if they don't have the number then she'll call and tell Bullock to disconnect it if they do have the number then she's going to call Bullock and tell them that they just stop the billing and give her a credit for all the money they've been spending they shouldn't have with them.,2025-06-27 16:53:54.96743,manual,2025-06-27 16:53:54.96743,2025-06-27 16:53:54.96743
+8,customer_003,4,Test User,Turned on WiFi for Shelby. Need to follow in a week and see how it’s working for her.,2025-06-28 22:09:16.455289,manual,2025-06-28 22:09:16.455289,2025-06-28 22:09:16.455289
+35,customer_003,6,System,"🤖 System: Next step updated from ""Schedule Install"" to ""Place in Billing"" (triggered by Stan Gwin)",2025-07-12 01:52:14.918721,system,2025-07-12 01:52:14.918721,2025-07-12 01:52:14.918721
+86,customer_003,6,System,"🤖 System: Next step due date set to ""2025-07-25"" (triggered by Stan Gwin)",2025-07-17 14:35:10.966341,system,2025-07-17 14:35:10.966341,2025-07-17 14:35:10.966341
+99,customer_003,6,System,"🤖 System: Next step due date set to ""2025-07-25"" (triggered by Stan Gwin)",2025-07-22 15:18:06.974962,system,2025-07-22 15:18:06.974962,2025-07-22 15:18:06.974962
+151,customer_003,6,System,"🤖 System: Next step due date set to ""2025-07-30"" (triggered by Stan Gwin)",2025-07-29 18:27:35.755476,system,2025-07-29 18:27:35.755476,2025-07-29 18:27:35.755476
+46,customer_004,,Legacy User,Spoke with Yash. He had an issue with price. Rusty needs to go back and explain to him the whole story instead of just the voice portion,2025-06-23 21:00:00,manual,2025-06-23 21:00:00,2025-07-14 14:24:24.340897
+34,customer_004,6,System,"🤖 System: Next step set to ""Follow with VOXO AE"" (triggered by Stan Gwin)",2025-07-12 01:51:56.997405,system,2025-07-12 01:51:56.997405,2025-07-12 01:51:56.997405
+40,customer_004,6,System,"🤖 System: Status changed from ""Quoted"" to ""Closed"" (triggered by Stan Gwin)",2025-07-14 14:12:58.205027,system,2025-07-14 14:12:58.205027,2025-07-14 14:12:58.205027
+41,customer_004,6,System,"🤖 System: Next step updated from ""Follow with VOXO AE"" to ""None"" (triggered by Stan Gwin)",2025-07-14 14:13:02.645422,system,2025-07-14 14:13:02.645422,2025-07-14 14:13:02.645422
+42,customer_005,,Legacy User,Neal is reaching out to Jackie -- From Connect 2025. Saw her there. She is purposely waiting a few months to move forward with Voxo until she gets some folks back in the office.,2025-06-23 21:00:00,manual,2025-06-23 21:00:00,2025-07-14 14:24:24.340897
+77,customer_005,6,System,"🤖 System: Next step updated from ""Follow with VOXO AE"" to ""Follow with Affiliate AE"" (triggered by Stan Gwin)",2025-07-16 17:15:30.89902,system,2025-07-16 17:15:30.89902,2025-07-16 17:15:30.89902
+49,customer_006,,Legacy User,"We have 4 stores in a 30 mile radius that we need to get VPN connected with each other. A not-so-distant goal is to get a centralized data entry location for these stores setup, with central fill a secondary goal.",2025-06-23 21:00:00,manual,2025-06-23 21:00:00,2025-07-14 14:24:24.340897
+11,customer_006,6,System,"🤖 System: 7 files uploaded: McCoyTygart&CentralServers.jpg, McCoyTygartnetwork.jpg, Redfieldnet2.jpg, Redfieldnetwork.jpg, SheridanFamilynet2.jpg, SheridanFamilynetwork.jpg, Woodlandsnetwork.jpg (triggered by Stan Gwin)",2025-07-11 23:38:42.701839,system,2025-07-11 23:38:42.701839,2025-07-11 23:38:42.701839
+24,customer_006,6,System,"🤖 System: Next step set to ""Send Quote"" (triggered by Stan Gwin)",2025-07-12 00:08:46.643374,system,2025-07-12 00:08:46.643374,2025-07-12 00:08:46.643374
+57,customer_006,6,Stan Gwin,"Just sent the following updated proposal to Casey and Sean -- Casey,
+Here’s the revised pricing proposal for your four pharmacy locations. A few points of note:
+Each site now includes a PoE switch.
+For the McCoy Tygart location, I originally quoted an MX67 instead of the correct MX67W—the version with built-in Wi-Fi. I apologize for the oversight and have corrected it in this proposal.
+​e’ll provide secure VPN connectivity between locations, VPN client access for up to 10 users, and remote setup support with someone from your team (Sean Brasseal) assisting onsite during each turn-up.
+Each managed location includes full management and monitoring of the firewall, Wi-Fi, and switch, along with ongoing licensing for those devices.
+Regarding Woodlands (the Ubiquiti location): while this site won’t support Cisco’s Auto VPN process and its associated enhancements, a standard site-to-site VPN is still achievable. I’ve noted a few key points below, and I’m happy to walk through the technical details if you’d like to explore further.
+
+McCoy Tygart Drug – 821 N Rock St, Sheridan, AR
+Upfront Cost:
+– Cisco Meraki MX67W firewall with integrated Wi-Fi: $1100
+– Cisco Meraki MR28 access point for extended Wi-Fi coverage: $450
+– Cisco Meraki MS130-48P switch: $2,900
+Total Upfront: $4,450
+Monthly Service: $275/month
+
+Sheridan Family Pharmacy – 677 Heritage Dr, Sheridan, AR
+Upfront Cost:
+– Cisco Meraki Z4 firewall with integrated Wi-Fi: $500
+– Cisco Meraki MS130-24P switch: $1,650
+Total Upfront: $2,150
+Monthly Service: $165/month
+
+Redfield Pharmacy – 1011 Sheridan Rd, Redfield, AR
+Upfront Cost:
+– Cisco Meraki Z4 firewall with integrated Wi-Fi: $500
+– Cisco Meraki MS130-24P switch: $1,650
+Total Upfront: $2,150
+Monthly Service: $165/month
+
+Woodlands Pharmacy – 7197 Sheridan Rd #109, White Hall, AR
+Currently, equipment and management for this location have been arranged through one of your partners. While this site does not support Cisco’s Auto VPN process and its associated enhancements, a standard site-to-site VPN is still achievable—though it may be slightly more complex to configure and maintain over time. We will assist with setting up the VPN connection from this site to the main McCoy Tygart location, with the understanding that your other partner will be responsible for completing the configuration on their end and supporting any technical issues that may arise with their equipment in the future. No monthly fee will apply to this site unless we are asked to manage it as well. Please note that remote access to this location—from Sheridan, Redfield, or external users—may require additional setup and could incur separate charges from either Vantix or your Ubiquiti partner.
+
+Summary:
+Total Upfront (all sites): $8,750
+Total Monthly Recurring: $605/month
+
+Let me know if you have any questions or are ready for me to send a service agreement.
+
+Thanks again,
+Stan
+
+
+Stan G. Gwin
+601.408.9199
+www.vantix.tech",2025-07-14 18:41:11.138401,manual,2025-07-14 18:41:11.138401,2025-07-14 18:41:11.138401
+91,customer_006,6,Stan Gwin,"Got this email from Casey Hedden today -- Stan,
+
+Thanks for the follow up. Contacting you was on my to do list for the day. Last night I signed the proposals for Voxo. Target dates are 8/20-28 for the 3 change overs. 
+
+Megan & I have talked quite a bit about it & we’ve decided it makes the most sense to do this the easiest/cleanest way on the front end & not regret it later. So for Woodlands we want to use the same Cisco equipment the other stores are using. Please update our quote to include the same equipment as Redfield & Sheridan Family for Woodlands. 
+
+I should know by end of day tomorrow for sure, talking with Innovatech about returning the Ubiquiti hardware. There’s a chance that they will swap it to the Cisco but still trying to find that out. My best guess is that we pay a restocking fee & then get the Cisco equipment from you. We’ll still have them come in & update the cabling. 
+
+I’m in Las Vegas for a conference thru the weekend, I’ll get back to you ASAP once I hear back from Innovatech. 
+
+Thanks!
+Casey",2025-07-17 16:45:58.791329,manual,2025-07-17 16:45:58.791329,2025-07-17 16:45:58.791329
+92,customer_006,6,Stan Gwin,"Sent this follow up with an updated proposal -- Casey,
+Here’s the revised pricing proposal with Woodlands added. Points of note:
+Each site includes a PoE switch.
+W​e'll provide secure VPN connectivity between all locations, VPN client access for up to 10 users, and remote setup support with someone from your team (Sean Brasseal) assisting onsite during each turn-up.
+Each managed location includes full management and monitoring of the firewall, Wi-Fi, and switch, along with ongoing licensing for those devices.
+The Woodlands configuration now matches Sheridan and Redfield
+
+McCoy Tygart Drug – 821 N Rock St, Sheridan, AR
+Upfront Cost:
+– Cisco Meraki MX67W firewall with integrated Wi-Fi: $1100
+– Cisco Meraki MR28 access point for extended Wi-Fi coverage: $450
+– Cisco Meraki MS130-48P switch: $2,900
+Total Upfront: $4,450
+Monthly Service: $275/month
+
+Sheridan Family Pharmacy – 677 Heritage Dr, Sheridan, AR
+Upfront Cost:
+– Cisco Meraki Z4 firewall with integrated Wi-Fi: $500
+– Cisco Meraki MS130-24P switch: $1,650
+Total Upfront: $2,150
+Monthly Service: $165/month
+
+Redfield Pharmacy – 1011 Sheridan Rd, Redfield, AR
+Upfront Cost:
+– Cisco Meraki Z4 firewall with integrated Wi-Fi: $500
+– Cisco Meraki MS130-24P switch: $1,650
+Total Upfront: $2,150
+Monthly Service: $165/month
+
+Woodlands Pharmacy – 7197 Sheridan Rd #109, White Hall, AR
+Upfront Cost:
+– Cisco Meraki Z4 firewall with integrated Wi-Fi: $500
+– Cisco Meraki MS130-24P switch: $1,650
+Total Upfront: $2,150
+Monthly Service: $165/month
+
+Summary:
+Total Upfront (all sites): $10,900
+Total Monthly Recurring (all sites): $770/month
+
+Let me know if you have additional questions or are ready for me to send a service agreement.
+
+Thanks again,
+Stan
+
+
+Stan G. Gwin
+601.408.9199
+www.vantix.tech",2025-07-17 16:46:41.325742,manual,2025-07-17 16:46:41.325742,2025-07-17 16:46:41.325742
+93,customer_006,6,System,"🤖 System: Next step due date set to ""2025-07-18"" (triggered by Stan Gwin)",2025-07-17 16:47:22.712578,system,2025-07-17 16:47:22.712578,2025-07-17 16:47:22.712578
+94,customer_006,6,System,"🤖 System: Next step due date updated from ""2025-07-18"" to ""2025-07-17"" (triggered by Stan Gwin)",2025-07-17 16:47:25.699205,system,2025-07-17 16:47:25.699205,2025-07-17 16:47:25.699205
+142,customer_006,6,Stan Gwin,"Text between Sean and me yesterday.  Stan Gwin:
+	Sean, I hope you’re well today.  I received the signed order from Casey yesterday evening.  The order is being processed now for the hardware for all locations.  It will ship to your attention at McCoy Tygart Drug, 821 N Rock St, Sheridan, AR, 72150.  I’ll send tracking in a day or two when I have it.  Once it arrives, we will need to verify everything is accounted for.  Thanks!
+
+Sean Brasseal:
+	Yessir sounds good! And I’m doing pretty hope you are too! Once we get it I’ll make sure everything gets checked in! Have a great weekend!",2025-07-26 12:06:33.114373,manual,2025-07-26 12:06:33.114373,2025-07-26 12:06:33.114373
+143,customer_006,6,Stan Gwin,Ordered the equipment from Rhino Networks.,2025-07-26 12:06:57.563932,manual,2025-07-26 12:06:57.563932,2025-07-26 12:06:57.563932
+144,customer_006,6,System,"🤖 System: Status changed from ""Lead"" to ""Onboarding"" (triggered by Stan Gwin)",2025-07-28 21:55:48.068934,system,2025-07-28 21:55:48.068934,2025-07-28 21:55:48.068934
+145,customer_006,6,System,"🤖 System: Status changed from ""Onboarding"" to ""Signed"" (triggered by Stan Gwin)",2025-07-28 21:55:52.758491,system,2025-07-28 21:55:52.758491,2025-07-28 21:55:52.758491
+146,customer_006,6,System,"🤖 System: Next step updated from ""Send Quote"" to ""Configure in Dashboard"" (triggered by Stan Gwin)",2025-07-28 21:56:03.796319,system,2025-07-28 21:56:03.796319,2025-07-28 21:56:03.796319
+51,customer_007,,Legacy User,6/10/2025 -- Sent email to Walter requesting information for SA,2025-06-23 21:00:00,manual,2025-06-23 21:00:00,2025-07-14 14:24:24.340897
+5,customer_007,6,Stan Gwin,Have been talking to Voxo this morning about Walter and this location. They're having problems getting phones to pick up on the network. Can't get the firewall to get an IP address and pick up on the network either. We have no access to anything that they're plugging in. There's something wrong with their existing firewall/router. It may be running off IP addresses or it may have some other issue. Voxo is looking into it now and they're waiting on credentials to come from Lumistry for the existing Dray Tech firewall..,2025-06-27 17:06:37.371948,manual,2025-06-27 17:06:37.371948,2025-06-27 17:06:37.371948
+7,customer_007,6,System,"Files uploaded: File uploaded: ""IMG_2505[1].jpeg""",2025-06-27 19:36:44.152526,system,2025-06-27 19:36:44.152526,2025-06-27 19:36:44.152526
+26,customer_007,6,System,"🤖 System: Status changed from ""Onboarding"" to ""Hypercare"" (triggered by Stan Gwin)",2025-07-12 00:09:10.972913,system,2025-07-12 00:09:10.972913,2025-07-12 00:09:10.972913
+27,customer_007,6,System,"🤖 System: Status changed from ""Hypercare"" to ""Onboarding"" (triggered by Stan Gwin)",2025-07-12 00:09:34.079608,system,2025-07-12 00:09:34.079608,2025-07-12 00:09:34.079608
+28,customer_007,6,System,"🤖 System: Next step set to ""Place in Billing"" (triggered by Stan Gwin)",2025-07-12 00:09:47.209517,system,2025-07-12 00:09:47.209517,2025-07-12 00:09:47.209517
+84,customer_007,6,System,"🤖 System: Next step due date set to ""2025-07-18"" (triggered by Stan Gwin)",2025-07-17 14:35:02.437632,system,2025-07-17 14:35:02.437632,2025-07-17 14:35:02.437632
+85,customer_007,6,System,"🤖 System: Next step due date updated from ""2025-07-18"" to ""2025-07-25"" (triggered by Stan Gwin)",2025-07-17 14:35:05.356693,system,2025-07-17 14:35:05.356693,2025-07-17 14:35:05.356693
+100,customer_007,6,System,"🤖 System: Next step due date set to ""2025-07-25"" (triggered by Stan Gwin)",2025-07-22 15:18:13.172541,system,2025-07-22 15:18:13.172541,2025-07-22 15:18:13.172541
+150,customer_007,6,System,"🤖 System: Next step due date set to ""2025-07-30"" (triggered by Stan Gwin)",2025-07-29 18:27:32.660511,system,2025-07-29 18:27:32.660511,2025-07-29 18:27:32.660511
+44,customer_008,,Legacy User,AT Connect 2025 -- moving to VOXO. One location. VPN has been too slow. Told her we'd troubleshoot before we start changing firewall.,2025-06-23 21:00:00,manual,2025-06-23 21:00:00,2025-07-14 14:24:24.340897
+32,customer_008,6,System,"🤖 System: Status changed from ""Lead"" to ""Hypercare"" (triggered by Stan Gwin)",2025-07-12 01:51:22.358216,system,2025-07-12 01:51:22.358216,2025-07-12 01:51:22.358216
+33,customer_008,6,System,"🤖 System: Status changed from ""Hypercare"" to ""Lead"" (triggered by Stan Gwin)",2025-07-12 01:51:30.875383,system,2025-07-12 01:51:30.875383,2025-07-12 01:51:30.875383
+76,customer_008,6,System,"🤖 System: Next step set to ""Follow with Affiliate AE"" (triggered by Stan Gwin)",2025-07-16 17:15:28.429927,system,2025-07-16 17:15:28.429927,2025-07-16 17:15:28.429927
+118,customer_008,6,System,"🤖 System: Next step due date set to ""2025-07-31"" (triggered by Stan Gwin)",2025-07-23 02:57:37.88059,system,2025-07-23 02:57:37.88059,2025-07-23 02:57:37.88059
+125,customer_008,4,System,"🤖 System: Next step due date set to ""2025-07-22"" (triggered by Test User)",2025-07-23 03:34:13.632564,system,2025-07-23 03:34:13.632564,2025-07-23 03:34:13.632564
+126,customer_008,4,System,"🤖 System: Next step due date updated from ""2025-07-22"" to ""2025-07-21"" (triggered by Test User)",2025-07-23 03:34:14.828561,system,2025-07-23 03:34:14.828561,2025-07-23 03:34:14.828561
+43,customer_009,,Legacy User,Per Levi at Voxo I called Blake Tubbs to discuss needs for both of these businesses. He has a vital care pharmacy and the compounder here in Hattiesburg. Vital care is a franchise and he also has another one in Baton Rouge.,2025-06-23 21:00:00,manual,2025-06-23 21:00:00,2025-07-14 14:24:24.340897
+54,customer_009,6,Stan Gwin,"Just sent Jonathan Sims the following text -- Jonathan.  Stan Gwin.  I owe you a call and a visit this week, but I got back in town sick.  I’ll clear this first so I don’t infect anyone.  Sorry for the delay.",2025-07-14 14:46:03.222106,manual,2025-07-14 14:46:03.222106,2025-07-14 14:46:03.222106
+55,customer_009,6,Stan Gwin,"Sent Blake Tubbs the following message -- Blake, this is Stan Gwin from Vantix.  Levi Burnham had me reach out to you a couple of weeks ago, and you got me in touch with Jonathan Sims.  I just sent Jonathan the following text message — Jonathan.  Stan Gwin.  I owe you a call and a visit this week, but I got back in town sick.  I’ll clear this first so I don’t infect anyone.  Sorry for the delay.",2025-07-14 14:49:08.845453,manual,2025-07-14 14:49:08.845453,2025-07-14 14:49:08.845453
+56,customer_009,6,Stan Gwin,"Sent Blake Tubbs the following message -- Blake, this is Stan Gwin from Vantix.  Levi Burnham had me reach out to you a couple of weeks ago, and you got me in touch with Jonathan Sims.  I just sent Jonathan the following text message — Jonathan.  Stan Gwin.  I owe you a call and a visit this week, but I got back in town sick.  I’ll clear this first so I don’t infect anyone.  Sorry for the delay.",2025-07-14 14:49:09.124589,manual,2025-07-14 14:49:09.124589,2025-07-14 14:49:09.124589
+66,customer_009,6,Stan Gwin,Spoke with Jonathan on the phone. He's looking for somebody to handle a network management and all his PC and desktop support as well. He has talked to Pileum and is going to be going with them. That's a very good fit and they'll do a good job for him. I'm closing this and we'll make the same note under his sister company.,2025-07-15 16:56:14.623029,manual,2025-07-15 16:56:14.623029,2025-07-15 16:56:14.623029
+70,customer_009,6,System,"🤖 System: Status changed from ""Lead"" to ""Closed"" (triggered by Stan Gwin)",2025-07-15 16:57:05.978498,system,2025-07-15 16:57:05.978498,2025-07-15 16:57:05.978498
+71,customer_009,6,System,"🤖 System: Next step set to ""None"" (triggered by Stan Gwin)",2025-07-15 16:57:09.29699,system,2025-07-15 16:57:09.29699,2025-07-15 16:57:09.29699
+36,customer_010,6,System,"🤖 System: Next step set to ""Visit with him week of 7/14"" (triggered by Stan Gwin)",2025-07-12 01:52:38.685112,system,2025-07-12 01:52:38.685112,2025-07-12 01:52:38.685112
+37,customer_010,6,System,"🤖 System: Next step updated from ""Visit with him week of 7/14"" to ""Call for visit 7/14"" (triggered by Stan Gwin)",2025-07-12 01:52:46.800512,system,2025-07-12 01:52:46.800512,2025-07-12 01:52:46.800512
+67,customer_010,6,Stan Gwin,Spoke with Jonathan on the phone. He's looking for somebody to handle a network management and all his PC and desktop support as well. He has talked to Pileum and is going to be going with them. That's a very good fit and they'll do a good job for him. I'm closing this and we'll make the same note under his sister company.,2025-07-15 16:56:41.414343,manual,2025-07-15 16:56:41.414343,2025-07-15 16:56:41.414343
+68,customer_010,6,System,"🤖 System: Status changed from ""Lead"" to ""Closed"" (triggered by Stan Gwin)",2025-07-15 16:56:57.694006,system,2025-07-15 16:56:57.694006,2025-07-15 16:56:57.694006
+69,customer_010,6,System,"🤖 System: Next step updated from ""Call for visit 7/14"" to ""None"" (triggered by Stan Gwin)",2025-07-15 16:57:02.54023,system,2025-07-15 16:57:02.54023,2025-07-15 16:57:02.54023
+45,customer_011,,Legacy User,This is eight locations. They can handle doing the installations themselves although they did ask about Turkey. Each location is going to be a firewall and they need Wi-Fi turned up.,2025-06-23 21:00:00,manual,2025-06-23 21:00:00,2025-07-14 14:24:24.340897
+9,customer_011,4,System,"16 photos were uploaded to this customer record but were accidentally deleted during file management system improvements on June 26, 2025. The files were properly uploaded after PostgreSQL database was established, but were removed during file deletion system debugging (commits 3fbab5b and 2162c96). Database records show missing IDs 1,2,9-18,29,32,34 which correspond to the 16 deleted files. Please re-upload the missing photos for this customer.",2025-07-01 22:58:19.463506,system,2025-07-01 22:58:19.463506,2025-07-01 23:01:21.938702
+14,customer_011,6,System,"🤖 System: Status changed from ""Lead"" to ""Closed"" (triggered by Stan Gwin)",2025-07-12 00:03:15.142139,system,2025-07-12 00:03:15.142139,2025-07-12 00:03:15.142139
+15,customer_011,6,Stan Gwin,"I opted to back out of this deal because we were not ready to handle the cellular backup that they needed. Smart connect is able to do it with an integrated solution on a cradle point from Erickson. While we have the ability to do that with the Cisco gear, we've not tested any of that and I felt like we were guinea pig this customer. This customer is not somebody that needs to be trifled with or tested with. They're running a large business and don't need us playing around with new technology with them. I told Willis that and he appreciated it and asked me to contact them at the point where we actually had this available because he said they may want to move to us at that point.",2025-07-12 00:04:37.729148,manual,2025-07-12 00:04:37.729148,2025-07-12 00:04:37.729148
+16,customer_011,6,System,"🤖 System: Next step set to ""Schedule Call"" (triggered by Stan Gwin)",2025-07-12 00:05:02.262393,system,2025-07-12 00:05:02.262393,2025-07-12 00:05:02.262393
+17,customer_011,6,System,"🤖 System: Next step updated from ""Schedule Call"" to ""Send Quote"" (triggered by Stan Gwin)",2025-07-12 00:05:03.815154,system,2025-07-12 00:05:03.815154,2025-07-12 00:05:03.815154
+18,customer_011,6,System,"🤖 System: Status changed from ""Closed"" to ""Active"" (triggered by Stan Gwin)",2025-07-12 00:05:06.783541,system,2025-07-12 00:05:06.783541,2025-07-12 00:05:06.783541
+19,customer_011,6,System,"🤖 System: Status changed from ""Active"" to ""Signed"" (triggered by Stan Gwin)",2025-07-12 00:05:23.20395,system,2025-07-12 00:05:23.20395,2025-07-12 00:05:23.20395
+20,customer_011,6,System,"🤖 System: Status changed from ""Signed"" to ""Active"" (triggered by Stan Gwin)",2025-07-12 00:05:28.122838,system,2025-07-12 00:05:28.122838,2025-07-12 00:05:28.122838
+21,customer_011,6,System,"🤖 System: Status changed from ""Active"" to ""Closed"" (triggered by Stan Gwin)",2025-07-12 00:05:37.951754,system,2025-07-12 00:05:37.951754,2025-07-12 00:05:37.951754
+22,customer_011,6,System,"🤖 System: Status changed from ""Closed"" to ""Active"" (triggered by Stan Gwin)",2025-07-12 00:05:46.426845,system,2025-07-12 00:05:46.426845,2025-07-12 00:05:46.426845
+23,customer_011,6,System,"🤖 System: Status changed from ""Active"" to ""Closed"" (triggered by Stan Gwin)",2025-07-12 00:05:53.685601,system,2025-07-12 00:05:53.685601,2025-07-12 00:05:53.685601
+29,customer_011,6,System,"🤖 System: Status changed from ""Closed"" to ""Quoted"" (triggered by Stan Gwin)",2025-07-12 00:22:10.926606,system,2025-07-12 00:22:10.926606,2025-07-12 00:22:10.926606
+30,customer_011,6,System,"🤖 System: Status changed from ""Quoted"" to ""Hypercare"" (triggered by Stan Gwin)",2025-07-12 00:22:16.883547,system,2025-07-12 00:22:16.883547,2025-07-12 00:22:16.883547
+31,customer_011,6,System,"🤖 System: Status changed from ""Hypercare"" to ""Closed"" (triggered by Stan Gwin)",2025-07-12 00:22:30.331735,system,2025-07-12 00:22:30.331735,2025-07-12 00:22:30.331735
+78,customer_011,6,System,"🤖 System: Next step updated from ""Send Quote"" to ""None"" (triggered by Stan Gwin)",2025-07-16 17:15:36.342108,system,2025-07-16 17:15:36.342108,2025-07-16 17:15:36.342108
+131,customer_011,6,System,"🤖 System: Next step due date set to ""2025-07-26"" (triggered by Stan Gwin)",2025-07-25 02:46:54.535298,system,2025-07-25 02:46:54.535298,2025-07-25 02:46:54.535298
+132,customer_011,6,System,"🤖 System: Next step updated from ""None"" to """" (triggered by Stan Gwin)",2025-07-25 02:47:04.752619,system,2025-07-25 02:47:04.752619,2025-07-25 02:47:04.752619
+133,customer_011,6,System,"🤖 System: Next step due date updated from ""2025-07-26"" to ""2025-07-23"" (triggered by Stan Gwin)",2025-07-25 02:47:06.847974,system,2025-07-25 02:47:06.847974,2025-07-25 02:47:06.847974
+53,customer_012,6,System,"🤖 System: Next step set to ""Follow with Voxo AE"" (triggered by Stan Gwin)",2025-07-14 14:32:10.867021,system,2025-07-14 14:32:10.867021,2025-07-14 14:32:10.867021
+79,customer_012,6,System,"🤖 System: Next step updated from ""Follow with Voxo AE"" to ""Follow with Affiliate AE"" (triggered by Stan Gwin)",2025-07-16 17:15:41.270538,system,2025-07-16 17:15:41.270538,2025-07-16 17:15:41.270538
+58,customer_1752255981406,6,Stan Gwin,"Sent to Eli Rinker today -- Eli,
+Here’s the proposal for the three locations:
+Each Location Will Receive:
+(1) Meraki MS120-24 (non-PoE) switch – $1,100 (includes 1-year license)
+Meraki MX67W license renewal – $240 (Vantix covers future renewals under ongoing management)
+Monthly Management: $225/month (Firewall $175 + Switch $50)
+Total NRC per location: $1,340
+Each managed location includes full management and monitoring of the firewall, Wi-Fi, and switch, along with ongoing licensing for those devices.
+We’ll provide secure VPN connectivity between locations if needed and VPN client access for up to 10 users
+
+Locations:
+Plains Drug – 214 Railroad Ave, Plains, MT
+Thompson Falls Family Pharmacy – 1221 W Main St, Thompson Falls, MT
+Mineral Pharmacy – 207 River St, Superior, MT
+
+On-Site Infrastructure Work:
+Performed by Raymond Flowers (Eli assisting/training)
+Includes cable cleanup, new cabling as needed, any installation of hardware necessary at the distribution frames or at the jacks for end devices, switch installation, VOXO phone installation, testing with you of all devices, and anything else relevant to this project.
+5 days @ $800/day = $4,000 — This is an estimate and will be billed at actual days even if less.  Fractional days are $100 per hour.  Travel time is billed at regular rate.
+Travel/lodging/meals covered by Plains (customer).
+Materials cost will be covered by Plains and provided through Raymond Flowers unless you direct us otherwise.  
+
+Summary:
+Total NRC (all 3 locations): $4,020
+On-site Work (NRC): $4,000
+Grand Total NRC: $8,020
+Total MRC: $675/month
+
+Let me know if you have any questions or if you are ready to move forward, and we’ll coordinate the next steps.
+
+Thanks,
+Stan
+
+
+Stan G. Gwin
+601.408.9199
+www.vantix.tech",2025-07-14 19:19:55.575468,manual,2025-07-14 19:19:55.575468,2025-07-14 19:19:55.575468
+59,customer_1752255981406,6,System,"🤖 System: Status changed from ""Lead"" to ""Signed"" (triggered by Stan Gwin)",2025-07-15 00:02:42.037458,system,2025-07-15 00:02:42.037458,2025-07-15 00:02:42.037458
+60,customer_1752255981406,6,System,"🤖 System: Status changed from ""Signed"" to ""Onboarding"" (triggered by Stan Gwin)",2025-07-15 00:02:47.596201,system,2025-07-15 00:02:47.596201,2025-07-15 00:02:47.596201
+61,customer_1752255981406,6,System,"🤖 System: Status changed from ""Onboarding"" to ""Signed"" (triggered by Stan Gwin)",2025-07-15 00:02:54.31842,system,2025-07-15 00:02:54.31842,2025-07-15 00:02:54.31842
+62,customer_1752255981406,6,System,"🤖 System: Status changed from ""Signed"" to ""Onboarding"" (triggered by Stan Gwin)",2025-07-15 00:02:58.260305,system,2025-07-15 00:02:58.260305,2025-07-15 00:02:58.260305
+63,customer_1752255981406,6,System,"🤖 System: Status changed from ""Onboarding"" to ""Signed"" (triggered by Stan Gwin)",2025-07-15 00:03:12.210093,system,2025-07-15 00:03:12.210093,2025-07-15 00:03:12.210093
+64,customer_1752255981406,6,System,"🤖 System: Next step updated from ""Send Quote"" to ""Schedule Install"" (triggered by Stan Gwin)",2025-07-15 00:03:21.985157,system,2025-07-15 00:03:21.985157,2025-07-15 00:03:21.985157
+65,customer_1752255981406,6,System,"🤖 System: Next step updated from ""Send Quote"" to ""Order Hardware"" (triggered by Stan Gwin)",2025-07-15 00:03:22.901424,system,2025-07-15 00:03:22.901424,2025-07-15 00:03:22.901424
+88,customer_1752255981406,6,System,"🤖 System: Status changed from ""Signed"" to ""Onboarding"" (triggered by Stan Gwin)",2025-07-17 14:54:17.704454,system,2025-07-17 14:54:17.704454,2025-07-17 14:54:17.704454
+89,customer_1752255981406,6,System,"🤖 System: Next step updated from ""Order Hardware"" to ""Perform Install and Test"" (triggered by Stan Gwin)",2025-07-17 14:54:31.271037,system,2025-07-17 14:54:31.271037,2025-07-17 14:54:31.271037
+90,customer_1752255981406,6,System,"🤖 System: Next step due date set to ""2025-07-18"" (triggered by Stan Gwin)",2025-07-17 14:54:34.27198,system,2025-07-17 14:54:34.27198,2025-07-17 14:54:34.27198
+95,customer_1752255981406,6,Stan Gwin,"Email from today sent to project group -- Good morning Gentlemen,
+
+Tracking is showing that the equipment will be delivered this coming Monday.  Here is the link:  https://www.fedex.com/fedextrack/?trknbr=439510251712&trkqual=12029~439510251712~FDEG&simplified=true
+
+Track a package
+Track and Manage FedEx Deliveries
+www.fedex.com
+Eli,
+
+These will be the network switches only.  The licenses for the switches and the renewal licenses for the 67W's will come directly to me.  When the packages arrive, please take a picture of each packing list, verify all of the items on the packing lists are present, and then send me a copy of the packing lists.  Text is fine.
+
+Raymond,
+
+Even if the shipment runs a little late, it should have no problem being there next week. Your plan to start work on Monday, July 28, and complete the work that week should work well.  Also, will you be ready to turn up phones by Thursday, July 31?  Harley needs to schedule a port date that we are comfortable with and that happens while you're still on site.
+
+Thank you all,
+
+
+Stan
+
+
+
+
+Stan G. Gwin
+601.408.9199
+www.vantix.tech",2025-07-18 17:10:13.23458,manual,2025-07-18 17:10:13.23458,2025-07-18 17:10:13.23458
+96,customer_1752255981406,6,System,"🤖 System: Status changed from ""Onboarding"" to ""Signed"" (triggered by Stan Gwin)",2025-07-18 17:16:51.052708,system,2025-07-18 17:16:51.052708,2025-07-18 17:16:51.052708
+97,customer_1752255981406,6,System,"🤖 System: Next step updated from ""Perform Install and Test"" to ""Order Hardware"" (triggered by Stan Gwin)",2025-07-18 17:17:02.248807,system,2025-07-18 17:17:02.248807,2025-07-18 17:17:02.248807
+149,customer_1752255981406,6,System,"🤖 System: Next step updated from ""Order Hardware"" to ""Configure in Dashboard"" (triggered by Stan Gwin)",2025-07-29 18:27:00.44691,system,2025-07-29 18:27:00.44691,2025-07-29 18:27:00.44691
+80,customer_1752596891855,,Stan Gwin,Customer archived by Stan Gwin,2025-07-16 17:16:00.790074,manual,2025-07-16 17:16:00.790074,2025-07-16 17:16:00.790074
+81,customer_1752596894930,6,System,"🤖 System: Next step set to ""Follow with Affiliate AE"" (triggered by Stan Gwin)",2025-07-17 14:22:17.920419,system,2025-07-17 14:22:17.920419,2025-07-17 14:22:17.920419
+82,customer_1752596894930,6,Stan Gwin,"I got a call yesterday from Cliff at Voxo. He informed me that he had an order for these people that included me as the firewall provider. Rusty Betts is the account executive on this account for Voxo. I talked to Rusty. He said that he's including the firewall in his agreements now. I need to verify this with Nick, but on Voxo's word I probably need to go ahead and just order the equipment for this customer.",2025-07-17 14:23:15.156029,manual,2025-07-17 14:23:15.156029,2025-07-17 14:23:15.156029
+83,customer_1752596894930,6,System,"🤖 System: Next step due date set to ""2025-07-17"" (triggered by Stan Gwin)",2025-07-17 14:34:53.172233,system,2025-07-17 14:34:53.172233,2025-07-17 14:34:53.172233
+101,customer_1752596894930,6,Stan Gwin,"Thread between Laura and me -- Hello Laura,
+
+Thanks for reaching out.
+
+I need to have a short — 10 minutes or less conversation — just to make sure we are specifying the proper hardware and discuss your preference of installation options.  Then I need another 5 minutes from you to complete a Docusign that I'll send you.
+
+When do you have availability for a quick call?
+
+Stan
+
+
+
+Stan G. Gwin
+601.408.9199
+www.vantix.tech
+
+
+Book time to meet with me
+From: Postal Pharmacy <postalpharmrx@outlook.com>
+Sent: Monday, July 21, 2025 4:49 PM
+To: Stan Gwin <stan@vantix.tech>
+Subject: RE: Vantix Firewall / Oakridge Pharmacy
+ 
+Hi Stan,
+
+ 
+
+Do you need anything from us at this time to get the firewall setup for our transition on 8/8?
+
+ 
+
+Thank you,
+
+Laura Abrahamson
+
+President, Oakridge Pharmacy
+
+47809 Hwy 58
+
+PO Box 697
+
+Oakridge, OR 97463
+
+(541) 782-2617
+
+Privileged, confidential, or otherwise protected from disclosure. Any third party review or use of this message or its contents is strictly prohibited. If you have received this transmission in error, please notify us immediately by email and/or telephone.",2025-07-22 15:29:04.923763,manual,2025-07-22 15:29:04.923763,2025-07-22 15:29:04.923763
+102,customer_1752596894930,6,System,"🤖 System: Status changed from ""Lead"" to ""Quoted"" (triggered by Stan Gwin)",2025-07-22 15:29:35.365743,system,2025-07-22 15:29:35.365743,2025-07-22 15:29:35.365743
+103,customer_1752596894930,6,System,"🤖 System: Next step updated from ""Follow with Affiliate AE"" to ""Follow Up"" (triggered by Stan Gwin)",2025-07-22 15:29:40.413557,system,2025-07-22 15:29:40.413557,2025-07-22 15:29:40.413557
+104,customer_1752596894930,6,System,"🤖 System: Next step due date set to ""2025-07-22"" (triggered by Stan Gwin)",2025-07-22 15:29:45.147805,system,2025-07-22 15:29:45.147805,2025-07-22 15:29:45.147805
+108,customer_1752596894930,6,Stan Gwin,"Called Laura but got Christian on the phone. Spoke to him for a few minutes. They're on the edge of where they could go with a Z3 or Z4 so I recommended the Z4 but told him I'd be OK with going to see if they just didn't wanna spend the extra $200. He said let's spend the extra 200 and go with the Z4. They've got about eight employees and nine or 10 devices plus some printers and things like that so it should be fine. He did say that they have two different SS IDs one that is within the HIPAA local network and one that is outside of the HIPAA network for their personal devices, which is the correct way to do that. So we need to accommodate those. Also, he said that they do have a rats nest of a wiring issue which he is going to send me pictures of so I can see everything and identify what's going on however, he said he doesn't think it's bad enough that they're gonna have to get rewired right now. I am waiting for the pictures to come through. Then I will send them a proposal or rather I'll send them a service order for Laura to sign. Laura is the owner and will be the authorized signer.",2025-07-22 17:53:13.0372,manual,2025-07-22 17:53:13.0372,2025-07-22 17:53:13.0372
+109,customer_1752596894930,6,System,🤖 System: File uploaded: IMG_3113.HEIC (triggered by Stan Gwin),2025-07-22 17:56:50.887332,system,2025-07-22 17:56:50.887332,2025-07-22 17:56:50.887332
+110,customer_1752596894930,6,System,🤖 System: File uploaded: IMG_3112.HEIC (triggered by Stan Gwin),2025-07-22 17:56:55.855561,system,2025-07-22 17:56:55.855561,2025-07-22 17:56:55.855561
+111,customer_1752596894930,6,System,🤖 System: File uploaded: IMG_3111.HEIC (triggered by Stan Gwin),2025-07-22 17:57:04.275871,system,2025-07-22 17:57:04.275871,2025-07-22 17:57:04.275871
+112,customer_1752596894930,6,System,🤖 System: File uploaded: IMG_3115.HEIC (triggered by Stan Gwin),2025-07-22 17:58:14.735849,system,2025-07-22 17:58:14.735849,2025-07-22 17:58:14.735849
+113,customer_1752596894930,6,System,🤖 System: File uploaded: IMG_3114.HEIC (triggered by Stan Gwin),2025-07-22 17:58:20.362908,system,2025-07-22 17:58:20.362908,2025-07-22 17:58:20.362908
+114,customer_1752596894930,6,Stan Gwin,"Premise Address -- 
+47809 Hwy 58
+Oakridge, OR 97463",2025-07-22 18:54:44.133514,manual,2025-07-22 18:54:44.133514,2025-07-22 18:54:44.133514
+147,customer_1752596894930,6,System,"🤖 System: Status changed from ""Quoted"" to ""Signed"" (triggered by Stan Gwin)",2025-07-29 18:26:40.866605,system,2025-07-29 18:26:40.866605,2025-07-29 18:26:40.866605
+148,customer_1752596894930,6,System,"🤖 System: Next step updated from ""Follow Up"" to ""Configure in Dashboard"" (triggered by Stan Gwin)",2025-07-29 18:26:50.150055,system,2025-07-29 18:26:50.150055,2025-07-29 18:26:50.150055
+105,customer_1752858755499,,Stan Gwin,Customer archived by Stan Gwin,2025-07-22 15:30:05.644277,manual,2025-07-22 15:30:05.644277,2025-07-22 15:30:05.644277
+106,customer_1753203739064,6,Stan Gwin,"Retail pharmacy in St. Louis, MO.  Levi from Voxo had to do some cleanup work for them when he went out. They currently have a networking company that handles network, firewall, etc that complemented the pharmacy services.  Service level has dropped to unacceptable level.  No critical immediate need but want to change.  Two stores -- with about 60 employees.  Wants Internet rollover.  Has 3 different providers -- Nitel is primary, Charter broadband, AT&T.  Wants auto or flip of switch failover.   Told him I'd send him a text requesting specific items I need.  He would rather have somebody come over to his site initially to get everything right and do an assessment and he's willing to pay for that to make sure everything is proper and in place. He also is a little concerned about not having somebody in the local area that can come by and do his work and so I told him I would check with my network find out who the resource is in that location and what we need to do to make sure to trustworthy person that I'm confident can handle things if we need somebody in an urgent manner to come by for a 4 pay visit.",2025-07-22 17:21:36.437144,manual,2025-07-22 17:21:36.437144,2025-07-22 17:21:36.437144
+107,customer_1753203739064,6,Stan Gwin,"Just sent Craig this note via text -- Craig —
+Good talking with you today. To evaluate things on our end, here’s what I need from you when you get a chance:
+
+1. Photos (for each location, clearly labeled):
+	•	A wide-angle shot of your network area (equipment rack, wall-mounted gear, etc.)
+	•	A few closer shots so we can see the front and back of key devices and how things are connected — doesn’t have to be a separate picture of every single piece, just need to be able to zoom in enough to see front and back detail on every piece
+
+2. Info & Docs:
+	•	Copies of your Nitel, Charter, and AT&T internet bills
+	•	Physical address of each store
+	•	Your email address and company website (if available)
+	•	Rough count of devices in each store: PCs, phones, printers, scanners — anything plugged into ethernet
+
+3. Quick questions:
+	•	Do you have camera systems at either location?
+• If so, are they self-contained (cameras plug into their own controller or NVR) or do the cameras connect into your main network switches?
+	•	How is Wi-Fi being managed today? (e.g. separate access points, part of the firewall, included in a third-party service, etc.)
+
+Let me know if anything’s unclear.
+
+— Stan (Stan@vantix.tech)",2025-07-22 17:41:06.203449,manual,2025-07-22 17:41:06.203449,2025-07-22 17:41:06.203449
+116,customer_1753203739064,6,System,"🤖 System: Next step due date set to ""2025-07-24"" (triggered by Stan Gwin)",2025-07-23 02:57:32.880734,system,2025-07-23 02:57:32.880734,2025-07-23 02:57:32.880734
+121,customer_1753203739064,4,System,"🤖 System: Next step due date set to ""2025-07-22"" (triggered by Test User)",2025-07-23 03:34:08.643693,system,2025-07-23 03:34:08.643693,2025-07-23 03:34:08.643693
+122,customer_1753203739064,4,System,"🤖 System: Next step due date updated from ""2025-07-22"" to ""2025-07-30"" (triggered by Test User)",2025-07-23 03:34:09.643975,system,2025-07-23 03:34:09.643975,2025-07-23 03:34:09.643975
+129,customer_1753203739064,6,System,"🤖 System: Next step due date set to ""2025-07-31"" (triggered by Stan Gwin)",2025-07-25 02:46:42.367761,system,2025-07-25 02:46:42.367761,2025-07-25 02:46:42.367761
+141,customer_1753203739064,6,System,"🤖 System: Next step due date set to ""2025-07-31"" (triggered by Stan Gwin)",2025-07-25 03:04:59.500217,system,2025-07-25 03:04:59.500217,2025-07-25 03:04:59.500217
+39,customer_456247,6,Stan Gwin,Rusty Betts called me and asked me to contact this customer. He had questions about how we would handle their network management if they move to Voxo. I answered his questions and will follow up with Rusty later to see if there's anything going on here.,2025-07-12 01:59:58.840444,manual,2025-07-12 01:59:58.840444,2025-07-12 01:59:58.840444
+75,customer_456247,6,System,"🤖 System: Next step updated from ""Follow with VOXO AE"" to ""Follow with Affiliate AE"" (triggered by Stan Gwin)",2025-07-16 17:15:24.006059,system,2025-07-16 17:15:24.006059,2025-07-16 17:15:24.006059
+117,customer_456247,6,System,"🤖 System: Next step due date set to ""2025-07-09"" (triggered by Stan Gwin)",2025-07-23 02:57:35.014159,system,2025-07-23 02:57:35.014159,2025-07-23 02:57:35.014159
+123,customer_456247,4,System,"🤖 System: Next step due date set to ""2025-07-22"" (triggered by Test User)",2025-07-23 03:34:10.95057,system,2025-07-23 03:34:10.95057,2025-07-23 03:34:10.95057
+124,customer_456247,4,System,"🤖 System: Next step due date updated from ""2025-07-22"" to ""2025-07-18"" (triggered by Test User)",2025-07-23 03:34:11.906526,system,2025-07-23 03:34:11.906526,2025-07-23 03:34:11.906526
+127,customer_456247,6,System,"🤖 System: Primary-contact section updated: Primary Contact Phone: ""540-750-9999"" → ""540-750-1111"" (triggered by Stan Gwin)",2025-07-25 02:33:18.648033,system,2025-07-25 02:33:18.648033,2025-07-25 02:33:18.648033
+130,customer_456247,6,System,"🤖 System: Next step due date set to ""2025-07-28"" (triggered by Stan Gwin)",2025-07-25 02:46:45.253324,system,2025-07-25 02:46:45.253324,2025-07-25 02:46:45.253324
+136,customer_456247,6,System,"🤖 System: Next step due date set to ""2025-07-23"" (triggered by Stan Gwin)",2025-07-25 02:59:16.376677,system,2025-07-25 02:59:16.376677,2025-07-25 02:59:16.376677
+137,customer_456247,6,System,"🤖 System: Next step due date set to ""2025-07-15"" (triggered by Stan Gwin)",2025-07-25 02:59:38.026464,system,2025-07-25 02:59:38.026464,2025-07-25 02:59:38.026464
+138,customer_456247,6,System,"🤖 System: Next step due date updated from ""2025-07-15"" to ""2025-07-30"" (triggered by Stan Gwin)",2025-07-25 02:59:38.953421,system,2025-07-25 02:59:38.953421,2025-07-25 02:59:38.953421

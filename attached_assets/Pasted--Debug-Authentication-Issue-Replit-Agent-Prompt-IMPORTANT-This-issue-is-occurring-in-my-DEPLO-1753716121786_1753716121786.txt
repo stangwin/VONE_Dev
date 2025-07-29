@@ -1,0 +1,39 @@
+# Debug Authentication Issue - Replit Agent Prompt
+
+**IMPORTANT: This issue is occurring in my DEPLOYED/PRODUCTION version on Replit.**
+
+I'm experiencing an authentication issue where users can log in successfully but get immediately logged out. The browser console shows a 401 error from `/api/auth/me`.
+
+**Specific error:** `api/auth/me:1 Failed to load resource: the server responded with a status of 401 ()`
+
+**Please help me debug this by:**
+
+1. **Check the `/api/auth/me` endpoint:**
+   - Verify the endpoint exists and is properly configured
+   - Check if there are any errors in the server logs when this endpoint is called
+   - Test if the endpoint is returning the expected response format
+
+2. **Examine authentication middleware:**
+   - Review the authentication/authorization logic for the `/api/auth/me` route
+   - Check if JWT token validation or session verification is working correctly
+   - Look for any recent changes to auth-related code
+
+3. **Verify environment variables:**
+   - Confirm all authentication-related environment variables are set (JWT secrets, database URLs, etc.)
+   - Check if any secrets or environment variables have been reset or changed
+
+4. **Check database connectivity:**
+   - Verify the app can connect to the database for user authentication
+   - Test if user lookup queries are working properly
+
+5. **Review production server logs:**
+   - Show me any error messages from the production deployment logs when the 401 error occurs
+   - Look for any authentication-related errors or database connection issues in the deployed version
+
+**Additional context:** This was working in production previously, but now fails. Please focus on the deployed/production environment, not the development version.
+
+**Expected behavior:** After successful login, the `/api/auth/me` endpoint should return user information with a 200 status, allowing the user to stay logged in.
+
+**Current behavior:** The endpoint returns 401, causing the app to immediately log the user out.
+
+Please start by examining the server logs and the `/api/auth/me` endpoint implementation.

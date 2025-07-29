@@ -1,0 +1,32 @@
+[
+  {
+    "id": "4d057955-091d-4676-8fed-b494be60f974",
+    "affiliate_id": "2ec696e2-948e-4915-93d9-1b90951eb457",
+    "name": "Rusty Betts",
+    "created_at": "2025-07-15T16:10:01.777763Z"
+  },
+  {
+    "id": "6266bbd8-bae5-4629-bdd9-3617a9ef1a76",
+    "affiliate_id": "8c4908fd-9c26-43b8-9d1a-0806e7a6d2cf",
+    "name": "Sarah Johnson",
+    "created_at": "2025-07-15T16:10:01.777763Z"
+  },
+  {
+    "id": "70aae24a-dda5-4bdc-bc78-131df06a2013",
+    "affiliate_id": "2ec696e2-948e-4915-93d9-1b90951eb457",
+    "name": "Drake Druckenmiller",
+    "created_at": "2025-07-15T16:10:01.777763Z"
+  },
+  {
+    "id": "b58402e7-27e6-4af8-9d13-cf3949dfcdbe",
+    "affiliate_id": "8c4908fd-9c26-43b8-9d1a-0806e7a6d2cf",
+    "name": "Mike Chen",
+    "created_at": "2025-07-15T16:10:01.777763Z"
+  },
+  {
+    "id": "e668c08c-6c02-440c-afe6-2812c80eb8b4",
+    "affiliate_id": "2ec696e2-948e-4915-93d9-1b90951eb457",
+    "name": "Neal Bontrager",
+    "created_at": "2025-07-15T16:10:01.777763Z"
+  }
+]

@@ -1,0 +1,35 @@
+[
+  {
+    "id": 4,
+    "name": "Test User",
+    "email": "test@test.com",
+    "password_hash": "$2b$12$MS2Guoiy6A9TUDJw90yzxOzuSdNbsBn05RAVdSIrClXd/aF7mIaOa",
+    "auth_provider": "local",
+    "created_at": "2025-06-26T13:43:36.504116Z",
+    "role": "admin",
+    "two_factor_secret": null,
+    "two_factor_enabled": null
+  },
+  {
+    "id": 5,
+    "name": "Demo User",
+    "email": "demo@demo.com",
+    "password_hash": "$2b$12$MS2Guoiy6A9TUDJw90yzxOzuSdNbsBn05RAVdSIrClXd/aF7mIaOa",
+    "auth_provider": "local",
+    "created_at": "2025-06-26T13:45:32.923307Z",
+    "role": "user",
+    "two_factor_secret": null,
+    "two_factor_enabled": null
+  },
+  {
+    "id": 6,
+    "name": "Stan Gwin",
+    "email": "Stan@vantix.tech",
+    "password_hash": "$2b$12$CRAf1NCeMhwu1bcnHxb2ruWnbKVohBS1RzG.Dcn3abUEFDaXOAvey",
+    "auth_provider": "local",
+    "created_at": "2025-06-26T15:36:04.499609Z",
+    "role": "admin",
+    "two_factor_secret": null,
+    "two_factor_enabled": null
+  }
+]

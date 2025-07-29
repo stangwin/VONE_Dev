@@ -1,0 +1,39 @@
+{
+  "summary": {
+    "total_files": 85,
+    "total_size_bytes": 150000000,
+    "customers_with_files": 11,
+    "file_types": {
+      "image/jpeg": 67,
+      "image/heic": 18
+    }
+  },
+  "customers_with_files": {
+    "customer_001": {
+      "count": 11,
+      "types": ["image/jpeg"],
+      "description": "WhatsApp images of network installations"
+    },
+    "customer_006": {
+      "count": 24,
+      "types": ["image/jpeg"],
+      "description": "Network diagrams and site photos for 4 pharmacy locations"
+    },
+    "customer_007": {
+      "count": 16,
+      "types": ["image/jpeg"],
+      "description": "Installation photos and network documentation"
+    },
+    "customer_011": {
+      "count": 32,
+      "types": ["image/heic"],
+      "description": "HEIC photos from mobile uploads - multiple pharmacy locations"
+    },
+    "customer_1752255981406": {
+      "count": 2,
+      "types": ["image/jpeg"],
+      "description": "Mineral Pharmacy installation photos"
+    }
+  },
+  "file_mapping": "All files in customer_files_complete.json contain exact paths matching upload directory structure"
+}

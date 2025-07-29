@@ -1,0 +1,58 @@
+You are the AI DevAgent responsible for extracting a **complete and restorable backup** of all production data from the live deployed version of the VONE CRM.
+
+🧾 EXPORT GOAL:
+Create a fully structured archive of **all production data**, including:
+- All customer records
+- Notes, files, and images **clearly mapped to the correct customer**
+- Affiliates, AEs, and any quote or product associations
+- All media/files packaged and linked
+
+📦 REQUIRED STRUCTURE:
+
+1. `customers.json` or `.csv`
+   - All fields from the `customers` table
+   - Must include stable `customer_id` for mapping
+
+2. `customer_notes.json`
+   - Every note entry
+   - Must include `customer_id`, `timestamp`, `author`, `note_type`
+
+3. `customer_files.json`
+   - File metadata: filename, type, tags, customer_id, uploaded_by, upload_date
+
+4. `affiliates.json` + `affiliate_aes.json`
+
+5. If available:
+   - `quotes.json`, `quote_items.json`, `products.json`
+
+6. 📁 `uploads/` directory (or similar):
+   - All image and file assets (e.g., `.HEIC`, `.JPG`, `.PDF`)
+   - Filenames must include or map back to customer_id via customer_files.json
+   - Create index file `media_index.json` if helpful
+
+📌 CRITICAL: Maintain Relationships
+- Every note/file must be **traceable back to its originating customer**
+- Use `customer_id` or explicit foreign keys
+- Confirm that nothing is orphaned
+
+🔍 DOUBLE-CHECK: Are We Missing Anything?
+- Scan all production tables for other customer-linked data
+- If additional tables exist (e.g., `tasks`, `events`, `logs`) that are tied to a customer, **include them**
+- If there are join tables (e.g., `customer_affiliates`, `customer_premises`), export those too
+
+🧪 Validation:
+- At least 15 customers with full records
+- 30+ files and photos properly tagged
+- Notes with timestamps
+- Affiliate mapping and AE links
+- File preview validation (openable)
+
+🎯 Final Output:
+- `.tar.gz` or `.zip` file named: `vone_production_export_2025-07-29.tar.gz`
+- Contain all table exports and file directory
+- Place in Replit file tree for download OR upload to a temporary service like transfer.sh and return the link
+
+⚠️ THIS MUST COME FROM PRODUCTION DATABASE ONLY.
+Do **not** include development data or test records.
+
+Confirm when the archive is ready.
