@@ -628,11 +628,10 @@ const server = http.createServer(async (req, res) => {
           return;
         }
         
-        // Simple customer query for production (exclude deleted customers)
+        // Simple customer query for production
         const result = await pool.query(`
           SELECT c.*
           FROM customers c
-          WHERE c.deleted_at IS NULL
           ORDER BY c.company_name
         `);
         res.writeHead(200, { 'Content-Type': 'application/json' });
@@ -745,7 +744,7 @@ const server = http.createServer(async (req, res) => {
         }
         
         const customerId = pathname.split('/')[3];
-        const result = await pool.query('SELECT * FROM customers WHERE customer_id = $1 AND deleted_at IS NULL', [customerId]);
+        const result = await pool.query('SELECT * FROM customers WHERE customer_id = $1', [customerId]);
         
         if (result.rows.length === 0) {
           res.writeHead(404, { 'Content-Type': 'application/json' });
@@ -1053,25 +1052,25 @@ const server = http.createServer(async (req, res) => {
         const customerId = pathname.split('/')[3];
         console.log('11. Customer ID extracted:', customerId);
         
-        // Soft delete: set deleted_at timestamp
+        // Hard delete: remove customer record
         const schema = process.env.DATABASE_URL_DEV ? 'vantix_dev' : 'public';
         console.log('12. Schema determined:', schema);
         
-        const updateQuery = `UPDATE ${schema}.customers SET deleted_at = NOW() WHERE customer_id = $1 AND deleted_at IS NULL RETURNING *`;
-        console.log('13. SQL Query:', updateQuery);
+        const deleteQuery = `DELETE FROM ${schema}.customers WHERE customer_id = $1 RETURNING *`;
+        console.log('13. SQL Query:', deleteQuery);
         console.log('14. Query params:', [customerId]);
         
-        const result = await pool.query(updateQuery, [customerId]);
+        const result = await pool.query(deleteQuery, [customerId]);
         console.log('15. Query result rows:', result.rows.length);
         
         if (result.rows.length === 0) {
-          console.log('16. ❌ Customer not found or already deleted');
+          console.log('16. ❌ Customer not found');
           res.writeHead(404, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ error: 'Customer not found or already deleted' }));
+          res.end(JSON.stringify({ error: 'Customer not found' }));
           return;
         }
         
-        console.log('17. ✅ Customer soft-deleted successfully');
+        console.log('17. ✅ Customer deleted successfully');
         
         // Create system note for deletion
         try {
@@ -1086,7 +1085,7 @@ const server = http.createServer(async (req, res) => {
           console.error('20. ❌ Failed to create deletion system note:', noteError);
         }
         
-        const successResponse = { message: 'Customer archived successfully' };
+        const successResponse = { message: 'Customer deleted successfully' };
         console.log('21. Sending success response:', successResponse);
         
         res.writeHead(200, { 'Content-Type': 'application/json' });
