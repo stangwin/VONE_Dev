@@ -185,7 +185,7 @@ async function handleWithSession(req, res, handler) {
         };
         
         const envMode = isDevelopment ? 'Development' : 'Production';
-        console.log(`${envMode} session token authenticated:`, { 
+        console.log(`${envMode} session token authenticated from database:`, { 
           userId: sessionData.userId, 
           email: sessionData.user?.email,
           tokenPrefix: sessionToken.substring(0, 10) + '...'
@@ -194,7 +194,32 @@ async function handleWithSession(req, res, handler) {
         // Call handler directly with session token
         return handler(req, res);
       } else {
-        console.log('Session token not found in database:', sessionToken.substring(0, 10) + '...');
+        console.log('Session token not found in database, checking in-memory storage:', sessionToken.substring(0, 10) + '...');
+        
+        // Fallback to in-memory storage
+        const inMemorySession = devSessions.get(sessionToken);
+        if (inMemorySession) {
+          req.session = {
+            id: sessionToken,
+            userId: inMemorySession.userId,
+            user: inMemorySession.user,
+            save: (callback) => callback && callback(),
+            destroy: (callback) => {
+              callback && callback();
+            }
+          };
+          
+          const envMode = isDevelopment ? 'Development' : 'Production';
+          console.log(`${envMode} session token authenticated from memory:`, { 
+            userId: inMemorySession.userId, 
+            email: inMemorySession.user?.email,
+            tokenPrefix: sessionToken.substring(0, 10) + '...'
+          });
+          
+          return handler(req, res);
+        } else {
+          console.log('Session token not found in database or memory:', sessionToken.substring(0, 10) + '...');
+        }
       }
     } catch (error) {
       console.error('Session token lookup error:', error);
@@ -389,8 +414,28 @@ const server = http.createServer(async (req, res) => {
         if (isDevelopment || !req.headers.cookie) {
           const tokenPrefix = isDevelopment ? 'dev_' : 'prod_';
           sessionToken = tokenPrefix + Math.random().toString(36).substring(2) + Date.now().toString(36);
-          devSessions.set(sessionToken, { userId: user.id, user: user });
-          console.log(`Created ${isDevelopment ? 'development' : 'production'} session token for iframe:`, sessionToken);
+          
+          // Save session token to database
+          try {
+            const tableName = isDevelopment ? 'session_dev' : 'session_prod';
+            const sessionData = {
+              userId: user.id,
+              user: user
+            };
+            const expireTime = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days
+            
+            await pool.query(
+              `INSERT INTO ${tableName} (sid, sess, expire) VALUES ($1, $2, $3)`,
+              [sessionToken, JSON.stringify(sessionData), expireTime]
+            );
+            
+            console.log(`Created ${isDevelopment ? 'development' : 'production'} session token for iframe:`, sessionToken);
+            console.log(`Session token saved to database table: ${tableName}`);
+          } catch (error) {
+            console.error('Failed to save session token to database:', error);
+            // Fallback to in-memory storage
+            devSessions.set(sessionToken, { userId: user.id, user: user });
+          }
         }
         
         const response = { user };
